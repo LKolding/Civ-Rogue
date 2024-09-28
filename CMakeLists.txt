@@ -20,7 +20,7 @@ set(SFML_DIR ${LIB_DIR}/cmake/SFML)
 find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
 
 # Gather source files
-file(GLOB_RECURSE SOURCES "${SRC_DIR}/*.cpp")
+file(GLOB_RECURSE SOURCES ${SRC_DIR}/*.cpp)
 
 # add exe
 add_executable(${PROJECT_NAME} ${SOURCES})
