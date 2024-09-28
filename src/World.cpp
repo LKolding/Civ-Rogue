@@ -1,21 +1,27 @@
 #include "World.hpp"
 
 
-void World::createWorld() {
-    
+World::World(ResourceAllocator &allocator) {
+    // Initializes a default chunk from .tmx file
+    // and extracts all the tilesets provided
+
+    // Firstly, load the tmx file containing the tileset(s)
+    if (!this->loadMap("assets/tmx/maps/grass_chunk.tmx")) {
+        throw std::runtime_error("Couldn't load grass_chunk.tmx. World is left uninitialized...");
+    }
+
     // Extract tileset from .tmx file
     const auto& tilesets = map.getTilesets();
-    for(const auto& tileset : tilesets)
-    {
-        // Grass tileset
+    for(const auto& tileset : tilesets) {
+        // Load grass texture
         if (tileset.getName() == "grass") {
-            
+            allocator.loadTexture(tileset.getImagePath());
         }
     }
 }
 
 
-bool World::loadMap(std::string path) {
+bool World::loadMap(const std::string& path) {
     if (!this->map.load(path)) {
         return false;
     }
@@ -23,7 +29,7 @@ bool World::loadMap(std::string path) {
 }
 
 
-void World::render(sf::RenderTarget &ren) {
+void World::render(sf::RenderTarget &ren) const {
     const auto& layers = map.getLayers();
     for(const auto& layer : layers)
     {

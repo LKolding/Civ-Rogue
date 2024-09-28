@@ -11,15 +11,18 @@
 #include <string>
 #include <vector>
 
+// MY STUFF
+#include <ResourceAllocator.hpp>
+
 
 class World {
 
     tmx::Map map;
 
-    void createWorld();
+    World(ResourceAllocator &allocator);
 
-    bool loadMap(std::string path);
+    bool loadMap(const std::string& path);
 
-    void render(sf::RenderTarget &ren);
+    void render(sf::RenderTarget &ren) const;
 
 };
