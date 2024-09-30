@@ -5,22 +5,20 @@
 #include "ResourceAllocator.hpp"
 #include "World.hpp"
 
-
 int main() {
-    sf::RenderWindow window(sf::VideoMode(800, 600), "Civ_Rogue");
+    sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Civ_Rogue");
 
     ResourceAllocator allocator;
     World world1(allocator);
 
-    if (!world1.loadMap("grass_chunk.tmx")) {
-        return -1;
-    }
-    world1.generateChunks();
-    for (Chunk& chunk : world1.chunks) {
-        world1.createChunkSprites(chunk, allocator);
-    }
+    sf::Vector2f pos = {1,0};
+    world1.chunks.push_back(world1.generateRandomChunk(pos));
 
-    while (window.isOpen()) {
+    // create sprites
+    world1.createChunkSprites(allocator);
+
+    while (window.isOpen()) 
+    {
         sf::Event event;
         while (window.pollEvent(event))
         {
@@ -37,7 +35,7 @@ int main() {
         window.display();
     }
 
-
+    world1.saveMapToTMX("../saveGames/dildo.tmx");
 
     return 0;
 }

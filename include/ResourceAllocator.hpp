@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "hash_function.h"
 #include "constants.h" // for tile and chunk sizes
 
 class ResourceAllocator {
@@ -16,7 +17,12 @@ public:
 
     sf::IntRect locateTexOnSheet(int ID, std::string filename);
 
+    void addChunkTexturePointer(std::shared_ptr<sf::Texture> tex, std::pair<float,float>& pos);
+
 private:
-    std::unordered_map<std::string, std::shared_ptr<sf::Texture>> textures;
+    // holds pointers to pre-rendered chunk textures
+    std::unordered_map<std::pair<float,float>, std::shared_ptr<sf::Texture>, hash_pair> chunksTextures;
+
+    std::unordered_map<std::string,  std::shared_ptr<sf::Texture>> textures;
 };
 #endif

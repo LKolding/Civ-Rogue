@@ -39,3 +39,8 @@ sf::IntRect ResourceAllocator::locateTexOnSheet(int tileID, std::string filename
     
     return loc;
 }
+
+
+void ResourceAllocator::addChunkTexturePointer(std::shared_ptr<sf::Texture> tex, std::pair<float,float>& pos) {
+    chunksTextures[pos] = tex;
+}
