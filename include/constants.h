@@ -1,0 +1,12 @@
+#ifndef _CONSTANTS_
+#define _CONSTANTS_
+
+#define TILE_WIDTH 32
+#define TILE_HEIGHT 32
+#define TILE_SIZE TILE_WIDTH*TILE_HEIGHT
+
+#define CHUNK_WIDTH 16
+#define CHUNK_HEIGHT 16
+#define CHUNK_SIZE CHUNK_WIDTH*CHUNK_HEIGHT
+
+#endif

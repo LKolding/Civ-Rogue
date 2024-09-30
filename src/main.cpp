@@ -1,12 +1,26 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
+
+// My stuff
+#include "ResourceAllocator.hpp"
 #include "World.hpp"
 
-int main() {
-    sf::Window window(sf::VideoMode(800, 600), "My window");
 
-    while (window.isOpen())
-    {
+int main() {
+    sf::RenderWindow window(sf::VideoMode(800, 600), "Civ_Rogue");
+
+    ResourceAllocator allocator;
+    World world1(allocator);
+
+    if (!world1.loadMap("grass_chunk.tmx")) {
+        return -1;
+    }
+    world1.generateChunks();
+    for (Chunk& chunk : world1.chunks) {
+        world1.createChunkSprites(chunk, allocator);
+    }
+
+    while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event))
         {
@@ -17,7 +31,13 @@ int main() {
                 window.close();
             }
         }
+
+        window.clear();
+        world1.render(window);
+        window.display();
     }
+
+
 
     return 0;
 }
