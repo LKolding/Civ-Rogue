@@ -62,39 +62,14 @@ void World::saveMapToTMX(const std::string& filePath) {
     pugi::xml_node dataNode = layerNode.append_child("data");
     dataNode.append_attribute("encoding") = "csv";
 
-    /*
-    // Example: Fill the tilemap with dummy tile IDs (1 through width*height)
-    std::string csvData;
-    for (int y = 0; y < CHUNK_HEIGHT; ++y) {
-        for (int x = 0; x < CHUNK_WIDTH; ++x) {
-            csvData += std::to_string(1) + ",";
-        }
-        csvData.back() = '\n';  // Replace the last comma with a newline
-    }
-    dataNode.text().set(csvData.c_str());
-    */
     // chunk functionality
     for (Chunk& chunk : this->chunks) {
         // Create chunk node
         pugi::xml_node chunkNode = dataNode.append_child("chunk");
-        chunkNode.append_attribute("x") = chunk.position.x; // Set chunk position
-        chunkNode.append_attribute("y") = chunk.position.y;
+        chunkNode.append_attribute("x") = chunk.position.x * CHUNK_WIDTH;
+        chunkNode.append_attribute("y") = chunk.position.y * CHUNK_HEIGHT;
         chunkNode.append_attribute("width") = CHUNK_WIDTH;
         chunkNode.append_attribute("height") = CHUNK_HEIGHT;
-
-    /*
-        // Create the CSV string for this chunk
-        std::ostringstream csvStream;
-        for (int i = 0; i < CHUNK_HEIGHT; ++i) {
-            for (int j = 0; j < CHUNK_WIDTH; ++j) {
-                // Assuming you have a way to get the tile ID at (j, i) in this chunk
-                csvStream << getTileIdAt(chunkX, chunkY, j, i);
-                if (j < chunkWidth - 1) {
-                    csvStream << ",";
-                }
-            }
-            csvStream << "\n"; // New line for each row
-        }*/
 
         std::ostringstream csvStream;
         for (Tile& tile : chunk.background_tiles) {
