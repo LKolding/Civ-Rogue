@@ -51,7 +51,7 @@ public:
     void createChunkSprites(ResourceAllocator& allocator);
     void render(sf::RenderWindow &ren);
 
-    Chunk generateRandomChunk(sf::Vector2f& pos);
+    void generateRandomChunk(sf::Vector2f& pos);
 
     // test stuff
     // sprites

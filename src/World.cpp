@@ -173,7 +173,7 @@ std::unique_ptr<sf::Sprite> createChunkSprite(
     return pchunkSprite;
 }
 
-Chunk World::generateRandomChunk(sf::Vector2f& pos) {
+void World::generateRandomChunk(sf::Vector2f& pos) {
     Chunk tchunk;
     tchunk.position = pos;
 
@@ -183,7 +183,7 @@ Chunk World::generateRandomChunk(sf::Vector2f& pos) {
         ttile.isWalkable = true;
         tchunk.background_tiles[i] = ttile;
     }
-    return tchunk;
+    this->chunks.push_back(tchunk);
 }
 
 // Generates chunks from map
