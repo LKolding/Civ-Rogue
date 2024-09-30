@@ -35,7 +35,7 @@ int main() {
         window.display();
     }
 
-    world1.saveMapToTMX("../saveGames/dildo.tmx");
+    //world1.saveMapToTMX("../saveGames/dildo.tmx");
 
     return 0;
 }
