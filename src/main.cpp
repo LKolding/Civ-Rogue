@@ -13,12 +13,10 @@ int main() {
     // player and view
     auto playerp = std::make_shared<Player>();
     playerp->playerView.reset(sf::FloatRect(sf::Vector2f(100.f, 100.f),sf::Vector2f(WINDOW_WIDTH*0.7, WINDOW_HEIGHT*0.7)));
-
     // allocator and world
     ResourceAllocator allocator;
     World world1;
     world1.initialize(allocator, playerp);
-
     // create sprites
     world1.createChunkSprites(allocator);
 

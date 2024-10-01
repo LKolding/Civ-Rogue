@@ -37,9 +37,9 @@ public:
     void initialize(ResourceAllocator &allocator, std::shared_ptr<Player> p);
     void saveMapToTMX(const std::string& filePath);
     // Other
+    
     void createChunkSprites(ResourceAllocator& allocator);
     void render(sf::RenderWindow &ren);
-
     void generateRandomChunk(sf::Vector2f& pos);
 
 private:
