@@ -1,14 +1,17 @@
 #include "World.hpp"
 
+#define GAME_NAME "../saveGames/game1_test.tmx" //  TODO: Temporary
 
-World::World(ResourceAllocator &allocator) {
+
+void World::initialize(ResourceAllocator &allocator, std::shared_ptr<Player> p) {
     // Initializes a default chunk from .tmx file
     // and extracts all the tilesets provided
     tmx::Map map;
+    this->playerPtr = p;
     // Firstly, load the tmx file containing the tileset(s)
 
     //   // previous value: ../assets/tmx/maps/grass_chunk.tmx
-    if (!map.load("../saveGames/game1.tmx")) {
+    if (!map.load(GAME_NAME)) {
         std::cout << std::filesystem::current_path() << "\n";
         throw std::runtime_error("Couldn't load grass_chunk.tmx. World is left uninitialized...");
     }
@@ -23,7 +26,6 @@ World::World(ResourceAllocator &allocator) {
     }
     this->loadMap(map);
 }
-
 
 // TEMP FUNCTION BELOW
 void World::saveMapToTMX(const std::string& filePath) {
@@ -61,8 +63,8 @@ void World::saveMapToTMX(const std::string& filePath) {
     for (Chunk& chunk : this->chunks) {
         // Create chunk node
         pugi::xml_node chunkNode = dataNode.append_child("chunk");
-        chunkNode.append_attribute("x") = chunk.position.x * CHUNK_WIDTH;
-        chunkNode.append_attribute("y") = chunk.position.y * CHUNK_HEIGHT;
+        chunkNode.append_attribute("x") = chunk.position.x;
+        chunkNode.append_attribute("y") = chunk.position.y;
         chunkNode.append_attribute("width") = CHUNK_WIDTH;
         chunkNode.append_attribute("height") = CHUNK_HEIGHT;
 
@@ -80,13 +82,12 @@ void World::saveMapToTMX(const std::string& filePath) {
     pugi::xml_node playerLocationNode = objectsNode.append_child("object");
     playerLocationNode.append_attribute("id") = "1";
     playerLocationNode.append_attribute("name") = "playerLocation";
-    playerLocationNode.append_attribute("x") = this->playerPtr->playerView.getCenter().x;
-    playerLocationNode.append_attribute("y") = this->playerPtr->playerView.getCenter().y;
+    playerLocationNode.append_attribute("x") = (int) this->playerPtr->playerView.getCenter().x;
+    playerLocationNode.append_attribute("y") = (int) this->playerPtr->playerView.getCenter().y;
 
     // Save to file
     doc.save_file(filePath.c_str());
 }
-
 bool World::saveGame(const std::string& gameName) {
     return true;
 
@@ -109,16 +110,10 @@ std::unique_ptr<sf::Sprite> createTileSprite(
     // extract size and position
     tmx::Vector2u tmx_texture_rect = tileset_tile->imagePosition;
     tmx::Vector2u image_size = tileset_tile->imageSize;
-    // create temp IntRect
-    sf::IntRect sf_texture_rect;
-    sf_texture_rect.top  = tmx_texture_rect.y;
-    sf_texture_rect.left = tmx_texture_rect.x;
-    sf_texture_rect.width = image_size.x;
-    sf_texture_rect.height = image_size.y;
     // update sprite
     ptileSprite->setPosition(pos);
     ptileSprite->setTexture(*allocator.loadTexture("../assets/textures/tilesheets/TX Tileset Grass.png"));
-    ptileSprite->setTextureRect(sf_texture_rect);
+    ptileSprite->setTextureRect(sf::IntRect(tmx_texture_rect.x, tmx_texture_rect.y, image_size.x, image_size.y));
     // return sprite
     return ptileSprite;
 }
@@ -166,8 +161,8 @@ std::unique_ptr<sf::Sprite> createChunkSprite(
 
     // sprite position calculation
     sf::Vector2f spritePos;
-    spritePos.x = chunk.position.x * CHUNK_WIDTH  * TILE_WIDTH;
-    spritePos.y = chunk.position.y * CHUNK_HEIGHT * TILE_HEIGHT;
+    spritePos.x = chunk.position.x * TILE_WIDTH;
+    spritePos.y = chunk.position.y * TILE_HEIGHT;
 
     auto pchunkSprite = std::make_unique<sf::Sprite>();
     pchunkSprite->setTexture(*pchunkTex);
@@ -188,8 +183,6 @@ void World::generateRandomChunk(sf::Vector2f& pos) {
     this->chunks.push_back(tchunk);
 }
 
-
-
 //  processes tmx::tile and returns a tileModel
 //  generated from the tmx::tile information
 Tile   processTile(const tmx::TileLayer::Tile& tile,   const tmx::Tileset& tileset) {
@@ -207,6 +200,8 @@ Tile   processTile(const tmx::TileLayer::Tile& tile,   const tmx::Tileset& tiles
 }
 Chunk processChunk(const tmx::TileLayer::Chunk& chunk, const tmx::Tileset& tileset) {
     Chunk chunkModel;
+    chunkModel.position.x = chunk.position.x;
+    chunkModel.position.y = chunk.position.y;
 
     int tileCounter = 0;
     for (const auto& tile : chunk.tiles) {
@@ -222,36 +217,48 @@ Chunk processChunk(const tmx::TileLayer::Chunk& chunk, const tmx::Tileset& tiles
 //  Also tries to extract playerPosition
 //  object and update the playerView pos.
 void World::loadMap(tmx::Map& map) {
-    const auto& layers = map.getLayers();
+    if (!map.isInfinite()) {
+        std::cout << "Maps of fixed sizes not supported.\n";
+        return;
+    }
+    const auto& layers = map.getLayers(); // get layers
+
     for (const auto& layer : layers) {
         auto layerType = layer->getType();
         // Tile layer
         if (layerType == tmx::Layer::Type::Tile) {
             const auto& tileLayer = layer->getLayerAs<tmx::TileLayer>();
             if (!map.isInfinite()) {
-                std::cout << "Map is not infinite. Undefined behavior is about to commence...\n";
+                std::cout << "Map is not infinite.\n";
+                return;
             }
+            if (tileLayer.getName() != "background") {
+                std::cout << "Unknown tilelayer.\n";
+                return;
+            }
+            //  Load background tilesheet
+            tmx::Tileset tileset = this->tilesets.at("grass");
             for (const auto& chunk : tileLayer.getChunks()) {   // iterate chunks
-                // find tileset
-                tmx::Tileset tileset = this->tilesets.at("grass");
-                this->chunks.push_back(std::move(processChunk(chunk, tileset)));
+                // Create new chunk struct directly in vector
+                this->chunks.push_back(std::move(processChunk(chunk, tileset)));  
             }
         }
         // Object layer
         else if (layerType == tmx::Layer::Type::Object) {
             const auto& objectLayer = layer->getLayerAs<tmx::ObjectGroup>();
+
             if (objectLayer.getName() == "objects") {
-                for (const auto& object : objectLayer.getObjects()) {
+                for (const auto& object : objectLayer.getObjects()) { // iterate objects
                     if (this->playerPtr == nullptr) {
                         continue;
                     }
                     if (object.getName() == "playerLocation") {
-                        float x = object.getPosition().x;
-                        float y = object.getPosition().y;
-                        this->playerPtr->playerView.setCenter(x,y);
+                        this->playerPtr->playerView.setCenter(object.getPosition().x, object.getPosition().y);
                     }
                 }
             }
+        } else {
+            std::cout << "Unknown layer type. \n";
         }
     }
 }
@@ -268,10 +275,6 @@ void World::createChunkSprites(ResourceAllocator& allocator) {
             )
         );
     }
-}
-
-void World::setPlayer(Player& p) {
-    this->playerPtr = std::make_shared<Player>(p);
 }
 
 void World::render(sf::RenderWindow &ren) {

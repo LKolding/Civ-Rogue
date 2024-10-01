@@ -44,7 +44,7 @@ public:
     // Loading, parsing, storing etc. of tmx
 
     std::unordered_map<std::string, tmx::Tileset> tilesets;
-    World(ResourceAllocator &allocator);
+    void initialize(ResourceAllocator &allocator, std::shared_ptr<Player> p);
     bool saveGame(const std::string& gameName);
     void saveMapToTMX(const std::string& filePath);
     // Other
@@ -52,8 +52,6 @@ public:
     void render(sf::RenderWindow &ren);
 
     void generateRandomChunk(sf::Vector2f& pos);
-
-    void setPlayer(Player& p);
 
 private:
     void createGrassTileSprite(unsigned int &ID, sf::Vector2f pos, ResourceAllocator& allocator);
