@@ -22,21 +22,11 @@
 
 // MY STUFF
 #include "ResourceAllocator.hpp"
-#include "constants.h"
 #include "Player.h"
+#include "Tile.hpp"
 
-
-// Chunk (& tile) definition
-// TODO: Move to sperate file
-struct Tile {
-    unsigned int ID;
-    bool isWalkable;
-};
-
-struct Chunk {
-    sf::Vector2f position;
-    Tile background_tiles[CHUNK_SIZE];
-};
+#include "constants.h"
+#include "sprite_constructors.hpp"
 
 
 class World {
@@ -45,7 +35,6 @@ public:
 
     std::unordered_map<std::string, tmx::Tileset> tilesets;
     void initialize(ResourceAllocator &allocator, std::shared_ptr<Player> p);
-    bool saveGame(const std::string& gameName);
     void saveMapToTMX(const std::string& filePath);
     // Other
     void createChunkSprites(ResourceAllocator& allocator);
