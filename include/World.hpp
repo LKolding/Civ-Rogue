@@ -23,6 +23,7 @@
 // MY STUFF
 #include "ResourceAllocator.hpp"
 #include "constants.h"
+#include "Player.h"
 
 
 // Chunk (& tile) definition
@@ -44,7 +45,6 @@ public:
 
     std::unordered_map<std::string, tmx::Tileset> tilesets;
     World(ResourceAllocator &allocator);
-    bool  loadMap(const std::string& mapName, tmx::Map& map);
     bool saveGame(const std::string& gameName);
     void saveMapToTMX(const std::string& filePath);
     // Other
@@ -53,16 +53,16 @@ public:
 
     void generateRandomChunk(sf::Vector2f& pos);
 
+    void setPlayer(Player& p);
+
+private:
+    void createGrassTileSprite(unsigned int &ID, sf::Vector2f pos, ResourceAllocator& allocator);
+    void generateChunk(tmx::Map& map);
     // test stuff
-    // sprites
-    std::vector<sf::Sprite>  tileSprites;
     std::vector<std::unique_ptr<sf::Sprite>> chunkSprites;
     // chunk models
     std::vector<Chunk> chunks;
 
-private:
-    void createGrassTileSprite(unsigned int &ID, sf::Vector2f pos, ResourceAllocator& allocator);
-    void generateChunks(tmx::Map& map);
-
+    std::shared_ptr<Player> playerPtr;
 };
 #endif

@@ -6,7 +6,9 @@ World::World(ResourceAllocator &allocator) {
     // and extracts all the tilesets provided
     tmx::Map map;
     // Firstly, load the tmx file containing the tileset(s)
-    if (!this->loadMap("grass_chunk.tmx", map)) {
+
+    //   ../saveGames/game1.tmx// previous value
+    if (!map.load("../assets/tmx/maps/grass_chunk.tmx")) {
         std::cout << std::filesystem::current_path() << "\n";
         throw std::runtime_error("Couldn't load grass_chunk.tmx. World is left uninitialized...");
     }
@@ -19,16 +21,9 @@ World::World(ResourceAllocator &allocator) {
             this->tilesets.insert({"grass", tileset});
         }
     }
-    generateChunks(map);
+    generateChunk(map);
 }
 
-bool World::loadMap(const std::string& mapName, tmx::Map& map) {
-    const std::string mapsPath = "../assets/tmx/maps/";
-    if (!map.load(mapsPath+mapName)) {
-        return false;
-    }
-    return true;
-}
 
 // TEMP FUNCTION BELOW
 void World::saveMapToTMX(const std::string& filePath) {
@@ -62,7 +57,7 @@ void World::saveMapToTMX(const std::string& filePath) {
     pugi::xml_node dataNode = layerNode.append_child("data");
     dataNode.append_attribute("encoding") = "csv";
 
-    // chunk functionality
+    // chunks
     for (Chunk& chunk : this->chunks) {
         // Create chunk node
         pugi::xml_node chunkNode = dataNode.append_child("chunk");
@@ -78,6 +73,15 @@ void World::saveMapToTMX(const std::string& filePath) {
 
         chunkNode.text() = csvStream.str().c_str(); // Set chunk data
     }
+    // objects
+    pugi::xml_node objectsNode = mapNode.append_child("objectgroup");
+    objectsNode.append_attribute("name") = "objects";
+    objectsNode.append_attribute("id") = "1";
+    pugi::xml_node playerLocationNode = objectsNode.append_child("object");
+    playerLocationNode.append_attribute("id") = "1";
+    playerLocationNode.append_attribute("name") = "playerLocation";
+    playerLocationNode.append_attribute("x") = this->playerPtr->playerView.getCenter().x;
+    playerLocationNode.append_attribute("y") = this->playerPtr->playerView.getCenter().y;
 
     // Save to file
     doc.save_file(filePath.c_str());
@@ -186,11 +190,13 @@ void World::generateRandomChunk(sf::Vector2f& pos) {
     this->chunks.push_back(tchunk);
 }
 
-// Generates chunks from map
-void World::generateChunks(tmx::Map& map) {
+// Generates chunks from map 
+// TODO: REWRITE ENTIRE FUNCTION TO MAKE IT WORK WITH
+//  INFINITE MAPS (OR MAKE ANOTHER, BETTER FUNCTION)
+void World::generateChunk(tmx::Map& map) {
     // Generate chunk
     Chunk tchunk;
-    
+
     const auto& layers = map.getLayers();
     for(const auto& layer : layers) {
         // Tile layer
@@ -202,9 +208,11 @@ void World::generateChunks(tmx::Map& map) {
                 // tile struct to be moved into chunk struct
                 Tile tilet;
                 tilet.ID = tile.ID;
+
                 // find tile properties
-                auto grass_tileset = this->tilesets.at("grass");
-                const auto& tileProperties = grass_tileset.getTile(tile.ID)->properties;
+                tmx::Tileset tileset = this->tilesets.at("grass");
+
+                const auto& tileProperties = tileset.getTile(tile.ID)->properties;
                 for (const auto& property : tileProperties) {
                     if (property.getType() == tmx::Property::Type::Boolean) {
                         tilet.isWalkable = property.getBoolValue();
@@ -213,6 +221,22 @@ void World::generateChunks(tmx::Map& map) {
                 tchunk.background_tiles[tileCounter] = std::move(tilet);
                 tileCounter++;
 
+            }
+        }
+        // objects
+        else if (layer->getType() == tmx::Layer::Type::Object) {
+            const auto& objectLayer = layer->getLayerAs<tmx::ObjectGroup>();
+            if (objectLayer.getName() == "objects") {
+                for (const auto& object : objectLayer.getObjects()) {
+                    if (this->playerPtr == nullptr) {
+                        break;
+                    }
+                    if (object.getName() == "playerLocation") {
+                        float x = object.getPosition().x;
+                        float y = object.getPosition().y;
+                        this->playerPtr->playerView.setCenter(x,y);
+                    }
+                }
             }
         }
     }
@@ -231,6 +255,10 @@ void World::createChunkSprites(ResourceAllocator& allocator) {
             )
         );
     }
+}
+
+void World::setPlayer(Player& p) {
+    this->playerPtr = std::make_shared<Player>(p);
 }
 
 void World::render(sf::RenderWindow &ren) {
