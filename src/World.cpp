@@ -7,8 +7,8 @@ World::World(ResourceAllocator &allocator) {
     tmx::Map map;
     // Firstly, load the tmx file containing the tileset(s)
 
-    //   ../saveGames/game1.tmx// previous value
-    if (!map.load("../assets/tmx/maps/grass_chunk.tmx")) {
+    //   // previous value: ../assets/tmx/maps/grass_chunk.tmx
+    if (!map.load("../saveGames/game1.tmx")) {
         std::cout << std::filesystem::current_path() << "\n";
         throw std::runtime_error("Couldn't load grass_chunk.tmx. World is left uninitialized...");
     }
@@ -21,7 +21,7 @@ World::World(ResourceAllocator &allocator) {
             this->tilesets.insert({"grass", tileset});
         }
     }
-    generateChunk(map);
+    this->loadMap(map);
 }
 
 
@@ -88,8 +88,6 @@ void World::saveMapToTMX(const std::string& filePath) {
 }
 
 bool World::saveGame(const std::string& gameName) {
-
-
     return true;
 
 }
@@ -190,46 +188,62 @@ void World::generateRandomChunk(sf::Vector2f& pos) {
     this->chunks.push_back(tchunk);
 }
 
-// Generates chunks from map 
-// TODO: REWRITE ENTIRE FUNCTION TO MAKE IT WORK WITH
-//  INFINITE MAPS (OR MAKE ANOTHER, BETTER FUNCTION)
-void World::generateChunk(tmx::Map& map) {
-    // Generate chunk
-    Chunk tchunk;
 
+
+//  processes tmx::tile and returns a tileModel
+//  generated from the tmx::tile information
+Tile   processTile(const tmx::TileLayer::Tile& tile,   const tmx::Tileset& tileset) {
+    Tile tileModel;
+    tileModel.ID = tile.ID;
+    
+    const auto& tileProperties = tileset.getTile(tile.ID)->properties;
+    for (const auto& property : tileProperties) {
+        if (property.getType() == tmx::Property::Type::Boolean) {
+            tileModel.isWalkable = property.getBoolValue();
+        }
+    }
+
+    return tileModel;
+}
+Chunk processChunk(const tmx::TileLayer::Chunk& chunk, const tmx::Tileset& tileset) {
+    Chunk chunkModel;
+
+    int tileCounter = 0;
+    for (const auto& tile : chunk.tiles) {
+        chunkModel.background_tiles[tileCounter] = std::move(processTile(tile, tileset));
+        tileCounter++;
+    }
+
+    return chunkModel;
+}
+
+//  Extracts chunks from map parameter and
+//  stores it in chunks vector of World.
+//  Also tries to extract playerPosition
+//  object and update the playerView pos.
+void World::loadMap(tmx::Map& map) {
     const auto& layers = map.getLayers();
-    for(const auto& layer : layers) {
+    for (const auto& layer : layers) {
+        auto layerType = layer->getType();
         // Tile layer
-        if(layer->getType() == tmx::Layer::Type::Tile) {
+        if (layerType == tmx::Layer::Type::Tile) {
             const auto& tileLayer = layer->getLayerAs<tmx::TileLayer>();
-            int tileCounter = 0;
-            for (const auto& tile : tileLayer.getTiles()) {
-                if (tileCounter > CHUNK_SIZE) { break; } // shouldn't ever happen, but just in case
-                // tile struct to be moved into chunk struct
-                Tile tilet;
-                tilet.ID = tile.ID;
-
-                // find tile properties
+            if (!map.isInfinite()) {
+                std::cout << "Map is not infinite. Undefined behavior is about to commence...\n";
+            }
+            for (const auto& chunk : tileLayer.getChunks()) {   // iterate chunks
+                // find tileset
                 tmx::Tileset tileset = this->tilesets.at("grass");
-
-                const auto& tileProperties = tileset.getTile(tile.ID)->properties;
-                for (const auto& property : tileProperties) {
-                    if (property.getType() == tmx::Property::Type::Boolean) {
-                        tilet.isWalkable = property.getBoolValue();
-                    }
-                }
-                tchunk.background_tiles[tileCounter] = std::move(tilet);
-                tileCounter++;
-
+                this->chunks.push_back(std::move(processChunk(chunk, tileset)));
             }
         }
-        // objects
-        else if (layer->getType() == tmx::Layer::Type::Object) {
+        // Object layer
+        else if (layerType == tmx::Layer::Type::Object) {
             const auto& objectLayer = layer->getLayerAs<tmx::ObjectGroup>();
             if (objectLayer.getName() == "objects") {
                 for (const auto& object : objectLayer.getObjects()) {
                     if (this->playerPtr == nullptr) {
-                        break;
+                        continue;
                     }
                     if (object.getName() == "playerLocation") {
                         float x = object.getPosition().x;
@@ -240,7 +254,6 @@ void World::generateChunk(tmx::Map& map) {
             }
         }
     }
-    this->chunks.push_back(std::move(tchunk));
 }
 
 // Loops over all chunks in chunks vector and calls createGrassTileSprite for each tile in

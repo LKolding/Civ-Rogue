@@ -57,7 +57,7 @@ public:
 
 private:
     void createGrassTileSprite(unsigned int &ID, sf::Vector2f pos, ResourceAllocator& allocator);
-    void generateChunk(tmx::Map& map);
+    void loadMap(tmx::Map& map);
     // test stuff
     std::vector<std::unique_ptr<sf::Sprite>> chunkSprites;
     // chunk models
