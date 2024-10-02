@@ -4,24 +4,26 @@
 
 
 void World::initialize(ResourceAllocator &allocator, std::shared_ptr<Player> p) {
-    // Initializes a default chunk from .tmx file
-    // and extracts all the tilesets provided
+    // Performs an initialization of the World object incl.
+    // tilesets, chunks and tiles. Extracts from game file
     tmx::Map map;
     this->playerPtr = p;
-    // Firstly, load the tmx file containing the tileset(s)
 
-    //   // previous value: ../assets/tmx/maps/grass_chunk.tmx
     if (!map.load(GAME_NAME)) {
         std::cout << std::filesystem::current_path() << "\n";
-        throw std::runtime_error("Couldn't load grass_chunk.tmx. World is left uninitialized...");
+        throw std::runtime_error("Couldn't load. World is left uninitialized...");
     }
-    // Extract tileset from .tmx file
+    // Extract tileset(s) from .tmx file
     const auto& tilesets = map.getTilesets();
     for(const auto& tileset : tilesets) {
         // Load grass texture
         if (tileset.getName() == "grass") {
             allocator.loadTexture(tileset.getImagePath());
             this->tilesets.insert({"grass", tileset});
+        }
+        else {
+            allocator.loadTexture(tileset.getImagePath());
+            this->tilesets.insert({tileset.getName(), tileset});
         }
     }
     this->loadMap(map);
@@ -88,7 +90,6 @@ void World::saveMapToTMX(const std::string& filePath) {
     // Save to file
     doc.save_file(filePath.c_str());
 }
-
 
 void World::generateRandomChunk(sf::Vector2f& pos) {
     Chunk tchunk;
@@ -173,7 +174,7 @@ void World::loadMap(tmx::Map& map) {
                         continue;
                     }
                     if (object.getName() == "playerLocation") {
-                        this->playerPtr->playerView.setCenter(object.getPosition().x, object.getPosition().y);
+                        this->playerPtr->move(object.getPosition().x, object.getPosition().y);
                     }
                 }
             }
