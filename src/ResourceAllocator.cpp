@@ -40,6 +40,13 @@ sf::IntRect ResourceAllocator::locateTexOnSheet(int tileID, std::string filename
     return loc;
 }
 
+void ResourceAllocator::addTileset(const tmx::Tileset &tileset) {
+    this->loadTexture(tileset.getImagePath());
+    this->tilesets.insert({tileset.getName(), std::make_shared<tmx::Tileset>(tileset)});
+}
+tmx::Tileset& ResourceAllocator::getTileset(std::string name) {
+    return *this->tilesets[name];
+}
 
 void ResourceAllocator::addChunkTexturePointer(std::shared_ptr<sf::Texture> tex, std::pair<float,float>& pos) {
     chunksTextures[pos] = tex;

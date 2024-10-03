@@ -9,10 +9,17 @@
 #include "ResourceAllocator.hpp"
 #include "World.hpp"
 #include "Player.h"
+
+#include "HumanFactory.hpp"  // crafts HumanEntity
 // render
-#include "Entity.hpp"
+#include "ECS/Entities/Entity.hpp"
+#include "ECS/Entities/Human.hpp"
+
+#include "ECS/Systems/MovementSystem.hpp"
+#include "ECS/Systems/RenderSystem.hpp"
 
 #include "input.hpp"
+
 
 sf::Vector2i getChunkCoords(sf::Vector2f coords) {
     // Calculate chunk coordinates
@@ -73,8 +80,15 @@ int main() {
     world1.initialize(allocator, playerp);
     // input handler
     InputManager inputhandler(playerp);
-    // create sprites
+    // create sprites for chunks
     world1.createChunkSprites(allocator);
+    // entities
+    std::vector<std::unique_ptr<Entity>> entities;
+    entities.push_back(buildHuman(allocator));
+
+    // systems
+    MovementSystem movementSystem;
+    RenderSystem renderSystem;
 
     float deltaTime = 0.01f;
     while (window.isOpen()) {
@@ -84,7 +98,7 @@ int main() {
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
                 window.close();
-                
+
             else {
                 if (!handle_event(event, inputhandler, playerp, deltaTime)) {
                     world1.saveMapToTMX("../saveGames/game1_test.tmx");
@@ -93,10 +107,14 @@ int main() {
             }
                             
         }
-        
+
+        for (const auto& entity : entities) {
+            entity->update(deltaTime);
+        }
         window.setView(playerp->playerView);
         window.clear();
         world1.render(window);
+        renderSystem.update(window, entities);
         renderSelectionBox(window);
         window.display();
     }

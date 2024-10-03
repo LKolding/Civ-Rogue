@@ -21,7 +21,7 @@ public:
         float MOVE_AMOUNT = this->player->getSpeed() * dt;
         float moveX = 0;
         float moveY = 0;
-        for (auto& key : keyState) { // moveX and Y simply indicates direction
+        for (auto& key : this->keyState) { // moveX and Y simply indicates direction
             if (key.first == sf::Keyboard::W && key.second == true) { moveY -= 1.0f; }
             if (key.first == sf::Keyboard::A && key.second == true) { moveX -= 1.0f; }
             if (key.first == sf::Keyboard::S && key.second == true) { moveY += 1.0f; }
@@ -49,6 +49,10 @@ inline bool handle_event(
     std::shared_ptr<Player> playerp,
     float deltaTime
     ) {
+
+    if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
+        return false;
+    
 
     if (event.type == sf::Event::KeyPressed) {
         if (event.key.code == sf::Keyboard::W) {

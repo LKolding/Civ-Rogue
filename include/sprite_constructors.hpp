@@ -7,10 +7,10 @@
 // my stuff
 #include "ResourceAllocator.hpp"
 #include "World.hpp"
+#include "ECS/Entities/Human.hpp"
 
-// creates a new sprite for a tile.
-// allocator is needed to retrieve the shared ptr
-// to the tilesheet texture
+//  Chunks and tiles
+
 inline std::unique_ptr<sf::Sprite> createTileSprite(
     Tile& tile,                 // TILE STRUCT
     tmx::Tileset& tileset,      // TMX TILESET
@@ -83,4 +83,16 @@ inline std::unique_ptr<sf::Sprite> createChunkSprite(
     pchunkSprite->setPosition(spritePos);
     return pchunkSprite;
 }
+
+
+//  Entities
+/*
+inline std::unique_ptr<sf::Sprite> createHumanSprite(
+    HumanEntity& humanEnt,
+    tmx::Tileset& tileset,
+    ResourceAllocator& allocator
+    ) {
+    
+}
+*/
 #endif

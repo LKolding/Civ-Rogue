@@ -1,7 +1,7 @@
 #ifndef _COMPONENTS_
 #define _COMPONENTS_
 
-#include <SFML/Graphics.hpp>
+#include <SFML/Graphics.hpp>  // for Sprite
 
 struct PositionComponent { float x, y; };
 

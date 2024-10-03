@@ -16,16 +16,9 @@ void World::initialize(ResourceAllocator &allocator, std::shared_ptr<Player> p) 
     // Extract tileset(s) from .tmx file
     const auto& tilesets = map.getTilesets();
     for(const auto& tileset : tilesets) {
-        // Load grass texture
-        if (tileset.getName() == "grass") {
-            allocator.loadTexture(tileset.getImagePath());
-            this->tilesets.insert({"grass", tileset});
-        }
-        else {
-            allocator.loadTexture(tileset.getImagePath());
-            this->tilesets.insert({tileset.getName(), tileset});
-        }
+        allocator.addTileset(tileset);
     }
+
     this->loadMap(map);
 }
 
@@ -143,6 +136,7 @@ void World::loadMap(tmx::Map& map) {
         return;
     }
     const auto& layers = map.getLayers(); // get layers
+    const auto& tilesets = map.getTilesets();
 
     for (const auto& layer : layers) {
         auto layerType = layer->getType();
@@ -158,7 +152,12 @@ void World::loadMap(tmx::Map& map) {
                 return;
             }
             //  Load background tilesheet
-            tmx::Tileset tileset = this->tilesets.at("grass");
+            tmx::Tileset tileset(std::string("tmx/tsx/"));
+            for (auto& tempTileset : tilesets) {
+                if (tempTileset.getName() == "grass") {
+                    tileset = tempTileset;
+                }
+            }
             for (const auto& chunk : tileLayer.getChunks()) {   // iterate chunks
                 // Create new chunk struct directly in vector
                 this->chunks.push_back(std::move(processChunk(chunk, tileset)));  
@@ -184,19 +183,19 @@ void World::loadMap(tmx::Map& map) {
     }
 }
 
-// Loops over all chunks in chunks vector and calls createGrassTileSprite for each tile in
-// chunk which adds the tilesprite to the tileSprites vector. It actually creates tons of 
-// tile sprites and no "chunk" sprites
+
 void World::createChunkSprites(ResourceAllocator& allocator) {
     for (auto& chunk : this->chunks) {
         this->chunkSprites.push_back(createChunkSprite(
             chunk,
-            this->tilesets.at("grass"),
+            allocator.getTileset("grass"),
             allocator
             )
         );
     }
 }
+
+
 
 void World::render(sf::RenderWindow &ren) {
 

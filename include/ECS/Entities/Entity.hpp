@@ -6,7 +6,7 @@
 #include <typeindex>
 #include <typeinfo>
 
-#include "Components.hpp"
+#include "ECS/Components/Components.hpp"
 
 class Entity {
 public:
@@ -24,6 +24,9 @@ public:
     bool hasComponent() const {
         return components.find(typeid(T)) != components.end();
     }
+
+    virtual void update(float deltatime) = 0;
+    virtual ~Entity() = default;
 
     // Method to retrieve a component
     template <typename T>

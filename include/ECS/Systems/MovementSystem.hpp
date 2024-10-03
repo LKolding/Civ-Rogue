@@ -1,8 +1,8 @@
 #ifndef _MOVEMENT_SYSTEM_
 #define _MOVEMENT_SYSTEM_
 
-#include "Entity.hpp"
-#include "Components.hpp"
+#include "ECS/Entities/Entity.hpp"
+#include "ECS/Components/Components.hpp"
 
 class MovementSystem {
 public:

@@ -2,6 +2,8 @@
 #define _RESOURCE_ALLOC_
 #include <SFML/Graphics.hpp>
 
+#include <tmxlite/Map.hpp>
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -18,11 +20,13 @@ public:
     sf::IntRect locateTexOnSheet(int ID, std::string filename);
 
     void addChunkTexturePointer(std::shared_ptr<sf::Texture> tex, std::pair<float,float>& pos);
+    void addTileset(const tmx::Tileset &tileset);
+    tmx::Tileset& getTileset(std::string name);
 
 private:
     // holds pointers to pre-rendered chunk textures
     std::unordered_map<std::pair<float,float>, std::shared_ptr<sf::Texture>, hash_pair> chunksTextures;
-
+    std::unordered_map<std::string, std::shared_ptr<tmx::Tileset>> tilesets;
     std::unordered_map<std::string,  std::shared_ptr<sf::Texture>> textures;
 };
 #endif
