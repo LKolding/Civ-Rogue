@@ -101,7 +101,7 @@ void World::generateRandomChunk(sf::Vector2f& pos) {
         ttile.isWalkable = true;
         tchunk.background_tiles[i] = ttile;
     }
-    this->chunks.push_back(tchunk);
+    this->chunks.push_back(std::move(tchunk));
 }
 
 //  processes tmx::tile and returns a tileModel
@@ -174,7 +174,7 @@ void World::loadMap(tmx::Map& map) {
                         continue;
                     }
                     if (object.getName() == "playerLocation") {
-                        this->playerPtr->move(object.getPosition().x, object.getPosition().y);
+                        this->playerPtr->setPosition(object.getPosition().x, object.getPosition().y);
                     }
                 }
             }

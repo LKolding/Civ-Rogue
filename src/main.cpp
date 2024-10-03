@@ -1,11 +1,18 @@
-#include <iostream>
 #include <SFML/Graphics.hpp>
+#include <SFML/Window/Keyboard.hpp>
+
+// system
+#include <cmath>
+#include <iostream>
 
 // My stuff
 #include "ResourceAllocator.hpp"
 #include "World.hpp"
 #include "Player.h"
+// render
+#include "Entity.hpp"
 
+#include "input.hpp"
 
 sf::Vector2i getChunkCoords(sf::Vector2f coords) {
     // Calculate chunk coordinates
@@ -45,11 +52,12 @@ void renderSelectionBox(sf::RenderWindow &ren) {
     rect1.setPosition(rectPos);
     rect1.setOutlineColor(sf::Color::Black);
     rect1.setFillColor(sf::Color::Transparent);
-    rect1.setOutlineThickness(2);
-    rect1.setScale(0.88f, 0.88f);
+    rect1.setOutlineThickness(1.5);
+    rect1.setScale(0.9f, 0.9f);
 
     ren.draw(rect1);
 }
+
 
 
 int main() {
@@ -57,71 +65,40 @@ int main() {
     sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Civ_Rogue");
     // player and view
     auto playerp = std::make_shared<Player>();
-    playerp->playerView.reset(sf::FloatRect(sf::Vector2f(100.f, 100.f),sf::Vector2f(WINDOW_WIDTH*0.7, WINDOW_HEIGHT*0.7)));
+    playerp->playerView.reset(sf::FloatRect(sf::Vector2f(100.f, 100.f), sf::Vector2f(WINDOW_WIDTH*0.7, WINDOW_HEIGHT*0.7)));
     window.setView(playerp->playerView);
     // allocator and world
     ResourceAllocator allocator;
     World world1;
     world1.initialize(allocator, playerp);
+    // input handler
+    InputManager inputhandler(playerp);
     // create sprites
     world1.createChunkSprites(allocator);
 
-    int MOVE_AMOUNT = 12;
-    while (window.isOpen()) 
-    {
+    float deltaTime = 0.01f;
+    while (window.isOpen()) {
+        inputhandler.update(deltaTime);
+
         sf::Event event;
-        while (window.pollEvent(event))
-        {
+        while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
-                //world1.saveMapToTMX("../saveGames/game1_test.tmx");
                 window.close();
-
-            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
-                world1.saveMapToTMX("../saveGames/game1_test.tmx");
-                window.close();
-            }
-
-            if (event.type == sf::Event::KeyPressed) {
-                switch (event.key.code) {
-                    case sf::Keyboard::W:
-                        playerp->move(0, -MOVE_AMOUNT);
-                        break;
-
-                    case sf::Keyboard::A:
-                        playerp->move(-MOVE_AMOUNT, 0);
-                        break;
-
-                    case sf::Keyboard::S:
-                        playerp->move(0, MOVE_AMOUNT);
-                        break;
-
-                    case sf::Keyboard::D:
-                        playerp->move(MOVE_AMOUNT, 0);
-                        break;
-
-                    default:
-                        break;
+                
+            else {
+                if (!handle_event(event, inputhandler, playerp, deltaTime)) {
+                    world1.saveMapToTMX("../saveGames/game1_test.tmx");
+                    window.close();
                 }
             }
-
-            // zoom w/ mousewheel
-            if (event.type == sf::Event::MouseWheelScrolled) {
-                if (event.mouseWheelScroll.delta > 0) {
-                    if (playerp->playerView.getSize().x > 300)
-                        playerp->playerView.zoom(0.9f);  // Zoom in
-                } else if (event.mouseWheelScroll.delta < 0) {
-                    if (playerp->playerView.getSize().x < 800)
-                        playerp->playerView.zoom(1.1f);  // Zoom out
-                }
-            }
-
+                            
         }
+        
         window.setView(playerp->playerView);
         window.clear();
         world1.render(window);
         renderSelectionBox(window);
         window.display();
     }
-
     return 0;
 }
