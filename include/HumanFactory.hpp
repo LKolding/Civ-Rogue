@@ -30,14 +30,22 @@ std::unique_ptr<HumanEntity> buildHumanMage(ResourceAllocator &allocator, const 
     }
 
     if (auto state_ptr = humanptr->getComponent<StateComponent>()) {
-        state_ptr->state = state_ptr->IDLE;
+        state_ptr->state = state_ptr->ATTACK;
     }
 
     if (auto anime_ptr = humanptr->getComponent<AnimationComponent>()) {
         anime_ptr->animationIndex = 0;
         anime_ptr->elapsedTime = 0.0f;
     }
+
+    if (auto colli_ptr = humanptr->getComponent<CollisionComponent>()) {
+        colli_ptr->bounds = humanptr->getComponent<SpriteComponent>()->sprite.getGlobalBounds();
+    }
     
+    if (auto selec_ptr = humanptr->getComponent<SelectableComponent>()) {
+        selec_ptr->isSelected = false;
+    }
+
     return humanptr;
 }
 

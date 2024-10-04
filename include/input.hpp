@@ -49,11 +49,11 @@ inline bool handle_event(
     std::shared_ptr<Player> playerp,
     float deltaTime
     ) {
-
+    //  exit
     if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
         return false;
     
-
+    // keypressed
     if (event.type == sf::Event::KeyPressed) {
         if (event.key.code == sf::Keyboard::W) {
             input.keyState[sf::Keyboard::W] = true;
@@ -71,6 +71,7 @@ inline bool handle_event(
             input.keyState[sf::Keyboard::Escape] = true;
         }
     }
+    // keyreleased
     if (event.type == sf::Event::KeyReleased) {
         if (event.key.code == sf::Keyboard::W) {
             input.keyState[sf::Keyboard::W] = false;
@@ -97,6 +98,9 @@ inline bool handle_event(
             if (playerp->playerView.getSize().x < 800)
                 playerp->playerView.zoom(1.1f);  // Zoom out
         }
+    }
+    if (event.type == sf::Event::MouseButtonPressed) {
+        
     }
 
     return true; // return true if no exit button has been clicked

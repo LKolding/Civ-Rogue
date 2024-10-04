@@ -8,7 +8,7 @@
 // My stuff
 #include "ResourceAllocator.hpp"
 #include "World.hpp"
-#include "Player.h"
+#include "Player.hpp"
 
 #include "HumanFactory.hpp"  // crafts HumanEntity
 // Entities
@@ -47,6 +47,8 @@ void renderSelectionBox(sf::RenderWindow &ren) {
 }
 
 
+std::string game_path = "../saveGames/game1.tmx";
+
 int main() {
     // window
     sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Civ_Rogue");
@@ -57,7 +59,7 @@ int main() {
     //  allocator and world
     ResourceAllocator allocator;
     World world1;
-    world1.initialize(allocator, playerp);
+    world1.initialize(allocator, playerp, game_path);
     //  input handler
     InputManager inputhandler(playerp);
     //  create sprites for chunks
@@ -82,7 +84,7 @@ int main() {
 
             else {
                 if (!handle_event(event, inputhandler, playerp, deltaTime)) {
-                    world1.saveMapToTMX("../saveGames/game1_test.tmx");
+                    world1.saveMapToTMX(game_path);
                     window.close();
                 }
             } 

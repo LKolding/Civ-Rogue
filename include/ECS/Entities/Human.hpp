@@ -30,14 +30,16 @@ public:
         this->addComponent(std::make_shared<HealthComponent>());
         this->addComponent(std::make_shared<StateComponent>());
         this->addComponent(std::make_shared<AnimationComponent>());
+        this->addComponent(std::make_shared<CollisionComponent>());
+        this->addComponent(std::make_shared<SelectableComponent>());
     }
 
     void update(float deltatime) {
         // all of the code in this function updating the animation
-        // component that in then updates the textRect of the sprite
+        // component that then in turn updates the textRect of the sprite
         // is pretty hardcoded and should be refactored to support
         // all the different states of the sprites which all have
-        // variable duration
+        // variable duration of their animations
 
         // update sprite position
         float x = this->getComponent<PositionComponent>()->x;
@@ -62,7 +64,9 @@ public:
                 this->getComponent<AnimationComponent>()->animationIndex += 1;
             }
         }
-        
+
+        // update collision component
+        this->getComponent<CollisionComponent>()->bounds = this->getComponent<SpriteComponent>()->sprite.getGlobalBounds();
     }
 };
 

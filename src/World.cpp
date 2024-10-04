@@ -1,15 +1,13 @@
 #include "World.hpp"
 
-#define GAME_NAME "../saveGames/game1_test.tmx" //  TODO: Temporary
 
-
-void World::initialize(ResourceAllocator &allocator, std::shared_ptr<Player> p) {
+void World::initialize(ResourceAllocator &allocator, std::shared_ptr<Player> p, std::string& game_name) {
     // Performs an initialization of the World object incl.
     // tilesets, chunks and tiles. Extracts from game file
     tmx::Map map;
     this->playerPtr = p;
 
-    if (!map.load(GAME_NAME)) {
+    if (!map.load(game_name)) {
         std::cout << std::filesystem::current_path() << "\n";
         throw std::runtime_error("Couldn't load. World is left uninitialized...");
     }
@@ -194,7 +192,6 @@ void World::createChunkSprites(ResourceAllocator& allocator) {
         );
     }
 }
-
 
 
 void World::render(sf::RenderWindow &ren) {

@@ -19,5 +19,7 @@ struct InventoryComponent { std::vector<std::string> items; };
 
 struct InteractableComponent {};
 
+struct SelectableComponent { float isSelected; };
+
 struct CollisionComponent { sf::FloatRect bounds; };
 #endif

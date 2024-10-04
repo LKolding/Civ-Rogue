@@ -22,7 +22,7 @@
 
 // MY STUFF
 #include "ResourceAllocator.hpp"
-#include "Player.h"
+#include "Player.hpp"
 #include "Tile.hpp"
 
 #include "constants.h"
@@ -34,7 +34,7 @@ public:
     // Loading, parsing, storing etc. of tmx
 
     std::unordered_map<std::string, tmx::Tileset> tilesets;
-    void initialize(ResourceAllocator &allocator, std::shared_ptr<Player> p);
+    void initialize(ResourceAllocator &allocator, std::shared_ptr<Player> p, std::string& game_name);
     void saveMapToTMX(const std::string& filePath);
     // Other
     
