@@ -11,7 +11,9 @@ struct SpriteComponent { sf::Sprite sprite; };
 
 struct HealthComponent { int currentHealth, maxHealth; };
 
-struct AIComponent { enum State { IDLE, PATROL, CHASE, ATTACK } state; };
+struct AnimationComponent { float elapsedTime; int animationIndex; };
+
+struct StateComponent { enum State { IDLE, WALK, REST, ATTACK, ATTACK2, ATTACK3, TEMP, DEATH } state; };
 
 struct InventoryComponent { std::vector<std::string> items; };
 

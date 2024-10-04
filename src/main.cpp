@@ -11,36 +11,17 @@
 #include "Player.h"
 
 #include "HumanFactory.hpp"  // crafts HumanEntity
-// render
+// Entities
 #include "ECS/Entities/Entity.hpp"
 #include "ECS/Entities/Human.hpp"
-
+// Systems
 #include "ECS/Systems/MovementSystem.hpp"
 #include "ECS/Systems/RenderSystem.hpp"
 
 #include "input.hpp"
 
+#include "coordinate_calculators.hpp"
 
-sf::Vector2i getChunkCoords(sf::Vector2f coords) {
-    // Calculate chunk coordinates
-    int chunkX = static_cast<int>(coords.x / (CHUNK_WIDTH  * TILE_WIDTH / 2));
-    int chunkY = static_cast<int>(coords.y / (CHUNK_HEIGHT * TILE_HEIGHT / 2));
-    return sf::Vector2i(chunkX,chunkY);
-}
-// returns the index of the tile, that the
-// coordinates are 
-sf::Vector2f getTileIndex(sf::Vector2f coords) {
-    // Calculate local coordinates within the chunk (in pixels)
-    int localXInChunk = static_cast<int>(coords.x) % (CHUNK_WIDTH * (TILE_WIDTH / 2));
-    int localYInChunk = static_cast<int>(coords.y) % (CHUNK_HEIGHT * (TILE_HEIGHT / 2));
-
-    // Determine the tile within the chunk
-    int tileX = localXInChunk / (TILE_WIDTH / 2);
-    int tileY = localYInChunk / (TILE_HEIGHT / 2);
-
-    return sf::Vector2f(tileX, tileY);
-
-}
 
 void renderSelectionBox(sf::RenderWindow &ren) {
     //  ren.mapPixelToCoords()
@@ -66,27 +47,27 @@ void renderSelectionBox(sf::RenderWindow &ren) {
 }
 
 
-
 int main() {
     // window
     sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Civ_Rogue");
-    // player and view
+    //  player and view
     auto playerp = std::make_shared<Player>();
     playerp->playerView.reset(sf::FloatRect(sf::Vector2f(100.f, 100.f), sf::Vector2f(WINDOW_WIDTH*0.7, WINDOW_HEIGHT*0.7)));
     window.setView(playerp->playerView);
-    // allocator and world
+    //  allocator and world
     ResourceAllocator allocator;
     World world1;
     world1.initialize(allocator, playerp);
-    // input handler
+    //  input handler
     InputManager inputhandler(playerp);
-    // create sprites for chunks
+    //  create sprites for chunks
     world1.createChunkSprites(allocator);
-    // entities
+    //  entities
     std::vector<std::unique_ptr<Entity>> entities;
-    entities.push_back(buildHuman(allocator));
-
-    // systems
+    entities.push_back(buildHumanMage(allocator));
+    entities.push_back(buildHumanMage(allocator, 200.0f, 200.0f));
+    entities.push_back(buildHumanMage(allocator, 300.0f, 200.0f));
+    //  systems
     MovementSystem movementSystem;
     RenderSystem renderSystem;
 
@@ -104,18 +85,16 @@ int main() {
                     world1.saveMapToTMX("../saveGames/game1_test.tmx");
                     window.close();
                 }
-            }
-                            
+            } 
         }
 
-        for (const auto& entity : entities) {
-            entity->update(deltaTime);
-        }
+        // Update entities
+        for (const auto& entity : entities) { entity->update(deltaTime); }
         window.setView(playerp->playerView);
         window.clear();
         world1.render(window);
         renderSystem.update(window, entities);
-        renderSelectionBox(window);
+        //renderSelectionBox(window);
         window.display();
     }
     return 0;

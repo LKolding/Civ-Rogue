@@ -28,12 +28,41 @@ public:
         this->addComponent(std::make_shared<PositionComponent>());
         this->addComponent(std::make_shared<SpriteComponent>());
         this->addComponent(std::make_shared<HealthComponent>());
+        this->addComponent(std::make_shared<StateComponent>());
+        this->addComponent(std::make_shared<AnimationComponent>());
     }
 
     void update(float deltatime) {
+        // all of the code in this function updating the animation
+        // component that in then updates the textRect of the sprite
+        // is pretty hardcoded and should be refactored to support
+        // all the different states of the sprites which all have
+        // variable duration
+
+        // update sprite position
         float x = this->getComponent<PositionComponent>()->x;
         float y = this->getComponent<PositionComponent>()->y;
         this->getComponent<SpriteComponent>()->sprite.setPosition(x, y);
+        // update animation component's elapsed time
+        this->getComponent<AnimationComponent>()->elapsedTime += deltatime;
+        // update sprite texture rectangle to match up with the animation index of AnimationComponent
+        sf::IntRect textRect = this->getComponent<SpriteComponent>()->sprite.getTextureRect(); // get
+        textRect.left = 32 * this->getComponent<AnimationComponent>()->animationIndex;         // update frame index     (x)
+        textRect.top = 32 * this->getComponent<StateComponent>()->state;                       // update animation index (y)
+        this->getComponent<SpriteComponent>()->sprite.setTextureRect(textRect);                // set
+        // update animation component animationIndex (is enough time has passed)
+        if (this->getComponent<AnimationComponent>()->elapsedTime >= 2.0f) {
+            this->getComponent<AnimationComponent>()->elapsedTime = 0.0f;
+
+            const int animationSheetWidth = this->getComponent<SpriteComponent>()->sprite.getTexture()->getSize().x;
+            if (this->getComponent<AnimationComponent>()->animationIndex >= (animationSheetWidth/32)-1) {
+                this->getComponent<AnimationComponent>()->animationIndex = 0;
+            }
+            else {
+                this->getComponent<AnimationComponent>()->animationIndex += 1;
+            }
+        }
+        
     }
 };
 

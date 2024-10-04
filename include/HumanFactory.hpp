@@ -11,25 +11,7 @@
 #include "ECS/Entities/Human.hpp"
 #include "ECS/Components/Components.hpp"
 
-// if (this->hasComponent<PositionComponent>()) {
-//             auto posptr = this->getComponent<PositionComponent>();
-//             posptr->x = 20;
-//             posptr->y = 20;
-//         }
-
-//         if (this->hasComponent<HealthComponent>()) {
-//             auto healthptr = this->getComponent<HealthComponent>();
-//             healthptr->maxHealth = 100;
-//             healthptr->currentHealth = 100;
-//         }
-
-//         if (this->hasComponent<SpriteComponent>()) {
-//             auto spritePtr = this->getComponent<SpriteComponent>();
-//             spritePtr->sprite.setTexture();
-//         }
-
-
-std::unique_ptr<HumanEntity> buildHuman(ResourceAllocator &allocator) {
+std::unique_ptr<HumanEntity> buildHumanMage(ResourceAllocator &allocator, const float &x = 100, const float &y = 100) {
     auto humanptr = std::make_unique<HumanEntity>();
 
     if (auto health_ptr = humanptr->getComponent<HealthComponent>()) {
@@ -38,13 +20,22 @@ std::unique_ptr<HumanEntity> buildHuman(ResourceAllocator &allocator) {
     }
 
     if (auto pos_ptr = humanptr->getComponent<PositionComponent>()) {
-        pos_ptr->x = 30;
-        pos_ptr->y = 50;
+        pos_ptr->x = x;
+        pos_ptr->y = y;
     }
 
     if (auto sprite_ptr = humanptr->getComponent<SpriteComponent>()) {
         sprite_ptr->sprite.setTexture(*allocator.loadTexture("../assets/textures/characters/MiniMage.png"));
         sprite_ptr->sprite.setTextureRect(sf::IntRect(0,0,32,32));
+    }
+
+    if (auto state_ptr = humanptr->getComponent<StateComponent>()) {
+        state_ptr->state = state_ptr->IDLE;
+    }
+
+    if (auto anime_ptr = humanptr->getComponent<AnimationComponent>()) {
+        anime_ptr->animationIndex = 0;
+        anime_ptr->elapsedTime = 0.0f;
     }
     
     return humanptr;
