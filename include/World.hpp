@@ -33,7 +33,6 @@ class World {
 public:
     // Loading, parsing, storing etc. of tmx
 
-    std::unordered_map<std::string, tmx::Tileset> tilesets;
     void initialize(ResourceAllocator &allocator, std::shared_ptr<Player> p, std::string& game_name);
     void saveMapToTMX(const std::string& filePath);
     // Other

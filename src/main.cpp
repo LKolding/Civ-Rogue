@@ -10,7 +10,7 @@
 #include "World.hpp"
 #include "Player.hpp"
 
-#include "HumanFactory.hpp"  // crafts HumanEntity
+#include "EntityFactory.hpp"
 // Entities
 #include "ECS/Entities/Entity.hpp"
 #include "ECS/Entities/Human.hpp"
@@ -24,7 +24,8 @@
 
 
 void renderSelectionBox(sf::RenderWindow &ren) {
-    //  ren.mapPixelToCoords()
+    //  renders a rectangle on top of the tile that the cursor
+    //  is currently hovering above
     sf::Vector2f worldCoords = ren.mapPixelToCoords(sf::Mouse::getPosition(ren));
 
     sf::RectangleShape rect1(sf::Vector2f(TILE_WIDTH/2, TILE_HEIGHT/2));
@@ -46,6 +47,36 @@ void renderSelectionBox(sf::RenderWindow &ren) {
     ren.draw(rect1);
 }
 
+bool isEntityHovered(sf::RenderWindow &ren, std::unique_ptr<Entity>& entity) {
+    // Returns true if the entity's CollisionComponents boundingbox is currently
+    // below sf::Mouse::getPosition()
+    sf::Vector2f worldCoords = ren.mapPixelToCoords(sf::Mouse::getPosition(ren));
+    auto colli_ptr = entity->getComponent<CollisionComponent>();
+    if (colli_ptr->bounds.contains(worldCoords.x, worldCoords.y)) {
+        return true;
+    }
+    return false;
+}
+
+void selectUnits(sf::RenderWindow &ren, std::vector<std::unique_ptr<Entity>>& entities) {
+    for (auto& entity : entities) {
+        if (entity->hasComponent<CollisionComponent>() && isEntityHovered(ren, entity)) {
+            entity->getComponent<SelectableComponent>()->isSelected = true;
+        }
+    }
+}
+
+void deselectUnits(sf::RenderWindow &ren, std::vector<std::unique_ptr<Entity>>& entities) {
+    for (auto& entity : entities) {
+        for (auto& entity : entities) {
+            if (entity->hasComponent<CollisionComponent>() && isEntityHovered(ren, entity)) {
+                entity->getComponent<SelectableComponent>()->isSelected = false;
+            }
+        }
+        
+    }
+}
+
 
 std::string game_path = "../saveGames/game1.tmx";
 
@@ -60,7 +91,7 @@ int main() {
     ResourceAllocator allocator;
     World world1;
     world1.initialize(allocator, playerp, game_path);
-    //  input handler
+    //  input handler ( a bit hacky due to the fact that sfml behaves weirdly on m1 mac)
     InputManager inputhandler(playerp);
     //  create sprites for chunks
     world1.createChunkSprites(allocator);
@@ -82,6 +113,18 @@ int main() {
             if (event.type == sf::Event::Closed)
                 window.close();
 
+            // Mouse events
+
+            // select units
+            else if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
+                selectUnits(window, entities);
+            }
+            // deselect units
+            else if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Right) {
+                deselectUnits(window, entities);
+            }
+
+            // Let handle_event function (defined in input.hpp) handle the event
             else {
                 if (!handle_event(event, inputhandler, playerp, deltaTime)) {
                     world1.saveMapToTMX(game_path);
@@ -91,7 +134,9 @@ int main() {
         }
 
         // Update entities
-        for (const auto& entity : entities) { entity->update(deltaTime); }
+        for (const auto& entity : entities) {
+            entity->update(deltaTime); 
+        }
         window.setView(playerp->playerView);
         window.clear();
         world1.render(window);

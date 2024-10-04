@@ -4,27 +4,10 @@
 #include "Entity.hpp"
 #include "ECS/Components/Components.hpp"
 
-struct Human {  // temp 
+
+class HumanMageEntity: public Entity {
 public:
-    Human(int intelligence, int strength, int speed) {
-        this->intelligence = intelligence;
-        this->strength = strength;
-        this->speed = speed;
-    };
-    int getIntelligence() { return this->intelligence; };
-    int getStrength() { return this->strength; };
-    int getSpeed() { return this->speed; }
-
-private:
-    int intelligence;  // Gained by spending time in educational facility
-    int strength;      // Gained by spending time in gym facility
-    int speed;
-};
-
-
-class HumanEntity: public Entity {
-public:
-    HumanEntity() : Entity() {
+    HumanMageEntity() : Entity() {
         this->addComponent(std::make_shared<PositionComponent>());
         this->addComponent(std::make_shared<SpriteComponent>());
         this->addComponent(std::make_shared<HealthComponent>());
@@ -34,6 +17,59 @@ public:
         this->addComponent(std::make_shared<SelectableComponent>());
     }
 
+    void transitionState(StateComponent::State state) {
+        switch (state) {
+            case StateComponent::IDLE:
+                this->getComponent<StateComponent>()->state = state;
+                this->getComponent<AnimationComponent>()->animationIndexMax = 3;
+                this->getComponent<AnimationComponent>()->frameTime = 6.4f;
+                break;
+
+            case StateComponent::WALK:
+                this->getComponent<StateComponent>()->state = state;
+                this->getComponent<AnimationComponent>()->animationIndexMax = 5;
+                this->getComponent<AnimationComponent>()->frameTime = 2.0f;
+                break;
+
+            case StateComponent::REST:
+                this->getComponent<StateComponent>()->state = state;
+                this->getComponent<AnimationComponent>()->animationIndexMax = 2;
+                this->getComponent<AnimationComponent>()->frameTime = 5.0f;
+                break;
+
+            case StateComponent::ATTACK:
+                this->getComponent<StateComponent>()->state = state;
+                this->getComponent<AnimationComponent>()->animationIndexMax = 10;
+                this->getComponent<AnimationComponent>()->frameTime = 2.0f;
+                break;
+
+            case StateComponent::ATTACK2:
+                this->getComponent<StateComponent>()->state = state;
+                this->getComponent<AnimationComponent>()->animationIndexMax = 8;
+                this->getComponent<AnimationComponent>()->frameTime = 2.0f;
+                break;
+
+            case StateComponent::ATTACK3:
+                this->getComponent<StateComponent>()->state = state;
+                this->getComponent<AnimationComponent>()->animationIndexMax = 8;
+                this->getComponent<AnimationComponent>()->frameTime = 2.0f;
+                break;
+            
+            case StateComponent::TEMP:
+                this->getComponent<StateComponent>()->state = state;
+                this->getComponent<AnimationComponent>()->animationIndexMax = 1;
+                this->getComponent<AnimationComponent>()->frameTime = 3.0f;
+                break;
+
+            case StateComponent::DEATH:
+                this->getComponent<StateComponent>()->state = state;
+                this->getComponent<AnimationComponent>()->animationIndexMax = 8;
+                this->getComponent<AnimationComponent>()->frameTime = 2.0f;
+                break;
+
+        }
+    }
+
     void update(float deltatime) {
         // all of the code in this function updating the animation
         // component that then in turn updates the textRect of the sprite
@@ -41,27 +77,30 @@ public:
         // all the different states of the sprites which all have
         // variable duration of their animations
 
-        // update sprite position
+        //  update sprite position
         float x = this->getComponent<PositionComponent>()->x;
         float y = this->getComponent<PositionComponent>()->y;
         this->getComponent<SpriteComponent>()->sprite.setPosition(x, y);
-        // update animation component's elapsed time
-        this->getComponent<AnimationComponent>()->elapsedTime += deltatime;
-        // update sprite texture rectangle to match up with the animation index of AnimationComponent
+        //  update sprite texture rectangle to match up with the animation index of AnimationComponent
         sf::IntRect textRect = this->getComponent<SpriteComponent>()->sprite.getTextureRect(); // get
         textRect.left = 32 * this->getComponent<AnimationComponent>()->animationIndex;         // update frame index     (x)
         textRect.top = 32 * this->getComponent<StateComponent>()->state;                       // update animation index (y)
         this->getComponent<SpriteComponent>()->sprite.setTextureRect(textRect);                // set
-        // update animation component animationIndex (is enough time has passed)
-        if (this->getComponent<AnimationComponent>()->elapsedTime >= 2.0f) {
+        //  update animation component's elapsed time
+        this->getComponent<AnimationComponent>()->elapsedTime += deltatime;
+        //  update animation component animationIndex (is enough time has passed)
+        if (this->getComponent<AnimationComponent>()->elapsedTime >= this->getComponent<AnimationComponent>()->frameTime) {
             this->getComponent<AnimationComponent>()->elapsedTime = 0.0f;
 
             const int animationSheetWidth = this->getComponent<SpriteComponent>()->sprite.getTexture()->getSize().x;
-            if (this->getComponent<AnimationComponent>()->animationIndex >= (animationSheetWidth/32)-1) {
-                this->getComponent<AnimationComponent>()->animationIndex = 0;
+            const int animationIndex = this->getComponent<AnimationComponent>()->animationIndex;
+            if (
+                (animationIndex >= (animationSheetWidth/32)-1) | (animationIndex >= this->getComponent<AnimationComponent>()->animationIndexMax)
+                ) {
+                this->getComponent<AnimationComponent>()->animationIndex = 0;  //  reset
             }
             else {
-                this->getComponent<AnimationComponent>()->animationIndex += 1;
+                this->getComponent<AnimationComponent>()->animationIndex += 1; //  increment
             }
         }
 

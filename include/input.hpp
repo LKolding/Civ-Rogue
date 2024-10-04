@@ -17,8 +17,6 @@ public:
     }
 
     void update(float dt) {
-        //  Check every key you care about
-        float MOVE_AMOUNT = this->player->getSpeed() * dt;
         float moveX = 0;
         float moveY = 0;
         for (auto& key : this->keyState) { // moveX and Y simply indicates direction
@@ -27,22 +25,16 @@ public:
             if (key.first == sf::Keyboard::S && key.second == true) { moveY += 1.0f; }
             if (key.first == sf::Keyboard::D && key.second == true) { moveX += 1.0f; }
         }
-        // Calculate the length of the movement vector
-        float length = std::sqrt(moveX * moveX + moveY * moveY);
-
-        // Normalize the movement vector if it's non-zero
-        if (length != 0.0f) {
-            moveX /= length;
-            moveY /= length;
-        }
+     
         // update player
-        this->player->move(moveX * MOVE_AMOUNT, moveY * MOVE_AMOUNT);
+        this->player->move(moveX, moveY, dt);
     }
 
 private:
     std::shared_ptr<Player> player;
 };
 
+// Returns false if Escape (or another exit key) was pressed
 inline bool handle_event(
     sf::Event& event,
     InputManager& input,
@@ -70,6 +62,9 @@ inline bool handle_event(
         if (event.key.code == sf::Keyboard::Escape) {
             input.keyState[sf::Keyboard::Escape] = true;
         }
+        if (event.key.code == sf::Keyboard::Space) {
+            input.keyState[sf::Keyboard::Space] = true;
+        }
     }
     // keyreleased
     if (event.type == sf::Event::KeyReleased) {
@@ -88,6 +83,9 @@ inline bool handle_event(
         if (event.key.code == sf::Keyboard::Escape) {
             input.keyState[sf::Keyboard::Escape] = false;
         }
+        if (event.key.code == sf::Keyboard::Space) {
+            input.keyState[sf::Keyboard::Space] = false;
+        }
     }
     //  zoom w/ mousewheel
     if (event.type == sf::Event::MouseWheelScrolled) {
@@ -98,9 +96,6 @@ inline bool handle_event(
             if (playerp->playerView.getSize().x < 800)
                 playerp->playerView.zoom(1.1f);  // Zoom out
         }
-    }
-    if (event.type == sf::Event::MouseButtonPressed) {
-        
     }
 
     return true; // return true if no exit button has been clicked
