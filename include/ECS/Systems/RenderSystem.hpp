@@ -37,6 +37,19 @@ class RenderSystem {
                         spriteCompPtr->sprite.setPosition(entity->getComponent<PositionComponent>()->x, entity->getComponent<PositionComponent>()->y);
                     }
 
+                    if (entity->hasComponent<FlipComponent>()) {
+                        // flip texture
+                        if (entity->getComponent<FlipComponent>()->isFlipped && !entity->getComponent<SpriteComponent>()->hasBeenFlipped) {
+                            entity->getComponent<SpriteComponent>()->sprite.setScale(sf::Vector2f(-1.0f, 1.0f));
+                            entity->getComponent<SpriteComponent>()->hasBeenFlipped = true;
+                        }
+                        // unflip texture
+                        if (!entity->getComponent<FlipComponent>()->isFlipped && entity->getComponent<SpriteComponent>()->hasBeenFlipped) {
+                            entity->getComponent<SpriteComponent>()->sprite.setScale(sf::Vector2f(1.0f, 1.0f));
+                            entity->getComponent<SpriteComponent>()->hasBeenFlipped = false;
+                        }
+                    }
+
                     ren.draw(spriteCompPtr->sprite);
 
                     // draw box around entity (if selected)

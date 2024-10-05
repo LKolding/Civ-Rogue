@@ -38,8 +38,7 @@ private:
 inline bool handle_event(
     sf::Event& event,
     InputManager& input,
-    std::shared_ptr<Player> playerp,
-    float deltaTime
+    std::shared_ptr<Player> playerp
     ) {
     //  exit
     if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)

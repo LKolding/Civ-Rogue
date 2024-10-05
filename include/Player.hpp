@@ -10,9 +10,8 @@
 struct Player {
     sf::View playerView;
 
-    // x and y only indicate direction
-    // and therefore should only be of
-    // value 0, 1 or -1
+    // x and y simply indicate direction, and should be of
+    // value 1.0, 0.0 or -1.0
     void move(float x, float y, float dt) {
         const float MOVE_AMOUNT = this->moveSpeed * dt;
 
@@ -40,6 +39,15 @@ struct Player {
 
     void deselectUnit(std::shared_ptr<Entity> &entity) {
         this->selectedEntities.erase(entity->getComponent<UUIDComponent>()->ID);
+    }
+
+    void addObjectiveToSelectedUnits(sf::Vector2i pos) {
+        for (auto& entity : this->selectedEntities) {
+            if (!entity.second.lock()->hasComponent<ObjectiveComponent>()) {
+                continue;
+            }
+            entity.second.lock()->getComponent<ObjectiveComponent>()->addObjective(pos);
+        }
     }
 
 private:

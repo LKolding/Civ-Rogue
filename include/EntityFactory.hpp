@@ -69,11 +69,12 @@ std::shared_ptr<NinjaEntity> buildNinja(ResourceAllocator &allocator, const floa
         pos_ptr->x = x;
         pos_ptr->y = y;
     }
-    //  Texture
+    //  Sprite
     if (auto sprite_ptr = ninja_ptr->getComponent<SpriteComponent>()) {
         sprite_ptr->sprite.setTexture(*allocator.loadTexture("../assets/textures/characters/ninja_sheet.png"));
         sprite_ptr->sprite.setTextureRect(sf::IntRect(0,0,32,32));
         sprite_ptr->sprite.setScale(sf::Vector2f(1.0,1.0));
+        sprite_ptr->hasBeenFlipped = false;
     }
     //  State
     if (auto state_ptr = ninja_ptr->getComponent<NinjaStateComponent>()) {
@@ -84,7 +85,7 @@ std::shared_ptr<NinjaEntity> buildNinja(ResourceAllocator &allocator, const floa
         anime_ptr->animationIndex = 0;
         anime_ptr->elapsedTime = 0.0f;
         //  ensures animationIndexMax get's set up properly
-        ninja_ptr->transitionState(NinjaStateComponent::WALK); 
+        ninja_ptr->transitionState(NinjaStateComponent::IDLE); 
     }
     //  Collision
     if (auto colli_ptr = ninja_ptr->getComponent<CollisionComponent>()) {
@@ -92,16 +93,23 @@ std::shared_ptr<NinjaEntity> buildNinja(ResourceAllocator &allocator, const floa
     }
     //  Velocity
     if (auto velo_ptr = ninja_ptr->getComponent<VelocityComponent>()) {
-        velo_ptr->deceleration = 0.5f;
-        velo_ptr->xSpeed = 4.0f;
-        velo_ptr->ySpeed = 4.0f;
+        velo_ptr->xSpeed = 0.9f;
+        velo_ptr->ySpeed = 0.9f;
+    }
+    // Selectable
+    if (auto select_ptr = ninja_ptr->getComponent<SelectableComponent>()) {
+        select_ptr->isSelected = false;
     }
     // UUID
     if (auto uuid_ptr = ninja_ptr->getComponent<UUIDComponent>()) {
         uuid_ptr->ID = reinterpret_cast<uint64_t>(&ninja_ptr);
     }
+    // FlipComponent
+    if (auto flip_ptr = ninja_ptr->getComponent<FlipComponent>()) {
+        flip_ptr->isFlipped = false;
+    }
     // temp objective
-    ninja_ptr->addObjective(sf::Vector2f(400,400));
+    // ninja_ptr->addObjective(sf::Vector2f(400,400));
 
     return ninja_ptr;
 }

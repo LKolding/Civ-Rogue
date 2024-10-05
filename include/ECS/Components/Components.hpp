@@ -7,12 +7,14 @@ struct PositionComponent { float x, y; };
 
 struct VelocityComponent { 
     // constant value
-    float xSpeed, ySpeed, deceleration;
+    float xSpeed, ySpeed;
     // variable
     float xDir, yDir; 
     };
 
-struct SpriteComponent { sf::Sprite sprite; };
+struct SpriteComponent { sf::Sprite sprite; bool hasBeenFlipped; };
+// for when entities are walking left or right (flips the texture)
+struct FlipComponent { bool isFlipped; }; 
 
 struct HealthComponent { int currentHealth, maxHealth; };
 
@@ -22,7 +24,13 @@ struct MageStateComponent { enum State { IDLE, WALK, REST, ATTACK, ATTACK2, ATTA
 
 struct NinjaStateComponent { enum State { IDLE, WALK } state; };
 //  holds a location 
-struct ObjectiveComponent { std::unique_ptr<sf::Vector2f> location; };
+struct ObjectiveComponent { 
+    std::unique_ptr<sf::Vector2i> location;
+
+    void addObjective(sf::Vector2i pos) {
+        this->location = std::make_unique<sf::Vector2i>(pos);
+    } 
+};
 
 struct InventoryComponent { std::vector<std::string> items; };
 
