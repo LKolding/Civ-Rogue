@@ -8,14 +8,22 @@
 
 class AnimationSystem {
 public:
-    void update(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities) {
+    void update(float deltaTime, std::vector<std::shared_ptr<Entity>>& entities) {
         for (auto& entity : entities) {
             // Check if the entity has both components
             if (entity->hasComponent<AnimationComponent>()) {
                 //  update sprite texture rectangle to match up with the animation index of AnimationComponent
                 sf::IntRect textRect = entity->getComponent<SpriteComponent>()->sprite.getTextureRect(); // get
                 textRect.left = 32 * entity->getComponent<AnimationComponent>()->animationIndex;         // update frame index     (x)
-                textRect.top = 32 * entity->getComponent<StateComponent>()->state;                       // update animation index (y)
+                
+                if (entity->hasComponent<MageStateComponent>()) {
+                    textRect.top = 32 * entity->getComponent<MageStateComponent>()->state;               // update animation index (y)
+                }
+
+                if (entity->hasComponent<NinjaStateComponent>()) {
+                    textRect.top = 32 * entity->getComponent<NinjaStateComponent>()->state;               // update animation index (y)
+                }
+
                 entity->getComponent<SpriteComponent>()->sprite.setTextureRect(textRect);                // set
                 //  update animation component's elapsed time
                 entity->getComponent<AnimationComponent>()->elapsedTime += deltaTime;

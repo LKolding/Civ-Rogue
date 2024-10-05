@@ -34,9 +34,17 @@ struct Player {
         this->updateView();
     }
 
+    void selectUnit(std::shared_ptr<Entity> &entity) {
+        this->selectedEntities[entity->getComponent<UUIDComponent>()->ID] = std::weak_ptr<Entity>(entity);
+    }
+
+    void deselectUnit(std::shared_ptr<Entity> &entity) {
+        this->selectedEntities.erase(entity->getComponent<UUIDComponent>()->ID);
+    }
 
 private:
     sf::Vector2f pos;
+    std::unordered_map<uint32_t, std::weak_ptr<Entity>> selectedEntities;
     const float moveSpeed = 10.0f; // View panning speed
     void updateView() {
         this->playerView.setCenter(this->pos);

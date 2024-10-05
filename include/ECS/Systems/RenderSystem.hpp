@@ -26,7 +26,7 @@ void drawSelectedBox(sf::RenderWindow &ren, float x, float y, int width, int hei
 
 class RenderSystem {
     public:
-    void update(sf::RenderWindow& ren, std::vector<std::unique_ptr<Entity>>& entities) {
+    void update(sf::RenderWindow& ren, std::vector<std::shared_ptr<Entity>>& entities) {
         for (auto& entity : entities) {
             if (entity->hasComponent<SpriteComponent>()) {
                 // Use getComponent and dereference the shared_ptr to access the underlying component

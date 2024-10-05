@@ -17,6 +17,8 @@
 // Systems
 #include "ECS/Systems/MovementSystem.hpp"
 #include "ECS/Systems/RenderSystem.hpp"
+#include "ECS/Systems/AnimationSystem.hpp"
+#include "ECS/Systems/CollisionSystem.hpp"
 
 #include "input.hpp"
 
@@ -47,7 +49,7 @@ void renderSelectionBox(sf::RenderWindow &ren) {
     ren.draw(rect1);
 }
 
-bool isEntityHovered(sf::RenderWindow &ren, std::unique_ptr<Entity>& entity) {
+bool isEntityHovered(sf::RenderWindow &ren, std::shared_ptr<Entity>& entity) {
     // Returns true if the entity's CollisionComponents boundingbox is currently
     // below sf::Mouse::getPosition()
     sf::Vector2f worldCoords = ren.mapPixelToCoords(sf::Mouse::getPosition(ren));
@@ -58,19 +60,21 @@ bool isEntityHovered(sf::RenderWindow &ren, std::unique_ptr<Entity>& entity) {
     return false;
 }
 
-void selectUnits(sf::RenderWindow &ren, std::vector<std::unique_ptr<Entity>>& entities) {
+void selectUnits(sf::RenderWindow &ren, std::shared_ptr<Player> player, std::vector<std::shared_ptr<Entity>>& entities) {
     for (auto& entity : entities) {
-        if (entity->hasComponent<CollisionComponent>() && isEntityHovered(ren, entity)) {
+        if (entity->hasComponent<CollisionComponent>() && isEntityHovered(ren, entity) && entity->hasComponent<SelectableComponent>()) {
             entity->getComponent<SelectableComponent>()->isSelected = true;
+            player->selectUnit(entity);
         }
     }
 }
 
-void deselectUnits(sf::RenderWindow &ren, std::vector<std::unique_ptr<Entity>>& entities) {
+void deselectUnits(sf::RenderWindow &ren, std::shared_ptr<Player> player, std::vector<std::shared_ptr<Entity>>& entities) {
     for (auto& entity : entities) {
         for (auto& entity : entities) {
-            if (entity->hasComponent<CollisionComponent>() && isEntityHovered(ren, entity)) {
+            if (entity->hasComponent<CollisionComponent>() && isEntityHovered(ren, entity) && entity->hasComponent<SelectableComponent>()) {
                 entity->getComponent<SelectableComponent>()->isSelected = false;
+                player->deselectUnit(entity);
             }
         }
         
@@ -96,13 +100,13 @@ int main() {
     //  create sprites for chunks
     world1.createChunkSprites(allocator);
     //  entities
-    std::vector<std::unique_ptr<Entity>> entities;
-    entities.push_back(buildHumanMage(allocator));
-    entities.push_back(buildHumanMage(allocator, 200.0f, 200.0f));
-    entities.push_back(buildHumanMage(allocator, 300.0f, 200.0f));
+    std::vector<std::shared_ptr<Entity>> entities;
+    entities.push_back(buildNinja(allocator));
     //  systems
     MovementSystem movementSystem;
     RenderSystem renderSystem;
+    AnimationSystem animationSystem;
+    CollisionSystem collisionSystem;
 
     float deltaTime = 0.01f;
     while (window.isOpen()) {
@@ -116,12 +120,13 @@ int main() {
             // Mouse events
 
             // select units
+            
             else if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
-                selectUnits(window, entities);
+                selectUnits(window, playerp, entities);
             }
             // deselect units
             else if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Right) {
-                deselectUnits(window, entities);
+                deselectUnits(window, playerp, entities);
             }
 
             // Let handle_event function (defined in input.hpp) handle the event
@@ -137,6 +142,9 @@ int main() {
         for (const auto& entity : entities) {
             entity->update(deltaTime); 
         }
+        movementSystem.update(deltaTime, entities);
+        animationSystem.update(deltaTime, entities);
+        collisionSystem.update(deltaTime, entities);
         window.setView(playerp->playerView);
         window.clear();
         world1.render(window);
