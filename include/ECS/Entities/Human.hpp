@@ -77,33 +77,6 @@ public:
         // all the different states of the sprites which all have
         // variable duration of their animations
 
-        //  update sprite position
-        float x = this->getComponent<PositionComponent>()->x;
-        float y = this->getComponent<PositionComponent>()->y;
-        this->getComponent<SpriteComponent>()->sprite.setPosition(x, y);
-        //  update sprite texture rectangle to match up with the animation index of AnimationComponent
-        sf::IntRect textRect = this->getComponent<SpriteComponent>()->sprite.getTextureRect(); // get
-        textRect.left = 32 * this->getComponent<AnimationComponent>()->animationIndex;         // update frame index     (x)
-        textRect.top = 32 * this->getComponent<StateComponent>()->state;                       // update animation index (y)
-        this->getComponent<SpriteComponent>()->sprite.setTextureRect(textRect);                // set
-        //  update animation component's elapsed time
-        this->getComponent<AnimationComponent>()->elapsedTime += deltatime;
-        //  update animation component animationIndex (is enough time has passed)
-        if (this->getComponent<AnimationComponent>()->elapsedTime >= this->getComponent<AnimationComponent>()->frameTime) {
-            this->getComponent<AnimationComponent>()->elapsedTime = 0.0f;
-
-            const int animationSheetWidth = this->getComponent<SpriteComponent>()->sprite.getTexture()->getSize().x;
-            const int animationIndex = this->getComponent<AnimationComponent>()->animationIndex;
-            if (
-                (animationIndex >= (animationSheetWidth/32)-1) | (animationIndex >= this->getComponent<AnimationComponent>()->animationIndexMax)
-                ) {
-                this->getComponent<AnimationComponent>()->animationIndex = 0;  //  reset
-            }
-            else {
-                this->getComponent<AnimationComponent>()->animationIndex += 1; //  increment
-            }
-        }
-
         // update collision component
         this->getComponent<CollisionComponent>()->bounds = this->getComponent<SpriteComponent>()->sprite.getGlobalBounds();
     }

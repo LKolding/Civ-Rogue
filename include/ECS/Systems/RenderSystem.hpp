@@ -31,7 +31,12 @@ class RenderSystem {
             if (entity->hasComponent<SpriteComponent>()) {
                 // Use getComponent and dereference the shared_ptr to access the underlying component
                 auto spriteCompPtr = entity->getComponent<SpriteComponent>();
+
                 if (spriteCompPtr) {
+                    if (entity->hasComponent<PositionComponent>()) { // update sprite position
+                        spriteCompPtr->sprite.setPosition(entity->getComponent<PositionComponent>()->x, entity->getComponent<PositionComponent>()->y);
+                    }
+
                     ren.draw(spriteCompPtr->sprite);
 
                     // draw box around entity (if selected)
