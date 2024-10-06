@@ -40,5 +40,7 @@ struct SelectableComponent { float isSelected; };
 
 struct CollisionComponent { sf::FloatRect bounds; };
 
+struct DeletableComponent { bool markedForDeletion; };
+
 struct UUIDComponent { uint64_t ID; };
 #endif

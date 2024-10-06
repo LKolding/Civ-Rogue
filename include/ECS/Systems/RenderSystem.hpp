@@ -9,7 +9,7 @@
 #include "ECS/Entities/Human.hpp"
 #include "ECS/Components/Components.hpp"
 
-void drawSelectedBox(sf::RenderWindow &ren, float x, float y, int width, int height) {
+void drawSelectedBox(sf::RenderWindow &ren, float x, float y, int width, int height, sf::Color color = sf::Color::Black) {
     sf::RectangleShape hitbox;
     hitbox.setPosition(x, y);
     sf::Vector2f hbsize;
@@ -17,12 +17,14 @@ void drawSelectedBox(sf::RenderWindow &ren, float x, float y, int width, int hei
     hbsize.y = height;
     hitbox.setSize(hbsize);
 
-    hitbox.setOutlineColor(sf::Color::Black);
+    hitbox.setOutlineColor(color);
     hitbox.setFillColor(sf::Color::Transparent);
     hitbox.setOutlineThickness(1.5);
 
     ren.draw(hitbox);
 }
+
+#define DRAW_HITBOX false
 
 class RenderSystem {
     public:
@@ -52,6 +54,17 @@ class RenderSystem {
 
                     ren.draw(spriteCompPtr->sprite);
 
+                    // draw box around entity (if DRAW_HITBOX)
+                    if ( DRAW_HITBOX) {
+                        drawSelectedBox(
+                        ren, 
+                        spriteCompPtr->sprite.getGlobalBounds().left, 
+                        spriteCompPtr->sprite.getGlobalBounds().top,
+                        spriteCompPtr->sprite.getTextureRect().width,
+                        spriteCompPtr->sprite.getTextureRect().height
+                        );
+                    }    
+
                     // draw box around entity (if selected)
                     if (entity->hasComponent<SelectableComponent>() && entity->getComponent<SelectableComponent>()->isSelected) {
                         drawSelectedBox(
@@ -59,7 +72,8 @@ class RenderSystem {
                         spriteCompPtr->sprite.getGlobalBounds().left, 
                         spriteCompPtr->sprite.getGlobalBounds().top,
                         spriteCompPtr->sprite.getTextureRect().width,
-                        spriteCompPtr->sprite.getTextureRect().height
+                        spriteCompPtr->sprite.getTextureRect().height,
+                        sf::Color::Green
                         );
                     }    
                 }

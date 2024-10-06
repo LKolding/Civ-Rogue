@@ -74,11 +74,14 @@ public:
                 // Use getComponent and dereference the shared_ptr to access the underlying component
                 auto colPtr = entity->getComponent<CollisionComponent>();
 
-                // Make sure the pointers are valid
+                // Make sure the pointer is valid
                 if (colPtr) {
                     for (auto& entity_check : entities) {
                         if (entity_check->getComponent<UUIDComponent>()->ID == entity->getComponent<UUIDComponent>()->ID) {
                             continue; // skip own collision component
+                        }
+                        if (!entity_check->hasComponent<CollisionComponent>()) {
+                            continue; // skip entity if no CollisionComponent
                         }
                         if (checkCollision(*colPtr, *entity_check->getComponent<CollisionComponent>())) {
                             std::cout << "Collision detected!\n"; 

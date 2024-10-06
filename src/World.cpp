@@ -40,6 +40,15 @@ void World::saveMapToTMX(const std::string& filePath) {
     pugi::xml_node tilesetNode = mapNode.append_child("tileset");
     tilesetNode.append_attribute("firstgid") = 1;
     tilesetNode.append_attribute("source")   = "../assets/tmx/tsx/grass.tsx";
+    tilesetNode.append_attribute("name") = "grass";
+
+    // Add <tileset> element
+    pugi::xml_node tilesetNode2 = mapNode.append_child("tileset");
+    tilesetNode2.append_attribute("firstgid")  = 65;
+    tilesetNode2.append_attribute("source")    = "../assets/tmx/tsx/health_bars.tsx";
+    tilesetNode2.append_attribute("tilewidth") = 48;
+    tilesetNode2.append_attribute("tileheight")= 16;
+    tilesetNode.append_attribute("name") = "health_bars";
 
     // Add <layer> for tile data
     pugi::xml_node layerNode = mapNode.append_child("layer");
@@ -82,9 +91,12 @@ void World::saveMapToTMX(const std::string& filePath) {
     doc.save_file(filePath.c_str());
 }
 
+// pos argument is in amount of tiles. The tile to pixel
+// conversion happens in this function
 void World::generateRandomChunk(sf::Vector2f& pos) {
     Chunk tchunk;
-    tchunk.position = pos;
+    tchunk.position.x = pos.x * CHUNK_WIDTH;
+    tchunk.position.y = pos.y * CHUNK_HEIGHT;
 
     for (int i = 0; i<CHUNK_SIZE; i++) {
         Tile ttile;
@@ -195,7 +207,6 @@ void World::createChunkSprites(ResourceAllocator& allocator) {
 
 
 void World::render(sf::RenderWindow &ren) {
-
     // render chunks
     for (auto& sprite : this->chunkSprites) {
         ren.draw(*sprite);

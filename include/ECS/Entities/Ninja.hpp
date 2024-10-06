@@ -25,38 +25,16 @@ public:
     }
 
     void update(float deltatime) {
-        if (this->hasComponent<ObjectiveComponent>() && this->getComponent<ObjectiveComponent>()->location){
+        if (this->hasComponent<ObjectiveComponent>() && this->getComponent<ObjectiveComponent>()->location) {
+
             if (this->getComponent<ObjectiveComponent>()->location->x != 0 || (int)this->getComponent<ObjectiveComponent>()->location->y != 0) {
-                this->transitionState(NinjaStateComponent::WALK);
-                //  x
-                if (this->getComponent<ObjectiveComponent>()->location->x < (int)this->getComponent<PositionComponent>()->x) {
-                    this->getComponent<VelocityComponent>()->xDir = -1.0f;
-                }
-                if (this->getComponent<ObjectiveComponent>()->location->x > (int)this->getComponent<PositionComponent>()->x) {
-                    this->getComponent<VelocityComponent>()->xDir = 1.0f;
-                }
-                //  y
-                if (this->getComponent<ObjectiveComponent>()->location->y < (int)this->getComponent<PositionComponent>()->y) {
-                    this->getComponent<VelocityComponent>()->yDir = -1.0f;
-                }
-                if (this->getComponent<ObjectiveComponent>()->location->y > (int)this->getComponent<PositionComponent>()->y) {
-                    this->getComponent<VelocityComponent>()->yDir = 1.0f;
-                }
-                
+            this->transitionState(NinjaStateComponent::WALK);
             }
-            //  reset direction
-            if (this->getComponent<ObjectiveComponent>()->location->x == (int)this->getComponent<PositionComponent>()->x) {
-                this->getComponent<VelocityComponent>()->xDir = 0.0f;
-            }
-            if (this->getComponent<ObjectiveComponent>()->location->y == (int)this->getComponent<PositionComponent>()->y) {
-                this->getComponent<VelocityComponent>()->yDir = 0.0f;
-            }
-            //  reset objective
-            if (this->getComponent<ObjectiveComponent>()->location->x == (int)this->getComponent<PositionComponent>()->x && this->getComponent<ObjectiveComponent>()->location->y == (int)this->getComponent<PositionComponent>()->y) {
-                this->getComponent<ObjectiveComponent>()->addObjective(sf::Vector2i(0,0));
+            if (this->getComponent<ObjectiveComponent>()->location->x == 0 && this->getComponent<ObjectiveComponent>()->location->y == 0) {
                 this->transitionState(NinjaStateComponent::IDLE);
             }
         }
+
         
     }
 
@@ -65,13 +43,13 @@ public:
             case NinjaStateComponent::IDLE:
                 this->getComponent<NinjaStateComponent>()->state = state;
                 this->getComponent<AnimationComponent>()->animationIndexMax = 5;
-                this->getComponent<AnimationComponent>()->frameTime = 5.4f;
+                this->getComponent<AnimationComponent>()->frameTime = 0.1f;
                 break;
 
             case NinjaStateComponent::WALK:
                 this->getComponent<NinjaStateComponent>()->state = state;
                 this->getComponent<AnimationComponent>()->animationIndexMax = 3;
-                this->getComponent<AnimationComponent>()->frameTime = 3.4f;
+                this->getComponent<AnimationComponent>()->frameTime = 0.09f;
                 break;
 
             default: // doesn't update internal state if not recognized

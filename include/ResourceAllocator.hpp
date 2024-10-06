@@ -4,6 +4,9 @@
 
 #include <tmxlite/Map.hpp>
 
+// pugi
+#include "../src/tmxlite/detail/pugixml.hpp"
+
 #include <memory>
 #include <string>
 #include <vector>

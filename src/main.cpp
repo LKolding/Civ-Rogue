@@ -1,5 +1,4 @@
 #include <SFML/Graphics.hpp>
-#include <SFML/Window/Keyboard.hpp>
 
 // system
 #include <cmath>
@@ -19,6 +18,7 @@
 #include "ECS/Systems/RenderSystem.hpp"
 #include "ECS/Systems/AnimationSystem.hpp"
 #include "ECS/Systems/CollisionSystem.hpp"
+#include "ECS/Systems/ObjectiveSystem.hpp"
 
 #include "input.hpp"
 
@@ -52,6 +52,9 @@ void renderSelectionBox(sf::RenderWindow &ren) {
 bool isEntityHovered(sf::RenderWindow &ren, std::shared_ptr<Entity>& entity) {
     // Returns true if the entity's CollisionComponents boundingbox is currently
     // below sf::Mouse::getPosition()
+    if (entity->hasComponent<DeletableComponent>()) {
+        return false; // skip if entity is a healthbar (only entity containing Deletable)
+    }
     sf::Vector2f worldCoords = ren.mapPixelToCoords(sf::Mouse::getPosition(ren));
     auto colli_ptr = entity->getComponent<CollisionComponent>();
     if (colli_ptr->bounds.contains(worldCoords.x, worldCoords.y)) {
@@ -82,9 +85,14 @@ void deselectUnits(sf::RenderWindow &ren, std::shared_ptr<Player> player, std::v
 }
 
 
-std::string game_path = "../saveGames/game1.tmx";
+std::string game_path = "../assets/tmx/maps/grass_chunk.tmx";
+// std::string game_path = "../saveGames/game1.tmx";
 
 int main() {
+    const unsigned int targetFPS = 60;
+    const sf::Time targetFrameTime = sf::seconds(1.f / targetFPS); // Time per frame
+    sf::Clock clock;  // To measure the frame time
+
     // window
     sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Civ_Rogue");
     //  player and view
@@ -95,22 +103,38 @@ int main() {
     ResourceAllocator allocator;
     World world1;
     world1.initialize(allocator, playerp, game_path);
+    sf::Vector2f chunk1pos = sf::Vector2f(0,0);
+    sf::Vector2f chunk2pos = sf::Vector2f(1,0);
+    sf::Vector2f chunk3pos = sf::Vector2f(0,1);
+    sf::Vector2f chunk4pos = sf::Vector2f(1,1);
+    world1.generateRandomChunk(chunk1pos);
+    world1.generateRandomChunk(chunk2pos);
+    world1.generateRandomChunk(chunk3pos);
+    world1.generateRandomChunk(chunk4pos);
     //  input handler ( a bit hacky due to the fact that sfml behaves weirdly on m1 mac)
     InputManager inputhandler(playerp);
     //  create sprites for chunks
     world1.createChunkSprites(allocator);
     //  entities
     std::vector<std::shared_ptr<Entity>> entities;
-    entities.push_back(buildNinja(allocator));
+
+    auto ninja = buildNinja(allocator);
+    auto ninja_hp = buildHealthbar(allocator, ninja);
+    entities.push_back(std::move(ninja));
+    entities.push_back(std::move(ninja_hp));
+
     //  systems
-    MovementSystem movementSystem;
-    RenderSystem renderSystem;
+    MovementSystem  movementSystem;
+    RenderSystem    renderSystem;
     AnimationSystem animationSystem;
     CollisionSystem collisionSystem;
+    ObjectiveSystem objectiveSystem;
 
-    float deltaTime = 0.01f;
+    float deltaTime = 1.0f;
     while (window.isOpen()) {
-        inputhandler.update(deltaTime);
+        // Restart the clock at the beginning of the frame
+        sf::Time frameStartTime = clock.restart();
+        deltaTime = frameStartTime.asSeconds();
 
         sf::Event event;
         while (window.pollEvent(event)) {
@@ -122,7 +146,20 @@ int main() {
             // select units
             
             else if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
-                selectUnits(window, playerp, entities);
+                bool someEntityIsBeingHovered = false;
+                // iterates through all entites and checks if any are currently being hovered
+                for (auto& entity : entities) { 
+                    if ((someEntityIsBeingHovered = isEntityHovered(window, entity)))
+                        break;
+
+                }
+                if (someEntityIsBeingHovered) { // if any entity was clicked
+                    selectUnits(window, playerp, entities);
+                } 
+                else { // if no entities are being hovered, add mouse position
+                    playerp->addObjectiveToSelectedUnits(sf::Vector2i(window.mapPixelToCoords(sf::Mouse::getPosition(window)).x, window.mapPixelToCoords(sf::Mouse::getPosition(window)).y));
+                }
+                
             }
             // deselect units
             else if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Right) {
@@ -131,12 +168,15 @@ int main() {
 
             // Let handle_event function (defined in input.hpp) handle the event
             else {
-                if (!handle_event(event, inputhandler, playerp, deltaTime)) {
-                    world1.saveMapToTMX(game_path);
+                if (!handle_event(event, inputhandler, playerp)) {
+                    //world1.saveMapToTMX(game_path);
                     window.close();
                 }
             } 
         }
+
+        // Important
+        inputhandler.update(frameStartTime.asMicroseconds());
 
         // Update entities
         for (const auto& entity : entities) {
@@ -145,12 +185,21 @@ int main() {
         movementSystem.update(deltaTime, entities);
         animationSystem.update(deltaTime, entities);
         collisionSystem.update(deltaTime, entities);
+        objectiveSystem.update(deltaTime, entities);
+
         window.setView(playerp->playerView);
         window.clear();
         world1.render(window);
         renderSystem.update(window, entities);
         //renderSelectionBox(window);
         window.display();
+
+        // Measure the time it took to complete the frame
+        sf::Time frameTime = clock.getElapsedTime();
+        // If the frame was completed too quickly, sleep to cap the FPS
+        if (frameTime < targetFrameTime) {
+            sf::sleep(targetFrameTime - frameTime);
+        }
     }
     return 0;
 }

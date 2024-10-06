@@ -53,7 +53,7 @@ struct Player {
 private:
     sf::Vector2f pos;
     std::unordered_map<uint32_t, std::weak_ptr<Entity>> selectedEntities;
-    const float moveSpeed = 10.0f; // View panning speed
+    const float moveSpeed = 0.001f; // View panning speed
     void updateView() {
         this->playerView.setCenter(this->pos);
     }
