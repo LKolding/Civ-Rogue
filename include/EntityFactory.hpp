@@ -13,6 +13,7 @@
 #include "ECS/Entities/Healthbar.hpp"
 #include "ECS/Entities/Border.hpp"
 #include "ECS/Entities/Button.hpp"
+#include "ECS/Entities/Eyebug.hpp"
 #include "ECS/Components/Components.hpp"
 
 
@@ -29,4 +30,7 @@ std::shared_ptr<BorderEntity> buildBorder(std::shared_ptr<ResourceAllocator> all
 
 // BUtton
 std::shared_ptr<ButtonEntity> buildButton(std::shared_ptr<ResourceAllocator> allocator, const float &x = 100, const float &y = 100);
+
+std::shared_ptr<EyeBugEntity> buildEyeBug(std::shared_ptr<ResourceAllocator> allocator, const float &x = 100, const float &y = 100);
+
 #endif

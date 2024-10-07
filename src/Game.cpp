@@ -33,21 +33,20 @@ void Game::initializeGame(std::string &gameFilePath, sf::RenderWindow &ren) {
     ren.setView(this->player->playerView);
 
     this->world.initialize(this->allocator, this->player, gameFilePath);
-    this->world.generateRandomChunk(sf::Vector2f(0,0));
     this->world.createChunkSprites(this->allocator);
 
     this->entityManager.createBorderEntities(this->allocator, sf::Vector2i(0,0));
 
     this->systems.push_back(std::make_unique<MovementSystem>());
-    this->systems.push_back(std::make_unique<AnimationSystem>());
     this->systems.push_back(std::make_unique<CollisionSystem>());
+    this->systems.push_back(std::make_unique<AnimationSystem>());
     this->systems.push_back(std::make_unique<ObjectiveSystem>());
 
     // TEMP
-    this->buttons_vectorp.push_back(buildButton(allocator, (CHUNK_WIDTH*TILE_WIDTH)/2, -100));
-    this->buttons_vectorp.push_back(buildButton(allocator, (CHUNK_WIDTH*TILE_WIDTH)/2, CHUNK_HEIGHT*TILE_HEIGHT));
-    this->buttons_vectorp.push_back(buildButton(allocator, CHUNK_WIDTH*TILE_WIDTH, (CHUNK_WIDTH*TILE_WIDTH)/2));
-    this->buttons_vectorp.push_back(buildButton(allocator, -100, (CHUNK_WIDTH*TILE_WIDTH)/2));
+    this->buttons_vectorp.push_back(buildButton(allocator, ((CHUNK_WIDTH*TILE_WIDTH)/2), -100));                     // top
+    this->buttons_vectorp.push_back(buildButton(allocator, ((CHUNK_WIDTH*TILE_WIDTH)/2), CHUNK_HEIGHT*TILE_HEIGHT)); // bot
+    this->buttons_vectorp.push_back(buildButton(allocator, CHUNK_WIDTH*TILE_WIDTH, (CHUNK_WIDTH*TILE_WIDTH)/2));     // right
+    this->buttons_vectorp.push_back(buildButton(allocator, -100, (CHUNK_WIDTH*TILE_WIDTH)/2));                       // left
 
 }
 
@@ -65,6 +64,14 @@ bool Game::handleEvent(sf::RenderWindow &ren) {
 
         // select units
         if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
+            // Check for button
+            for (auto btn : this->buttons_vectorp) {
+                if (isEntityHovered(ren, btn)) {
+                    std::static_pointer_cast<ButtonEntity>(btn)->click();
+                }
+
+            }
+
             bool someEntityIsBeingHovered = false;
             // iterates through all entites and checks if any are currently being hovered
             for (auto entity : this->entityManager.getAllEntities()) { 

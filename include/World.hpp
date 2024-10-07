@@ -25,6 +25,7 @@
 #include "Player.hpp"
 #include "Tile.hpp"
 
+#include "coordinate_calculators.hpp"
 #include "constants.h"
 #include "sprite_constructors.hpp"
 

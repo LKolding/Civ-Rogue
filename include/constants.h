@@ -1,8 +1,8 @@
 #ifndef _CONSTANTS_
 #define _CONSTANTS_
 
-#define WINDOW_WIDTH  1920 / 2 // Size in pixels
-#define WINDOW_HEIGHT 1080 / 2 // Size in pixels
+#define WINDOW_WIDTH  1920 // Size in pixels
+#define WINDOW_HEIGHT 1080 // Size in pixels
 
 #define TILE_WIDTH 32                    // Size in pixels
 #define TILE_HEIGHT 32                   // Size in pixels

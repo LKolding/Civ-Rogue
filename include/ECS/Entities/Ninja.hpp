@@ -26,9 +26,8 @@ public:
 
     void update(float deltatime) {
         if (this->hasComponent<ObjectiveComponent>() && this->getComponent<ObjectiveComponent>()->location) {
-
             if (this->getComponent<ObjectiveComponent>()->location->x != 0 || (int)this->getComponent<ObjectiveComponent>()->location->y != 0) {
-            this->transitionState(NinjaStateComponent::WALK);
+                this->transitionState(NinjaStateComponent::WALK);
             }
             if (this->getComponent<ObjectiveComponent>()->location->x == 0 && this->getComponent<ObjectiveComponent>()->location->y == 0) {
                 this->transitionState(NinjaStateComponent::IDLE);

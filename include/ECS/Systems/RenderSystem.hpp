@@ -26,7 +26,7 @@ void inline drawSelectedBox(sf::RenderWindow &ren, float x, float y, int width, 
     ren.draw(hitbox);
 }
 
-#define DRAW_HITBOX true
+#define DRAW_HITBOX false
 
 class RenderSystem {
 public:

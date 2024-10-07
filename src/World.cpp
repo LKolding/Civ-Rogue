@@ -51,7 +51,7 @@ void World::saveMapToTMX(const std::string& filePath) {
     tilesetNode2.append_attribute("source")    = "../assets/tmx/tsx/health_bars.tsx";
     tilesetNode2.append_attribute("tilewidth") = 48;
     tilesetNode2.append_attribute("tileheight")= 16;
-    tilesetNode.append_attribute("name") = "health_bars";
+    tilesetNode2.append_attribute("name") = "health_bars";
 
     // Add <layer> for tile data
     pugi::xml_node layerNode = mapNode.append_child("layer");
@@ -210,6 +210,13 @@ void World::createChunkSprites(std::shared_ptr<ResourceAllocator> allocator) {
 void World::render(sf::RenderWindow &ren) {
     // render chunks
     for (auto& sprite : this->chunkSprites) {
-        ren.draw(*sprite);
+        if (auto player = this->playerPtr.lock()) {
+            sf::Vector2f player_pos = player->playerView.getCenter();
+            sf::Vector2i pos = getChunkCoords(player_pos);
+            sf::Vector2i chunk_pos = getChunkCoords(sf::Vector2f(sprite->getPosition().x, sprite->getPosition().y));
+            if (pos == chunk_pos)
+                ren.draw(*sprite);
+        }
+
     }
 }

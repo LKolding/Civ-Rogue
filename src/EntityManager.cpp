@@ -6,10 +6,10 @@ void EntityManager::setAllocator(std::shared_ptr<ResourceAllocator> allocator) {
         // TODO TEMP
         this->entities.push_back(buildNinja(allocator_p));
         this->entities.push_back(buildNinja(allocator_p, 300, 200));
-        this->entities.push_back(buildNinja(allocator_p, 460, 400));
+        this->entities.push_back(buildNinja(allocator_p, 300, 250));
+        this->entities.push_back(buildEyeBug(allocator_p));
 
 }
-
 
 template <typename T>
 void EntityManager::createEntity(T entityClass) {
@@ -31,6 +31,14 @@ void EntityManager::createBorderEntities(std::shared_ptr<ResourceAllocator> allo
     this->entities.push_back(std::move(topBorder2));
     this->entities.push_back(std::move(botBorder1));
     this->entities.push_back(std::move(botBorder2));
+    
+    auto lefBorder1 = buildBorder(allocator, pos.x, pos.y);
+    lefBorder1->getComponent<SpriteComponent>()->sprite.setRotation(90);  
+    auto lefBorder2 = buildBorder(allocator, pos.x, pos.y+240);
+    lefBorder2->getComponent<SpriteComponent>()->sprite.setRotation(90);  
+
+    this->entities.push_back(std::move(lefBorder1));
+    this->entities.push_back(std::move(lefBorder2));
 }
 
 void EntityManager::update(float deltaTime) {

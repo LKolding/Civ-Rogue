@@ -60,7 +60,6 @@ std::shared_ptr<NinjaEntity> buildNinja(std::shared_ptr<ResourceAllocator> alloc
     if (auto sprite_ptr = ninja_ptr->getComponent<SpriteComponent>()) {
         sprite_ptr->sprite.setTexture(*(allocator->loadTexture("../assets/textures/characters/ninja_sheet.png")));
         sprite_ptr->sprite.setTextureRect(sf::IntRect(0,0,32,32));
-        sprite_ptr->sprite.setScale(sf::Vector2f(1.0,1.0));
         sprite_ptr->sprite.setOrigin(sf::Vector2f(sprite_ptr->sprite.getTextureRect().width/2, sprite_ptr->sprite.getTextureRect().height/2));
         sprite_ptr->hasBeenFlipped = false;
     }
@@ -170,7 +169,38 @@ std::shared_ptr<ButtonEntity> buildButton(std::shared_ptr<ResourceAllocator> all
         spr_ptr->sprite.setTexture(*allocator->loadTexture("../assets/textures/UI/button.png"));
         spr_ptr->sprite.setTextureRect(sf::IntRect(sf::Vector2i(0,0), sf::Vector2i(spr_ptr->sprite.getTexture()->getSize().x, spr_ptr->sprite.getTexture()->getSize().y)));
         spr_ptr->sprite.scale(0.1,0.1);
+        spr_ptr->sprite.setPosition(btn_ptr->getComponent<PositionComponent>()->x, btn_ptr->getComponent<PositionComponent>()->y);
+    }
+    if (auto col_ptr = btn_ptr->getComponent<CollisionComponent>()) {
+        col_ptr->bounds = btn_ptr->getComponent<SpriteComponent>()->sprite.getGlobalBounds();
     }
 
     return btn_ptr;
+}
+
+// Eyebug entity
+std::shared_ptr<EyeBugEntity> buildEyeBug(std::shared_ptr<ResourceAllocator> allocator, const float &x, const float &y) {
+    auto eye_ptr = std::make_shared<EyeBugEntity>();
+
+    if (auto pos_ptr = eye_ptr->getComponent<PositionComponent>()) {
+        pos_ptr->x = x;
+        pos_ptr->y = y;
+    }
+
+    if (auto spr_ptr = eye_ptr->getComponent<SpriteComponent>()) {
+        spr_ptr->sprite.setTexture(*allocator->loadTexture("../assets/textures/characters/eyebug.png"));
+        spr_ptr->sprite.setTextureRect(sf::IntRect(sf::Vector2i(0,0), sf::Vector2i(32, 32)));
+    }
+
+    if (auto ani_ptr = eye_ptr->getComponent<AnimationComponent>()) {
+        ani_ptr->animationIndex = 0;
+        ani_ptr->elapsedTime = 0.0f;
+        ani_ptr->frameTime = 0.1;
+        ani_ptr->animationIndexMax = 96;
+        
+    }
+    if (auto uid_ptr = eye_ptr->getComponent<UUIDComponent>()) {
+        uid_ptr->ID = reinterpret_cast<uint64_t>(&eye_ptr);
+    }
+    return eye_ptr;
 }

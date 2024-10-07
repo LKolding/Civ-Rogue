@@ -13,8 +13,11 @@ public:
     ButtonEntity() {
         this->addComponent(std::make_shared<PositionComponent>());
         this->addComponent(std::make_shared<SpriteComponent>());
+        this->addComponent(std::make_shared<CollisionComponent>());
     }
-
+    inline void click() {
+        std::cout << "CLICKED\n";
+    }
     inline void update(float deltaTime) {
         this->getComponent<SpriteComponent>()->sprite.setPosition(this->getComponent<PositionComponent>()->x, this->getComponent<PositionComponent>()->y);
     }

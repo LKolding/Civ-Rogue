@@ -5,10 +5,10 @@
 #include "constants.h"
 
 inline sf::Vector2i getChunkCoords(sf::Vector2f global_coords) {
-    // Calculate chunk coordinates
-    int chunkX = static_cast<int>(global_coords.x / (CHUNK_WIDTH  * TILE_WIDTH / 2));
-    int chunkY = static_cast<int>(global_coords.y / (CHUNK_HEIGHT * TILE_HEIGHT / 2));
-    return sf::Vector2i(chunkX,chunkY);
+    // Calculate chunk coordinates using floor division
+    int chunkX = static_cast<int>(std::floor(global_coords.x / (CHUNK_WIDTH  * TILE_WIDTH)));
+    int chunkY = static_cast<int>(std::floor(global_coords.y / (CHUNK_HEIGHT * TILE_HEIGHT)));
+    return sf::Vector2i(chunkX, chunkY);
 }
 
 inline sf::Vector2f getTileIndex(sf::Vector2f global_coords) {

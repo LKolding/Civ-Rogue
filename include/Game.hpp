@@ -95,25 +95,6 @@ void inline deselectUnits(sf::RenderWindow &ren, std::shared_ptr<Player> player,
     }
 }
 
-/*
-void drawGameState(sf::RenderWindow &ren, GameState& game_state) {
-    static sf::Font font;
-    static bool hasBeenLoaded;
-    if (!hasBeenLoaded) {
-        font.loadFromFile("../assets/fonts/BD_Cartoon_Shout.ttf");
-        hasBeenLoaded = true;
-    }
-    std::string entity_text = "Entities: " + std::to_string(game_state.amount_of_entities);
-    sf::Text text;
-    text.setFont(font);
-    text.setString(entity_text);
-    text.setCharacterSize(32);
-    text.setFillColor(sf::Color::White);
-    text.setPosition(sf::Vector2f(40, 20));
-
-    ren.draw(text);
-
-}*/
 
 struct GameState {
     enum State{INGAME, MENU} state;
