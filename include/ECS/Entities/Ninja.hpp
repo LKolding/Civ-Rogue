@@ -49,7 +49,7 @@ public:
             case NinjaStateComponent::WALK:
                 this->getComponent<NinjaStateComponent>()->state = state;
                 this->getComponent<AnimationComponent>()->animationIndexMax = 3;
-                this->getComponent<AnimationComponent>()->frameTime = 0.09f;
+                this->getComponent<AnimationComponent>()->frameTime = 0.03f;
                 break;
 
             default: // doesn't update internal state if not recognized

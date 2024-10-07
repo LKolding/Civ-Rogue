@@ -3,10 +3,11 @@
 
 #include <iostream>
 
+#include "ECS/Systems/System.hpp"
 #include "ECS/Entities/Entity.hpp"
 #include "ECS/Components/Components.hpp"
 
-bool checkCollision(const CollisionComponent& a, const CollisionComponent& b) {
+bool inline checkCollision(const CollisionComponent& a, const CollisionComponent& b) {
     // Example: Assuming AABB (axis-aligned bounding box) collision detection
     return (a.bounds.left < b.bounds.left + b.bounds.width &&
             a.bounds.left + a.bounds.width > b.bounds.left &&
@@ -14,7 +15,7 @@ bool checkCollision(const CollisionComponent& a, const CollisionComponent& b) {
             a.bounds.top + a.bounds.height > b.bounds.top);
 }
 
-void resolveCollision(std::shared_ptr<Entity> entityA, std::shared_ptr<Entity> entityB) {
+void inline resolveCollision(std::shared_ptr<Entity> entityA, std::shared_ptr<Entity> entityB) {
     // Get shared_ptr to components
     auto collisionA = entityA->getComponent<CollisionComponent>();
     auto collisionB = entityB->getComponent<CollisionComponent>();
@@ -61,31 +62,35 @@ void resolveCollision(std::shared_ptr<Entity> entityA, std::shared_ptr<Entity> e
 }
 
 
-class CollisionSystem {
+class CollisionSystem: public System {
 public:
-    void update(float deltaTime, std::vector<std::shared_ptr<Entity>>& entities) {
-        for (auto& entity : entities) {
-            // Check if the entity has both components
-            if (entity->hasComponent<CollisionComponent>()) {
-                if (entity->hasComponent<SpriteComponent>()) {
-                    // update collision component
-                    entity->getComponent<CollisionComponent>()->bounds = entity->getComponent<SpriteComponent>()->sprite.getGlobalBounds();
-                }
-                // Use getComponent and dereference the shared_ptr to access the underlying component
-                auto colPtr = entity->getComponent<CollisionComponent>();
+    inline void update(float deltaTime, std::vector<std::weak_ptr<Entity>> entities) {
+        for (auto& entity_p : entities) {
+            if (auto entity = entity_p.lock()) {
+                // Check if the entity has both components
+                if (entity->hasComponent<CollisionComponent>()) {
+                    if (entity->hasComponent<SpriteComponent>()) {
+                        // update collision component
+                        entity->getComponent<CollisionComponent>()->bounds = entity->getComponent<SpriteComponent>()->sprite.getGlobalBounds();
+                    }
+                    // Use getComponent and dereference the shared_ptr to access the underlying component
+                    auto colPtr = entity->getComponent<CollisionComponent>();
 
-                // Make sure the pointer is valid
-                if (colPtr) {
-                    for (auto& entity_check : entities) {
-                        if (entity_check->getComponent<UUIDComponent>()->ID == entity->getComponent<UUIDComponent>()->ID) {
-                            continue; // skip own collision component
-                        }
-                        if (!entity_check->hasComponent<CollisionComponent>()) {
-                            continue; // skip entity if no CollisionComponent
-                        }
-                        if (checkCollision(*colPtr, *entity_check->getComponent<CollisionComponent>())) {
-                            std::cout << "Collision detected!\n"; 
-                            resolveCollision(entity, entity_check);
+                    // Make sure the pointer is valid
+                    if (colPtr) {
+                        for (auto& entity_check_p : entities) {
+                            if (auto entity_check = entity_check_p.lock()) {
+                                if (entity_check->getComponent<UUIDComponent>()->ID == entity->getComponent<UUIDComponent>()->ID) {
+                                continue; // skip own collision component
+                                }
+                                if (!entity_check->hasComponent<CollisionComponent>()) {
+                                    continue; // skip entity if no CollisionComponent
+                                }
+                                if (checkCollision(*colPtr, *entity_check->getComponent<CollisionComponent>())) {
+                                    std::cout << "Collision detected!\n"; 
+                                    resolveCollision(entity, entity_check);
+                                }
+                            }
                         }
                     }
                 }

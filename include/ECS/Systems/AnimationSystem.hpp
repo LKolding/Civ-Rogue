@@ -3,15 +3,17 @@
 
 #include <vector>
 
+#include "ECS/Systems/System.hpp"
 #include "ECS/Entities/Entity.hpp"
 
 
-class AnimationSystem {
+class AnimationSystem: public System {
 public:
-    void update(float deltaTime, std::vector<std::shared_ptr<Entity>>& entities) {
-        for (auto& entity : entities) {
+    inline void update(float deltaTime, std::vector<std::weak_ptr<Entity>> entities) override {
+        for (auto& entity_p : entities) {
             // Check if the entity has both components
-            if (entity->hasComponent<AnimationComponent>()) {
+            if (auto entity = entity_p.lock()) {
+                if (entity->hasComponent<AnimationComponent>()) {
                 //  update sprite texture rectangle to match up with the animation index of AnimationComponent
                 sf::IntRect textRect = entity->getComponent<SpriteComponent>()->sprite.getTextureRect(); // get
                 textRect.left = 32 * entity->getComponent<AnimationComponent>()->animationIndex;         // update frame index     (x)
@@ -42,6 +44,7 @@ public:
                         entity->getComponent<AnimationComponent>()->animationIndex += 1; //  increment
                     }
                 }
+            }
             }
         }
     }

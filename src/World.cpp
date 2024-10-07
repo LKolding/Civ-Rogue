@@ -1,7 +1,7 @@
 #include "World.hpp"
 
 
-void World::initialize(ResourceAllocator &allocator, std::shared_ptr<Player> p, std::string& game_name) {
+void World::initialize(std::weak_ptr<ResourceAllocator> allocator, std::weak_ptr<Player> p, std::string& game_name) {
     // Performs an initialization of the World object incl.
     // tilesets, chunks and tiles. Extracts from game file
     tmx::Map map;
@@ -14,7 +14,10 @@ void World::initialize(ResourceAllocator &allocator, std::shared_ptr<Player> p, 
     // Extract tileset(s) from .tmx file
     const auto& tilesets = map.getTilesets();
     for(const auto& tileset : tilesets) {
-        allocator.addTileset(tileset);
+        if (auto alloc = allocator.lock()) {
+            alloc->addTileset(tileset);
+        }
+        
     }
 
     this->loadMap(map);
@@ -84,8 +87,8 @@ void World::saveMapToTMX(const std::string& filePath) {
     pugi::xml_node playerLocationNode = objectsNode.append_child("object");
     playerLocationNode.append_attribute("id") = "1";
     playerLocationNode.append_attribute("name") = "playerLocation";
-    playerLocationNode.append_attribute("x") = (int) this->playerPtr->playerView.getCenter().x;
-    playerLocationNode.append_attribute("y") = (int) this->playerPtr->playerView.getCenter().y;
+    playerLocationNode.append_attribute("x") = (int) this->playerPtr.lock()->playerView.getCenter().x;
+    playerLocationNode.append_attribute("y") = (int) this->playerPtr.lock()->playerView.getCenter().y;
 
     // Save to file
     doc.save_file(filePath.c_str());
@@ -100,7 +103,7 @@ void World::generateRandomChunk(sf::Vector2f& pos) {
 
     for (int i = 0; i<CHUNK_SIZE; i++) {
         Tile ttile;
-        ttile.ID = rand() % 32 + 1;
+        ttile.ID = rand() % 60 + 1;
         ttile.isWalkable = true;
         tchunk.background_tiles[i] = ttile;
     }
@@ -179,11 +182,11 @@ void World::loadMap(tmx::Map& map) {
 
             if (objectLayer.getName() == "objects") {
                 for (const auto& object : objectLayer.getObjects()) { // iterate objects
-                    if (this->playerPtr == nullptr) {
+                    if (!this->playerPtr.lock()) {
                         continue;
                     }
                     if (object.getName() == "playerLocation") {
-                        this->playerPtr->setPosition(object.getPosition().x, object.getPosition().y);
+                        this->playerPtr.lock()->setPosition(object.getPosition().x, object.getPosition().y);
                     }
                 }
             }
@@ -193,18 +196,16 @@ void World::loadMap(tmx::Map& map) {
     }
 }
 
-
-void World::createChunkSprites(ResourceAllocator& allocator) {
+void World::createChunkSprites(std::shared_ptr<ResourceAllocator> allocator) {
     for (auto& chunk : this->chunks) {
         this->chunkSprites.push_back(createChunkSprite(
             chunk,
-            allocator.getTileset("grass"),
-            allocator
+            allocator->getTileset("grass"),
+            *allocator // TODO: MAKE ALL USE WEAK PTR INSTEAD OF SHARED_PTR
             )
         );
     }
 }
-
 
 void World::render(sf::RenderWindow &ren) {
     // render chunks

@@ -8,6 +8,7 @@ struct PositionComponent { float x, y; };
 struct VelocityComponent { 
     // constant value
     float xSpeed, ySpeed;
+    float moveAmount; // amount in pixels
     // variable
     float xDir, yDir; 
     };

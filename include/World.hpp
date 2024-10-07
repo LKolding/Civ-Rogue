@@ -33,11 +33,11 @@ class World {
 public:
     // Loading, parsing, storing etc. of tmx
 
-    void initialize(ResourceAllocator &allocator, std::shared_ptr<Player> p, std::string& game_name);
+    void initialize(std::weak_ptr<ResourceAllocator> allocator, std::weak_ptr<Player> p, std::string& game_name);
     void saveMapToTMX(const std::string& filePath);
     // Other
     
-    void createChunkSprites(ResourceAllocator& allocator);
+    void createChunkSprites(std::shared_ptr<ResourceAllocator> allocator);
     void render(sf::RenderWindow &ren);
     void generateRandomChunk(sf::Vector2f& pos);
 
@@ -49,6 +49,6 @@ private:
     // chunk models
     std::vector<Chunk> chunks;
 
-    std::shared_ptr<Player> playerPtr;
+    std::weak_ptr<Player> playerPtr;
 };
 #endif
