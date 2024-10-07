@@ -33,14 +33,22 @@ public:
                         
                     }
                     //  reset direction
-                    if (objective->location->x == (int)position->x) {
+                    auto objX = objective->location->x;
+                    auto objY = objective->location->y;
+                    auto entX = (int)position->x;
+                    auto entY = (int)position->y;
+
+                    const int INCLUSION_AREA = 8;
+                    if (objX >= (entX - INCLUSION_AREA) && objX < (entX + INCLUSION_AREA) ) {
                         entity->getComponent<VelocityComponent>()->xDir = 0.0f;
+
                     }
-                    if (objective->location->y == (int)position->y) {
+
+                    if (objY >= (entY - INCLUSION_AREA) && objY < (entY + INCLUSION_AREA) ) {
                         entity->getComponent<VelocityComponent>()->yDir = 0.0f;
                     }
                     //  reset objective
-                    if (objective->location->x == (int)position->x && objective->location->y == (int)position->y) {
+                    if ( objX >= (entX - INCLUSION_AREA) && objX < (entX + INCLUSION_AREA) && objY >= (entY - INCLUSION_AREA) && objY < (entY + INCLUSION_AREA) ) {
                         objective->addObjective(sf::Vector2i(0,0));
                     }
                 }

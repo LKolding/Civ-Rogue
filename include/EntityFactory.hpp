@@ -11,6 +11,8 @@
 #include "ECS/Entities/Human.hpp"
 #include "ECS/Entities/Ninja.hpp"
 #include "ECS/Entities/Healthbar.hpp"
+#include "ECS/Entities/Border.hpp"
+#include "ECS/Entities/Button.hpp"
 #include "ECS/Components/Components.hpp"
 
 
@@ -21,4 +23,10 @@ std::shared_ptr<NinjaEntity> buildNinja(std::shared_ptr<ResourceAllocator> alloc
 
 // Healthbar
 std::shared_ptr<HealthbarEntity> buildHealthbar(std::shared_ptr<ResourceAllocator> allocator, std::shared_ptr<Entity> ownerEntity, const float &x = 100, const float &y = 100);
+
+// Border
+std::shared_ptr<BorderEntity> buildBorder(std::shared_ptr<ResourceAllocator> allocator, const float &x = 100, const float &y = 100);
+
+// BUtton
+std::shared_ptr<ButtonEntity> buildButton(std::shared_ptr<ResourceAllocator> allocator, const float &x = 100, const float &y = 100);
 #endif

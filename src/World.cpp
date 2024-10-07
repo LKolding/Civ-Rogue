@@ -96,7 +96,7 @@ void World::saveMapToTMX(const std::string& filePath) {
 
 // pos argument is in amount of tiles. The tile to pixel
 // conversion happens in this function
-void World::generateRandomChunk(sf::Vector2f& pos) {
+void World::generateRandomChunk(sf::Vector2f pos) {
     Chunk tchunk;
     tchunk.position.x = pos.x * CHUNK_WIDTH;
     tchunk.position.y = pos.y * CHUNK_HEIGHT;

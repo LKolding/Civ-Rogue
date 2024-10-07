@@ -16,6 +16,8 @@
 
 class ResourceAllocator {
 public:
+    sf::Font default_font;
+    void initialize(); // inits font
     // Load a texture; if it's already loaded, return a shared pointer to it
     std::shared_ptr<sf::Texture> loadTexture(const std::string& filename);
     sf::Vector2u getSizeOfTexture(std::string filename);

@@ -21,11 +21,12 @@ void inline drawSelectedBox(sf::RenderWindow &ren, float x, float y, int width, 
     hitbox.setOutlineColor(color);
     hitbox.setFillColor(sf::Color::Transparent);
     hitbox.setOutlineThickness(1.5);
+    //hitbox.scale(1.2f,1.2f);
 
     ren.draw(hitbox);
 }
 
-#define DRAW_HITBOX false
+#define DRAW_HITBOX true
 
 class RenderSystem {
 public:
@@ -56,13 +57,13 @@ public:
                         ren.draw(spriteCompPtr->sprite);
 
                         // draw box around entity (if DRAW_HITBOX)
-                        if ( DRAW_HITBOX) {
+                        if ( DRAW_HITBOX && entity->hasComponent<CollisionComponent>()) {
                             drawSelectedBox(
                             ren, 
-                            spriteCompPtr->sprite.getGlobalBounds().left, 
-                            spriteCompPtr->sprite.getGlobalBounds().top,
-                            spriteCompPtr->sprite.getTextureRect().width,
-                            spriteCompPtr->sprite.getTextureRect().height
+                            entity->getComponent<CollisionComponent>()->bounds.left, 
+                            entity->getComponent<CollisionComponent>()->bounds.top,
+                            entity->getComponent<CollisionComponent>()->bounds.width,
+                            entity->getComponent<CollisionComponent>()->bounds.height
                             );
                         }    
 

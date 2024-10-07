@@ -16,14 +16,14 @@ public:
                 if (entity->hasComponent<AnimationComponent>()) {
                 //  update sprite texture rectangle to match up with the animation index of AnimationComponent
                 sf::IntRect textRect = entity->getComponent<SpriteComponent>()->sprite.getTextureRect(); // get
-                textRect.left = 32 * entity->getComponent<AnimationComponent>()->animationIndex;         // update frame index     (x)
+                textRect.left = textRect.width * entity->getComponent<AnimationComponent>()->animationIndex;         // update frame index     (x)
                 
                 if (entity->hasComponent<MageStateComponent>()) {
-                    textRect.top = 32 * entity->getComponent<MageStateComponent>()->state;               // update animation index (y)
+                    textRect.top = textRect.height * entity->getComponent<MageStateComponent>()->state;               // update animation index (y)
                 }
 
                 if (entity->hasComponent<NinjaStateComponent>()) {
-                    textRect.top = 32 * entity->getComponent<NinjaStateComponent>()->state;               // update animation index (y)
+                    textRect.top = textRect.height * entity->getComponent<NinjaStateComponent>()->state;               // update animation index (y)
                 }
 
                 entity->getComponent<SpriteComponent>()->sprite.setTextureRect(textRect);                // set
@@ -36,7 +36,7 @@ public:
                     const int animationSheetWidth = entity->getComponent<SpriteComponent>()->sprite.getTexture()->getSize().x;
                     const int animationIndex = entity->getComponent<AnimationComponent>()->animationIndex;
                     if (
-                        (animationIndex >= (animationSheetWidth/32)-1) | (animationIndex >= entity->getComponent<AnimationComponent>()->animationIndexMax)
+                        (animationIndex >= (animationSheetWidth/textRect.width)-1) | (animationIndex >= entity->getComponent<AnimationComponent>()->animationIndexMax)
                         ) {
                         entity->getComponent<AnimationComponent>()->animationIndex = 0;  //  reset
                     }

@@ -13,6 +13,7 @@ struct CommonValues {
 // this function gets called by this class' own constructor
 void Game::initialize() {
     this->allocator = std::make_shared<ResourceAllocator>();    // init allocator
+    this->allocator->initialize();
     this->gameState.state = GameState::State::MENU;             // start in menu
 }
 
@@ -32,7 +33,10 @@ void Game::initializeGame(std::string &gameFilePath, sf::RenderWindow &ren) {
     ren.setView(this->player->playerView);
 
     this->world.initialize(this->allocator, this->player, gameFilePath);
+    this->world.generateRandomChunk(sf::Vector2f(0,0));
     this->world.createChunkSprites(this->allocator);
+
+    this->entityManager.createBorderEntities(this->allocator, sf::Vector2i(0,0));
 
     this->systems.push_back(std::make_unique<MovementSystem>());
     this->systems.push_back(std::make_unique<AnimationSystem>());
@@ -40,6 +44,11 @@ void Game::initializeGame(std::string &gameFilePath, sf::RenderWindow &ren) {
     this->systems.push_back(std::make_unique<ObjectiveSystem>());
 
     // TEMP
+    this->buttons_vectorp.push_back(buildButton(allocator, (CHUNK_WIDTH*TILE_WIDTH)/2, -100));
+    this->buttons_vectorp.push_back(buildButton(allocator, (CHUNK_WIDTH*TILE_WIDTH)/2, CHUNK_HEIGHT*TILE_HEIGHT));
+    this->buttons_vectorp.push_back(buildButton(allocator, CHUNK_WIDTH*TILE_WIDTH, (CHUNK_WIDTH*TILE_WIDTH)/2));
+    this->buttons_vectorp.push_back(buildButton(allocator, -100, (CHUNK_WIDTH*TILE_WIDTH)/2));
+
 }
 
 void Game::updateSystems(float deltaTime) {
@@ -54,39 +63,35 @@ bool Game::handleEvent(sf::RenderWindow &ren) {
         if (event.type == sf::Event::Closed)
             ren.close();
 
-        if (!handle_event(event, this->inputManager, this->player))
-            ren.close();
-
-        /*
         // select units
         if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
             bool someEntityIsBeingHovered = false;
             // iterates through all entites and checks if any are currently being hovered
-            for (auto& entity : entities) { 
-                if ((someEntityIsBeingHovered = isEntityHovered(window, entity)))
+            for (auto entity : this->entityManager.getAllEntities()) { 
+                if ((someEntityIsBeingHovered = isEntityHovered(ren, entity)))
                     break;
 
             }
             if (someEntityIsBeingHovered) { // if any entity was clicked
-                selectUnits(window, playerp, entities);
+                selectUnits(ren, this->player, entityManager.getAllEntities());
             } 
             else { // if no entities are being hovered, add mouse position
-                playerp->addObjectiveToSelectedUnits(sf::Vector2i(window.mapPixelToCoords(sf::Mouse::getPosition(window)).x, window.mapPixelToCoords(sf::Mouse::getPosition(window)).y));
+                this->player->addObjectiveToSelectedUnits(sf::Vector2i(ren.mapPixelToCoords(sf::Mouse::getPosition(ren)).x, ren.mapPixelToCoords(sf::Mouse::getPosition(ren)).y));
             }
             
         }
         // deselect units
         else if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Right) {
-            deselectUnits(window, playerp, entities);
+            deselectUnits(ren, this->player, entityManager.getAllEntities());
         }
 
         // Let handle_event function (defined in input.hpp) handle the event
         else {
-            if (!handle_event(event, inputhandler, playerp)) {
-                //world1.saveMapToTMX(game_path);
-                window.close();
+            if (!handle_event(event, this->inputManager, this->player)) {
+                this->world.saveMapToTMX(GAME_PATH);
+                ren.close();
             }
-        } */
+        } 
     }
 }
 
@@ -98,9 +103,12 @@ void Game::gameLoop(sf::RenderWindow &ren) {
         this->handleEvent(ren);
         this->inputManager->update(deltaTime);
 
-        // update entities in EntityManager
+        for (auto& btn : this->buttons_vectorp) {
+            btn->update(deltaTime);
+        }
 
         this->updateSystems(deltaTime);
+        this->entityManager.update(deltaTime);
 
         ren.setView(this->player->playerView);
         ren.clear();
@@ -122,6 +130,13 @@ void Game::gameLoop(sf::RenderWindow &ren) {
 
 void Game::render(sf::RenderWindow &ren) {
     this->renderSystem->update(ren, this->entityManager.getAllEntities());
+    this->renderUI(ren);
+}
+
+void Game::renderUI(sf::RenderWindow &ren) {
+    for (auto &btn : this->buttons_vectorp) {
+        ren.draw(btn->getComponent<SpriteComponent>()->sprite);
+    }
 }
 
 // public methods

@@ -19,6 +19,8 @@
 
 #include "ECS/Systems/RenderSystem.hpp"
 
+#include "ECS/Entities/Button.hpp"
+
 #include "EntityManager.hpp"
 // other
 #include "input.hpp"
@@ -51,32 +53,39 @@ void inline renderSelectionBox(sf::RenderWindow &ren) {
     ren.draw(rect1);
 }
 
-bool inline isEntityHovered(sf::RenderWindow &ren, std::shared_ptr<Entity>& entity) {
+bool inline isEntityHovered(sf::RenderWindow &ren, std::weak_ptr<Entity> entity_p) {
     // Returns true if the entity's CollisionComponents boundingbox is currently
     // below sf::Mouse::getPosition()
-    if (entity->hasComponent<DeletableComponent>()) {
-        return false; // skip if entity is a healthbar (only entity containing Deletable)
+    if (auto entity = entity_p.lock()) {
+        sf::Vector2f worldCoords = ren.mapPixelToCoords(sf::Mouse::getPosition(ren));
+        if (!entity->hasComponent<CollisionComponent>()) {
+            return false;
+        }
+        auto colli_ptr = entity->getComponent<CollisionComponent>();
+        if (colli_ptr->bounds.contains(worldCoords.x, worldCoords.y)) {
+            return true;
+        }
     }
-    sf::Vector2f worldCoords = ren.mapPixelToCoords(sf::Mouse::getPosition(ren));
-    auto colli_ptr = entity->getComponent<CollisionComponent>();
-    if (colli_ptr->bounds.contains(worldCoords.x, worldCoords.y)) {
-        return true;
-    }
+    
     return false;
 }
 
-void inline selectUnits(sf::RenderWindow &ren, std::shared_ptr<Player> player, std::vector<std::shared_ptr<Entity>>& entities) {
-    for (auto& entity : entities) {
-        if (entity->hasComponent<CollisionComponent>() && isEntityHovered(ren, entity) && entity->hasComponent<SelectableComponent>()) {
+void inline selectUnits(sf::RenderWindow &ren, std::shared_ptr<Player> player, std::vector<std::weak_ptr<Entity>> entities_p) {
+    for (auto entity_p : entities_p) {
+        if (auto entity = entity_p.lock()) {
+            if (entity->hasComponent<CollisionComponent>() && isEntityHovered(ren, entity) && entity->hasComponent<SelectableComponent>()) {
             entity->getComponent<SelectableComponent>()->isSelected = true;
             player->selectUnit(entity);
+            }
+
         }
+        
     }
 }
 
-void inline deselectUnits(sf::RenderWindow &ren, std::shared_ptr<Player> player, std::vector<std::shared_ptr<Entity>>& entities) {
-    for (auto& entity : entities) {
-        for (auto& entity : entities) {
+void inline deselectUnits(sf::RenderWindow &ren, std::shared_ptr<Player> player, std::vector<std::weak_ptr<Entity>> entities_p) {
+    for (auto entity_p : entities_p) {
+        if (auto entity = entity_p.lock()) {
             if (entity->hasComponent<CollisionComponent>() && isEntityHovered(ren, entity) && entity->hasComponent<SelectableComponent>()) {
                 entity->getComponent<SelectableComponent>()->isSelected = false;
                 player->deselectUnit(entity);
@@ -106,7 +115,6 @@ void drawGameState(sf::RenderWindow &ren, GameState& game_state) {
 
 }*/
 
-
 struct GameState {
     enum State{INGAME, MENU} state;
 };
@@ -128,6 +136,8 @@ private:
     std::vector<std::unique_ptr<System>> systems;
     std::unique_ptr<RenderSystem> renderSystem;
 
+    std::vector<std::shared_ptr<Entity>> buttons_vectorp;
+
     EntityManager entityManager;
     std::shared_ptr<InputManager> inputManager;
 
@@ -141,7 +151,7 @@ private:
 
     // Returns false on exit
     void gameLoop(sf::RenderWindow &ren);
-
+    void renderUI(sf::RenderWindow &ren);
     void render(sf::RenderWindow &ren);
     void initialize();
 

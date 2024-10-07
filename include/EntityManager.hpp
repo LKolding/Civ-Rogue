@@ -14,6 +14,8 @@ public:
     // Creates entity and stores it
     template <typename T>
     void createEntity(T entityClass);
+    void createBorderEntities(std::shared_ptr<ResourceAllocator> allocator, sf::Vector2i pos); // pos = pos of chunk
+    void update(float deltaTime);
     // Returns a vector containing weak_ptr to all entities
     std::vector<std::weak_ptr<Entity>> getAllEntities();
 

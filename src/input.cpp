@@ -82,7 +82,7 @@ bool handle_event(
                 if (playerp->playerView.getSize().x > 300)
                     playerp->playerView.zoom(0.9f);  // Zoom in
             } else if (event.mouseWheelScroll.delta < 0) {
-                if (playerp->playerView.getSize().x < 800)
+                if (playerp->playerView.getSize().x < 1000)
                     playerp->playerView.zoom(1.1f);  // Zoom out
             }
         }

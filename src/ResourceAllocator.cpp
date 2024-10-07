@@ -1,5 +1,8 @@
 #include "ResourceAllocator.hpp"
 
+void ResourceAllocator::initialize() {
+    this->default_font.loadFromFile("../assets/fonts/BD_Cartoon_Shout.ttf");
+}
 
 std::shared_ptr<sf::Texture> ResourceAllocator::loadTexture(const std::string& filename) {
         auto it = textures.find(filename);
@@ -16,7 +19,6 @@ std::shared_ptr<sf::Texture> ResourceAllocator::loadTexture(const std::string& f
 
         return nullptr; // Return null if loading failed
     }
-
 
 sf::Vector2u ResourceAllocator::getSizeOfTexture(std::string filename) {
     return this->textures[filename].get()->getSize();

@@ -130,3 +130,47 @@ std::shared_ptr<HealthbarEntity> buildHealthbar(ResourceAllocator &allocator, st
 
     return hp_ptr;
 }
+
+// Border
+std::shared_ptr<BorderEntity> buildBorder(std::shared_ptr<ResourceAllocator> allocator, const float &x, const float &y) {
+    auto bor_ptr = std::make_shared<BorderEntity>();
+
+    if (auto pos_ptr = bor_ptr->getComponent<PositionComponent>()) {
+        pos_ptr->x = x;
+        pos_ptr->y = y;
+    }
+    if (auto spr_ptr = bor_ptr->getComponent<SpriteComponent>()) {
+        spr_ptr->sprite.setTexture(*allocator->loadTexture("../assets/effects/shadow_realm_border.png"));
+        spr_ptr->sprite.setTextureRect(sf::IntRect(sf::Vector2i(00,0), sf::Vector2i(256, 32)));
+    }
+    if (auto ani_ptr = bor_ptr->getComponent<AnimationComponent>()) {
+        ani_ptr->frameTime = 0.1f;
+        ani_ptr->animationIndex = 0;
+        ani_ptr->elapsedTime = 0.0f;
+        ani_ptr->animationIndexMax = 5;
+        
+    }
+    if (auto uid_ptr = bor_ptr->getComponent<UUIDComponent>()) {
+        uid_ptr->ID = reinterpret_cast<uint64_t>(&bor_ptr);
+    }
+    return bor_ptr;
+}
+
+// Button
+std::shared_ptr<ButtonEntity> buildButton(std::shared_ptr<ResourceAllocator> allocator, const float &x, const float &y) {
+    auto btn_ptr = std::make_shared<ButtonEntity>();
+
+    if (auto pos_ptr = btn_ptr->getComponent<PositionComponent>()) {
+        pos_ptr->x = x;
+        pos_ptr->y = y;
+    }
+
+    if (auto spr_ptr = btn_ptr->getComponent<SpriteComponent>()) {
+        spr_ptr->hasBeenFlipped = false;
+        spr_ptr->sprite.setTexture(*allocator->loadTexture("../assets/textures/UI/button.png"));
+        spr_ptr->sprite.setTextureRect(sf::IntRect(sf::Vector2i(0,0), sf::Vector2i(spr_ptr->sprite.getTexture()->getSize().x, spr_ptr->sprite.getTexture()->getSize().y)));
+        spr_ptr->sprite.scale(0.1,0.1);
+    }
+
+    return btn_ptr;
+}

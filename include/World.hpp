@@ -39,7 +39,7 @@ public:
     
     void createChunkSprites(std::shared_ptr<ResourceAllocator> allocator);
     void render(sf::RenderWindow &ren);
-    void generateRandomChunk(sf::Vector2f& pos);
+    void generateRandomChunk(sf::Vector2f pos);
 
 private:
     void createGrassTileSprite(unsigned int &ID, sf::Vector2f pos, ResourceAllocator& allocator);
