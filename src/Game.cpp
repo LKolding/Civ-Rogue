@@ -70,6 +70,17 @@ bool Game::handleEvent(sf::RenderWindow &ren) {
         if (event.type == sf::Event::Closed)
             ren.close();
 
+        // Follow Entity that is being hovered on Spacebar
+        if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space) {
+            if (this->player->isFollowingUnit()) {
+                this->player->stopFollow();
+                
+            } else {
+                followEntity(ren, this->player, entityManager.getAllEntities());
+            }
+            
+        }
+
         // select units
         if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
             // Check for button
@@ -124,6 +135,8 @@ void Game::gameLoop(sf::RenderWindow &ren) {
 
         this->updateSystems(deltaTime);
         this->entityManager.update(deltaTime);
+
+        this->player->update(deltaTime);
 
         ren.setView(this->player->playerView);
         ren.clear();

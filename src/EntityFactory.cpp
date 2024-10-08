@@ -203,7 +203,7 @@ std::shared_ptr<EyeBugEntity> buildEyeBug(std::shared_ptr<ResourceAllocator> all
     if (auto vel_ptr = eye_ptr->getComponent<VelocityComponent>()) {
         vel_ptr->xSpeed = 17.0f;
         vel_ptr->ySpeed = 17.0f;
-        vel_ptr->moveAmount = 10.0f;
+        vel_ptr->moveAmount = 2.0f;
     }
     return eye_ptr;
 }

@@ -87,7 +87,6 @@ public:
                                     continue; // skip entity if no CollisionComponent
                                 }
                                 if (checkCollision(*colPtr, *entity_check->getComponent<CollisionComponent>())) {
-                                    std::cout << "Collision detected!\n"; 
                                     resolveCollision(entity, entity_check);
                                 }
                             }

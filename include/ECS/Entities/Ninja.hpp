@@ -33,8 +33,8 @@ public:
                 this->transitionState(NinjaStateComponent::IDLE);
             }
         }
+        this->getComponent<SpriteComponent>()->sprite.setPosition(this->getComponent<PositionComponent>()->x, this->getComponent<PositionComponent>()->y);
 
-        
     }
 
     void transitionState(NinjaStateComponent::State state) {

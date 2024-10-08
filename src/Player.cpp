@@ -23,9 +23,12 @@ void Player::move(float x, float y, float dt) {
 }
 
 void Player::setPosition(float x, float y) {
-    this->pos.x = x < 0 ? 0 : x;
-    this->pos.y = y < 0 ? 0 : y;
+    this->pos.x = x == 0 ? this->pos.x : x;
+    this->pos.y = y == 0 ? this->pos.y : y;
     this->updateView();
+}
+sf::Vector2f Player::getPosition() {
+    return this->pos;
 }
 
 void Player::selectUnit(std::shared_ptr<Entity> &entity) {
@@ -34,6 +37,41 @@ void Player::selectUnit(std::shared_ptr<Entity> &entity) {
 
 void Player::deselectUnit(std::shared_ptr<Entity> &entity) {
     this->selectedEntities.erase(entity->getComponent<UUIDComponent>()->ID);
+}
+
+void Player::update(float deltaTime) {
+    //  Follow entity
+    if (auto ent_p = this->entityFollow.lock()) {
+        auto ent_pos = sf::Vector2f(ent_p->getComponent<PositionComponent>()->x, ent_p->getComponent<PositionComponent>()->y);
+        auto pla_pos = this->getPosition();
+
+        if (ent_p->getComponent<PositionComponent>()->x != pla_pos.x) {
+            this->setPosition(ent_pos.x);
+        } 
+
+        if (ent_p->getComponent<PositionComponent>()->y != pla_pos.y) {
+            this->setPosition(0, ent_pos.y);
+        }
+        
+    }
+}
+
+void Player::followUnit(std::shared_ptr<Entity>& entity) {
+    this->entityFollow = entity;
+}
+
+void Player::stopFollow() {
+    if (this->entityFollow.lock()) {
+        this->entityFollow.reset();
+    }
+}
+
+bool Player::isFollowingUnit() {
+    if (this->entityFollow.lock()) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 void Player::addObjectiveToSelectedUnits(sf::Vector2i pos) {

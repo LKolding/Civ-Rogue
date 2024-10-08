@@ -20,7 +20,7 @@
 std::shared_ptr<HumanMageEntity> buildHumanMage(ResourceAllocator &allocator, const float &x = 100, const float &y = 100);
 
 // Ninja
-std::shared_ptr<NinjaEntity> buildNinja(std::shared_ptr<ResourceAllocator> allocator, const float &x = 100 ,const float &y = 100);
+std::shared_ptr<NinjaEntity> buildNinja(std::shared_ptr<ResourceAllocator> allocator, const float &x = CHUNK_WIDTH*TILE_WIDTH/2 ,const float &y = CHUNK_HEIGHT*TILE_HEIGHT/2);
 
 // Healthbar
 std::shared_ptr<HealthbarEntity> buildHealthbar(std::shared_ptr<ResourceAllocator> allocator, std::shared_ptr<Entity> ownerEntity, const float &x = 100, const float &y = 100);

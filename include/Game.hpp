@@ -95,6 +95,18 @@ void inline deselectUnits(sf::RenderWindow &ren, std::shared_ptr<Player> player,
     }
 }
 
+void inline followEntity(sf::RenderWindow &ren, std::shared_ptr<Player> player, std::vector<std::weak_ptr<Entity>> entities_p) {
+    for (auto entity_p : entities_p) {
+        if (auto entity = entity_p.lock()) {
+            if (entity->hasComponent<CollisionComponent>() && isEntityHovered(ren, entity)) {
+                player->followUnit(entity);
+                return;
+            }
+
+        }
+        
+    }
+}
 
 struct GameState {
     enum State{INGAME, MENU} state;
