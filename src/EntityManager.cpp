@@ -5,8 +5,16 @@ void EntityManager::setAllocator(std::shared_ptr<ResourceAllocator> allocator) {
         this->allocator_p = allocator;
         // TODO TEMP
         this->entities.push_back(buildNinja(allocator_p));
-        this->entities.push_back(buildNinja(allocator_p, 300, 200));
-        this->entities.push_back(buildNinja(allocator_p, 300, 250));
+        this->entities.push_back(buildNinja(allocator_p));
+        this->entities.push_back(buildNinja(allocator_p));
+        this->entities.push_back(buildNinja(allocator_p));
+        this->entities.push_back(buildNinja(allocator_p));
+        this->entities.push_back(buildNinja(allocator_p));
+        this->entities.push_back(buildNinja(allocator_p));
+        this->entities.push_back(buildNinja(allocator_p));
+        this->entities.push_back(buildNinja(allocator_p));
+        this->entities.push_back(buildNinja(allocator_p));
+        this->entities.push_back(buildNinja(allocator_p));
         this->entities.push_back(buildEyeBug(allocator_p));
 
 }

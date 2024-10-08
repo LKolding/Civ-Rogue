@@ -186,12 +186,10 @@ std::shared_ptr<EyeBugEntity> buildEyeBug(std::shared_ptr<ResourceAllocator> all
         pos_ptr->x = x;
         pos_ptr->y = y;
     }
-
     if (auto spr_ptr = eye_ptr->getComponent<SpriteComponent>()) {
         spr_ptr->sprite.setTexture(*allocator->loadTexture("../assets/textures/characters/eyebug.png"));
         spr_ptr->sprite.setTextureRect(sf::IntRect(sf::Vector2i(0,0), sf::Vector2i(32, 32)));
     }
-
     if (auto ani_ptr = eye_ptr->getComponent<AnimationComponent>()) {
         ani_ptr->animationIndex = 0;
         ani_ptr->elapsedTime = 0.0f;
@@ -201,6 +199,11 @@ std::shared_ptr<EyeBugEntity> buildEyeBug(std::shared_ptr<ResourceAllocator> all
     }
     if (auto uid_ptr = eye_ptr->getComponent<UUIDComponent>()) {
         uid_ptr->ID = reinterpret_cast<uint64_t>(&eye_ptr);
+    }
+    if (auto vel_ptr = eye_ptr->getComponent<VelocityComponent>()) {
+        vel_ptr->xSpeed = 17.0f;
+        vel_ptr->ySpeed = 17.0f;
+        vel_ptr->moveAmount = 10.0f;
     }
     return eye_ptr;
 }

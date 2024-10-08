@@ -214,9 +214,42 @@ void World::render(sf::RenderWindow &ren) {
             sf::Vector2f player_pos = player->playerView.getCenter();
             sf::Vector2i pos = getChunkCoords(player_pos);
             sf::Vector2i chunk_pos = getChunkCoords(sf::Vector2f(sprite->getPosition().x, sprite->getPosition().y));
-            if (pos == chunk_pos)
+            //if (pos == chunk_pos)
                 ren.draw(*sprite);
         }
 
     }
+
+    /*
+    // Set up the minimap view
+    sf::View minimapView;
+    
+    // Define the minimap's size and the area of the world it will cover
+    if (auto player = this->playerPtr.lock()) {
+        sf::FloatRect minimapRect(player->playerView.getCenter().x-256, player->playerView.getCenter().y-256, 1024, 1024);
+        minimapView.reset(minimapRect);
+    }
+
+    // Set the viewport: this defines where the minimap appears in the window
+    minimapView.setViewport(sf::FloatRect(0.75f, 0.75f, 0.3f, 0.3f));  // Bottom-right corner
+
+    // Optionally zoom out the minimap view to show a larger part of the world
+    //minimapView.zoom(0.25f);  // Zoom out to show more of the map
+
+    // Render the game world again with the minimap view
+    ren.setView(minimapView);
+    // render chunks
+    if (auto player = this->playerPtr.lock()) {
+        for (auto& sprite : this->chunkSprites) {
+        sf::Vector2f player_pos = player->playerView.getCenter();
+        sf::Vector2i pos = getChunkCoords(player_pos);
+        sf::Vector2i chunk_pos = getChunkCoords(sf::Vector2f(sprite->getPosition().x, sprite->getPosition().y));
+        //if (pos == chunk_pos)
+            ren.draw(*sprite);
+        }
+        // Reset back to the main game view (if needed to render UI or other elements)
+        ren.setView(player->playerView);
+    }*/
+    
+    
 }

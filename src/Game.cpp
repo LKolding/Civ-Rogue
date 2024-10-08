@@ -42,7 +42,7 @@ void Game::initializeGame(std::string &gameFilePath, sf::RenderWindow &ren) {
     this->systems.push_back(std::make_unique<AnimationSystem>());
     this->systems.push_back(std::make_unique<ObjectiveSystem>());
 
-    // TEMP
+    // TEMP BUTTON FUNCTIONALITY
     this->buttons_vectorp.push_back(buildButton(allocator, ((CHUNK_WIDTH*TILE_WIDTH)/2), -100));                     // top
     this->buttons_vectorp.push_back(buildButton(allocator, ((CHUNK_WIDTH*TILE_WIDTH)/2), CHUNK_HEIGHT*TILE_HEIGHT)); // bot
     this->buttons_vectorp.push_back(buildButton(allocator, CHUNK_WIDTH*TILE_WIDTH, (CHUNK_WIDTH*TILE_WIDTH)/2));     // right
@@ -51,7 +51,15 @@ void Game::initializeGame(std::string &gameFilePath, sf::RenderWindow &ren) {
 }
 
 void Game::updateSystems(float deltaTime) {
+    static float collisionDetectionTimer = 0.0f;
     for (auto &system : this->systems) {
+        if (dynamic_cast<CollisionSystem*>(system.get())) {
+            collisionDetectionTimer += deltaTime;
+            if (collisionDetectionTimer >= 0.3f) {
+                system->update(deltaTime, this->entityManager.getAllEntities());
+                collisionDetectionTimer = 0.0f;
+            }
+        }
         system->update(deltaTime, this->entityManager.getAllEntities());
     }
 }
