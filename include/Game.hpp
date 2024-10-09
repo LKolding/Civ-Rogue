@@ -16,12 +16,14 @@
 #include "ECS/Systems/AnimationSystem.hpp"
 #include "ECS/Systems/CollisionSystem.hpp"
 #include "ECS/Systems/ObjectiveSystem.hpp"
+#include "ECS/Systems/LifetimeSystem.hpp"
 
 #include "ECS/Systems/RenderSystem.hpp"
 
 #include "ECS/Entities/Button.hpp"
 
 #include "EntityManager.hpp"
+#include "EntityFactory.hpp"
 // other
 #include "input.hpp"
 #include "coordinate_calculators.hpp"
@@ -58,11 +60,11 @@ bool inline isEntityHovered(sf::RenderWindow &ren, std::weak_ptr<Entity> entity_
     // below sf::Mouse::getPosition()
     if (auto entity = entity_p.lock()) {
         sf::Vector2f worldCoords = ren.mapPixelToCoords(sf::Mouse::getPosition(ren));
-        if (!entity->hasComponent<CollisionComponent>()) {
+        if (!entity->hasComponent<SelectableComponent>()) {
             return false;
         }
-        auto colli_ptr = entity->getComponent<CollisionComponent>();
-        if (colli_ptr->bounds.contains(worldCoords.x, worldCoords.y)) {
+        auto spr_ptr = entity->getComponent<SpriteComponent>();
+        if (spr_ptr->sprite.getGlobalBounds().contains(worldCoords.x, worldCoords.y)) {
             return true;
         }
     }
@@ -112,7 +114,6 @@ struct GameState {
     enum State{INGAME, MENU} state;
 };
 
-
 class Game {
 public:
     int run(); // game execution starts and ends here
@@ -140,7 +141,7 @@ private:
 
     void updateSystems(float deltaTime);
 
-    bool handleEvent(sf::RenderWindow &ren);
+    void handleEvent(sf::RenderWindow &ren);
 
     // Returns false on exit
     void gameLoop(sf::RenderWindow &ren);

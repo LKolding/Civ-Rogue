@@ -7,10 +7,10 @@
 
 class InputManager {
 public:
+    std::map<sf::Mouse::Button, bool> mkeyState;
     std::map<sf::Keyboard::Key, bool> keyState;
 
     void start(std::shared_ptr<Player> p);
-
     void update(float dt);
 
 private:

@@ -16,7 +16,6 @@ public:
 
     }
 
-    
     void update(float dt) {
         if (!entity_ptr.lock()) {
             this->getComponent<DeletableComponent>()->markedForDeletion = true;

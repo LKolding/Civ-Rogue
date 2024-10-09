@@ -8,6 +8,8 @@
 
 #include "ECS/Components/Components.hpp"
 
+// BASE CLASS
+
 class Entity {
 public:
     // Store components using std::type_index to map to their types

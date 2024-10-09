@@ -51,6 +51,12 @@ public:
                 this->getComponent<AnimationComponent>()->frameTime = 0.03f;
                 break;
 
+            case NinjaStateComponent::ACTIVE:
+                this->getComponent<NinjaStateComponent>()->state = state;
+                this->getComponent<AnimationComponent>()->animationIndexMax = 0;
+                this->getComponent<AnimationComponent>()->frameTime = 1.0f;
+                break;
+
             default: // doesn't update internal state if not recognized
                 break;
 

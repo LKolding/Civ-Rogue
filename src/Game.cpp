@@ -35,19 +35,26 @@ void Game::initializeGame(std::string &gameFilePath, sf::RenderWindow &ren) {
     this->world.initialize(this->allocator, this->player, gameFilePath);
     this->world.createChunkSprites(this->allocator);
 
-    this->entityManager.createBorderEntities(this->allocator, sf::Vector2i(0,0));
+    //this->entityManager.createBorderEntities(this->allocator, sf::Vector2i(0,0));
 
     this->systems.push_back(std::make_unique<MovementSystem>());
     this->systems.push_back(std::make_unique<CollisionSystem>());
     this->systems.push_back(std::make_unique<AnimationSystem>());
     this->systems.push_back(std::make_unique<ObjectiveSystem>());
+    this->systems.push_back(std::make_unique<LifetimeSystem>());
+
+    this->entityManager.addEntity(buildNinja(allocator));
+    this->entityManager.addEntity(buildNinja(allocator));
+    this->entityManager.addEntity(buildNinja(allocator));
+    this->entityManager.addEntity(buildNinja(allocator));
 
     // TEMP BUTTON FUNCTIONALITY
+    /*
     this->buttons_vectorp.push_back(buildButton(allocator, ((CHUNK_WIDTH*TILE_WIDTH)/2), -100));                     // top
     this->buttons_vectorp.push_back(buildButton(allocator, ((CHUNK_WIDTH*TILE_WIDTH)/2), CHUNK_HEIGHT*TILE_HEIGHT)); // bot
     this->buttons_vectorp.push_back(buildButton(allocator, CHUNK_WIDTH*TILE_WIDTH, (CHUNK_WIDTH*TILE_WIDTH)/2));     // right
     this->buttons_vectorp.push_back(buildButton(allocator, -100, (CHUNK_WIDTH*TILE_WIDTH)/2));                       // left
-
+    */
 }
 
 void Game::updateSystems(float deltaTime) {
@@ -64,7 +71,7 @@ void Game::updateSystems(float deltaTime) {
     }
 }
 
-bool Game::handleEvent(sf::RenderWindow &ren) {
+void Game::handleEvent(sf::RenderWindow &ren) {
     sf::Event event;
     while (ren.pollEvent(event)) {
         if (event.type == sf::Event::Closed)
@@ -74,35 +81,43 @@ bool Game::handleEvent(sf::RenderWindow &ren) {
         if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space) {
             if (this->player->isFollowingUnit()) {
                 this->player->stopFollow();
-                
             } else {
                 followEntity(ren, this->player, entityManager.getAllEntities());
             }
-            
         }
-
-        // select units
+        //  LEFT MOUSE BTN
         if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
+            const auto mouse_pos = sf::Vector2i(ren.mapPixelToCoords(sf::Mouse::getPosition(ren)).x, ren.mapPixelToCoords(sf::Mouse::getPosition(ren)).y);
             // Check for button
             for (auto btn : this->buttons_vectorp) {
                 if (isEntityHovered(ren, btn)) {
                     std::static_pointer_cast<ButtonEntity>(btn)->click();
+                    continue;
                 }
-
             }
-
             bool someEntityIsBeingHovered = false;
             // iterates through all entites and checks if any are currently being hovered
             for (auto entity : this->entityManager.getAllEntities()) { 
                 if ((someEntityIsBeingHovered = isEntityHovered(ren, entity)))
                     break;
-
             }
-            if (someEntityIsBeingHovered) { // if any entity was clicked
+            if (someEntityIsBeingHovered) { // if any entity was hovered while click happened
+                /*  // KILLS ALL ENTITIES BELOW
+                auto worldCoords = ren.mapPixelToCoords(sf::Mouse::getPosition(ren));
+                for (auto entity_p : this->entityManager.getAllEntities()) {
+                    if (auto entity = entity_p.lock()) {
+                        auto colli_ptr = entity->getComponent<CollisionComponent>();
+                        if (colli_ptr->bounds.contains(worldCoords)) {
+                            this->entityManager.killEntity(entity->getComponent<UUIDComponent>()->ID);
+                        }
+                    }
+                }*/
                 selectUnits(ren, this->player, entityManager.getAllEntities());
-            } 
+            }
             else { // if no entities are being hovered, add mouse position
-                this->player->addObjectiveToSelectedUnits(sf::Vector2i(ren.mapPixelToCoords(sf::Mouse::getPosition(ren)).x, ren.mapPixelToCoords(sf::Mouse::getPosition(ren)).y));
+                this->player->addObjectiveToSelectedUnits(mouse_pos);
+                this->entityManager.addEntity(buildBluePointer(this->allocator, mouse_pos.x, mouse_pos.y));
+                //this->entityManager.addEntity(buildArrow(this->allocator, mouse_pos.x, mouse_pos.y));
             }
             
         }
@@ -110,7 +125,6 @@ bool Game::handleEvent(sf::RenderWindow &ren) {
         else if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Right) {
             deselectUnits(ren, this->player, entityManager.getAllEntities());
         }
-
         // Let handle_event function (defined in input.hpp) handle the event
         else {
             if (!handle_event(event, this->inputManager, this->player)) {
@@ -123,6 +137,7 @@ bool Game::handleEvent(sf::RenderWindow &ren) {
 
 void Game::gameLoop(sf::RenderWindow &ren) {
     while (ren.isOpen()) {
+
         sf::Time frameStartTime = this->clock.restart();
         float deltaTime = frameStartTime.asSeconds();
 

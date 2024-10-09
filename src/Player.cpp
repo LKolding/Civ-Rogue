@@ -52,7 +52,6 @@ void Player::update(float deltaTime) {
         if (ent_p->getComponent<PositionComponent>()->y != pla_pos.y) {
             this->setPosition(0, ent_pos.y);
         }
-        
     }
 }
 

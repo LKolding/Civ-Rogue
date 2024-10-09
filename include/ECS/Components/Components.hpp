@@ -2,7 +2,6 @@
 #define _COMPONENTS_
 
 #include <SFML/Graphics.hpp>  // for Sprite
-
 struct PositionComponent { float x, y; };
 
 struct VelocityComponent { 
@@ -23,17 +22,12 @@ struct AnimationComponent { float elapsedTime; float frameTime; int animationInd
 
 struct MageStateComponent { enum State { IDLE, WALK, REST, ATTACK, ATTACK2, ATTACK3, TEMP, DEATH } state; };
 
-struct NinjaStateComponent { enum State { IDLE, WALK } state; };
+struct NinjaStateComponent { enum State { IDLE, WALK, ACTIVE } state; };
 //  holds a location 
 struct ObjectiveComponent { 
     std::unique_ptr<sf::Vector2i> location;
-
-    void addObjective(sf::Vector2i pos) {
-        this->location = std::make_unique<sf::Vector2i>(pos);
-    } 
+    void addObjective(sf::Vector2i pos) { this->location = std::make_unique<sf::Vector2i>(pos); } 
 };
-
-struct InventoryComponent { std::vector<std::string> items; };
 
 struct InteractableComponent {};
 
@@ -44,4 +38,7 @@ struct CollisionComponent { sf::FloatRect bounds; };
 struct DeletableComponent { bool markedForDeletion; };
 
 struct UUIDComponent { uint64_t ID; };
+
+struct LifetimeComponent { float timeAlive; float deathTime; };
+
 #endif

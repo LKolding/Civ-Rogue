@@ -8,7 +8,7 @@
 #include "ECS/Components/Components.hpp"
 
 bool inline checkCollision(const CollisionComponent& a, const CollisionComponent& b) {
-    // Example: Assuming AABB (axis-aligned bounding box) collision detection
+    //  AABB (axis-aligned bounding box) collision detection
     return (a.bounds.left < b.bounds.left + b.bounds.width &&
             a.bounds.left + a.bounds.width > b.bounds.left &&
             a.bounds.top < b.bounds.top + b.bounds.height &&
@@ -69,10 +69,15 @@ public:
             if (auto entity = entity_p.lock()) {
                 // Check if the entity has both components
                 if (entity->hasComponent<CollisionComponent>()) {
-                    if (entity->hasComponent<SpriteComponent>()) {
-                        // update collision component
-                        entity->getComponent<CollisionComponent>()->bounds = entity->getComponent<SpriteComponent>()->sprite.getGlobalBounds();
-                    }
+                    // update position
+                    auto posPtr = entity->getComponent<PositionComponent>();
+                    // half of texture (COLLISION BOX) width
+                    auto texWidth = entity->getComponent<CollisionComponent>()->bounds.width/2;
+                    // half of texture (COLLISION BOX) height
+                    auto texHeight = entity->getComponent<CollisionComponent>()->bounds.height/2;
+                    entity->getComponent<CollisionComponent>()->bounds.left = posPtr->x - texWidth;
+                    entity->getComponent<CollisionComponent>()->bounds.top  = posPtr->y - texHeight;
+                    
                     // Use getComponent and dereference the shared_ptr to access the underlying component
                     auto colPtr = entity->getComponent<CollisionComponent>();
 

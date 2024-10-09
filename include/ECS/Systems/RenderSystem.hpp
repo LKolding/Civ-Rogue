@@ -26,7 +26,7 @@ void inline drawSelectedBox(sf::RenderWindow &ren, float x, float y, int width, 
     ren.draw(hitbox);
 }
 
-#define DRAW_HITBOX false
+#define DRAW_HITBOX false  // only draws box if entity has CollisionComponent
 
 class RenderSystem {
 public:

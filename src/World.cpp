@@ -47,11 +47,11 @@ void World::saveMapToTMX(const std::string& filePath) {
 
     // Add <tileset> element
     pugi::xml_node tilesetNode2 = mapNode.append_child("tileset");
+    tilesetNode2.append_attribute("name") = "health_bars";
     tilesetNode2.append_attribute("firstgid")  = 65;
     tilesetNode2.append_attribute("source")    = "../assets/tmx/tsx/health_bars.tsx";
     tilesetNode2.append_attribute("tilewidth") = 48;
     tilesetNode2.append_attribute("tileheight")= 16;
-    tilesetNode2.append_attribute("name") = "health_bars";
 
     // Add <layer> for tile data
     pugi::xml_node layerNode = mapNode.append_child("layer");
