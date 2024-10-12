@@ -54,14 +54,14 @@ void Player::update(float deltaTime, std::shared_ptr<InputManager> inputManager)
             this->setPosition(0, ent_pos.y);//  <- and here
         }
     }
-    // else check for input
+    // check for input
     float moveX = 0;
     float moveY = 0;
-    if (inputManager->keyState[sf::Keyboard::W]) { moveY -= 1.0f; } // up
-    if (inputManager->keyState[sf::Keyboard::A]) { moveX -= 1.0f; } // left
-    if (inputManager->keyState[sf::Keyboard::S]) { moveY += 1.0f; } // down
-    if (inputManager->keyState[sf::Keyboard::D]) { moveX += 1.0f; } // right
-
+    if (inputManager->keyState[sf::Keyboard::W]) { moveY = -1.0f; } // up
+    if (inputManager->keyState[sf::Keyboard::A]) { moveX = -1.0f; } // left
+    if (inputManager->keyState[sf::Keyboard::S]) { moveY =  1.0f; } // down
+    if (inputManager->keyState[sf::Keyboard::D]) { moveX =  1.0f; } // right
+    // zoom
     if (inputManager->mouseWheelScroll > 0.0f && this->playerView.getSize().x > 500) {
         this->playerView.zoom(0.9f);  // Zoom in
     } 
@@ -71,9 +71,20 @@ void Player::update(float deltaTime, std::shared_ptr<InputManager> inputManager)
     // reset mWheelScrollDelta
     inputManager->mouseWheelScroll = 0.0f;
     
-    // update player
-    if (moveX != 0.0f || moveY != 0.0f )
-        this->move(moveX, moveY, deltaTime);
+    // update entity velocity if selected
+    if (auto ent = this->entityFollow.lock()) {
+        if (moveX != 0.0 || moveY != 0.0)
+            std::static_pointer_cast<NinjaEntity>(ent)->transitionState(NinjaStateComponent::WALK);
+        else
+            std::static_pointer_cast<NinjaEntity>(ent)->transitionState(NinjaStateComponent::IDLE);
+        ent->getComponent<VelocityComponent>()->xDir = moveX;
+        ent->getComponent<VelocityComponent>()->yDir = moveY;
+        
+    } else { // else simply update view member through move() method
+        if (moveX != 0.0f || moveY != 0.0f )
+            this->move(moveX, moveY, deltaTime);
+    }
+    
 
 }
 
@@ -96,10 +107,13 @@ bool Player::isFollowingUnit() {
 }
 
 void Player::addObjectiveToSelectedUnits(sf::Vector2i pos) {
-    for (auto& entity : this->selectedEntities) {
-        if (!entity.second.lock()->hasComponent<ObjectiveComponent>()) {
-            continue;
+    for (auto& entity_p : this->selectedEntities) {
+        if (auto entity = entity_p.second.lock()) { 
+            // if entity doesn't have objComp OR entity can be selected, and in fact is selected; skip
+            if (!entity->hasComponent<ObjectiveComponent>() || (entity->hasComponent<SelectableComponent>() && !entity->getComponent<SelectableComponent>()->isSelected)) {
+                continue;
+            }
+            entity->getComponent<ObjectiveComponent>()->addObjective(pos);
         }
-        entity.second.lock()->getComponent<ObjectiveComponent>()->addObjective(pos);
     }
 }

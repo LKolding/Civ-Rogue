@@ -4,6 +4,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "ECS/Entities/Entity.hpp"
+#include "ECS/Entities/Ninja.hpp"
 
 #include "input.hpp"
 

@@ -10,7 +10,7 @@
 #include "ECS/Components/Components.hpp"
 
 
-#define DRAW_HITBOX true  // only draws box if entity has CollisionComponent or StaticCollisionComponent
+#define DRAW_HITBOX false  // only draws box if entity has CollisionComponent or StaticCollisionComponent
 
 void inline drawSelectedBox(sf::RenderWindow &ren, float x, float y, int width, int height, sf::Color color = sf::Color::Black) {
     sf::RectangleShape hitbox;

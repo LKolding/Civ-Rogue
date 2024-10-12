@@ -16,28 +16,7 @@ public:
     }
 
     void update(float deltaTime) override {
-        
-
-        static const float thinkInterval = 2.0f;
-        static float thinkTimer = 0;
-        
-        if (thinkTimer >= thinkInterval) {
-            thinkTimer = 0.0f;
-
-            if (rand() % 2 == 1) {
-                if ((!this->getComponent<VelocityComponent>()->xDir == 0.0f) && (!this->getComponent<VelocityComponent>()->yDir == 0.0f)) {
-                    this->getComponent<VelocityComponent>()->xDir = 0.0f; // reset
-                    this->getComponent<VelocityComponent>()->yDir = 0.0f;
-
-                } else {
-                    this->getComponent<VelocityComponent>()->xDir = 1.0f * (rand() % 2);
-                    this->getComponent<VelocityComponent>()->yDir = 1.0f * (rand() % 2);
-                }
-
-            }
-        } else {
-            thinkTimer += deltaTime;
-        }
+        return;
     }
 };
 

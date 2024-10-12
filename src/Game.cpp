@@ -44,8 +44,6 @@ void Game::initializeGame(std::string &gameFilePath, sf::RenderWindow &ren) {
 
     this->entityManager.addEntity(buildNinja(allocator));
     this->entityManager.addEntity(buildNinja(allocator));
-    this->entityManager.addEntity(buildNinja(allocator));
-    this->entityManager.addEntity(buildNinja(allocator));
     this->entityManager.addEntity(buildEyeBug(allocator));
     this->entityManager.addEntity(buildWell(allocator, 400, 400));
 

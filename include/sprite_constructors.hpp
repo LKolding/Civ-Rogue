@@ -84,14 +84,4 @@ inline std::unique_ptr<sf::Sprite> createChunkSprite(
 }
 
 
-//  Entities
-/*
-inline std::unique_ptr<sf::Sprite> createHumanSprite(
-    HumanEntity& humanEnt,
-    tmx::Tileset& tileset,
-    ResourceAllocator& allocator
-    ) {
-    
-}
-*/
 #endif

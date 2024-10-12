@@ -125,7 +125,7 @@ void World::generateRandomChunk(sf::Vector2f pos) {
 
     for (int i = 0; i<CHUNK_SIZE; i++) {
         Tile ttile;
-        ttile.ID = rand() % 60 + 1;
+        ttile.ID = rand() % 30 + 1;
         ttile.isWalkable = true;
         tchunk.background_tiles[i] = ttile;
     }
