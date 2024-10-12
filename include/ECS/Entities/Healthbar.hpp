@@ -22,24 +22,30 @@ public:
             return;
         }
         if (auto ent_ptr = entity_ptr.lock()) {
-            if (auto spr_ptr = this->getComponent<SpriteComponent>()) {
-                if (auto hlt_ptr = ent_ptr->getComponent<HealthComponent>()) {
-                    float health_percentage =  (float)hlt_ptr->currentHealth / (float)hlt_ptr->maxHealth;
-                    int x_tile_amount = (spr_ptr->sprite.getTexture()->getSize().x / spr_ptr->sprite.getTextureRect().width) -1;// -1 skips the first healthbar container
-                    int healthbar_index = ceil((1.0f - health_percentage) * (x_tile_amount)); 
-                    int x_offset = (healthbar_index * spr_ptr->sprite.getTextureRect().width) + (spr_ptr->sprite.getTextureRect().width); // add extra offset to account for healthbar container
+            auto spr_ptr = this->getComponent<SpriteComponent>();
 
-                    sf::IntRect textRect;
-                    textRect = spr_ptr->sprite.getTextureRect();
-                    textRect.left = x_offset;
+            if (auto hlt_ptr = ent_ptr->getComponent<HealthComponent>()) {
+                float health_percentage =  (float)hlt_ptr->currentHealth / (float)hlt_ptr->maxHealth;
+                int x_tile_amount = (spr_ptr->sprite.getTexture()->getSize().x / spr_ptr->sprite.getTextureRect().width) -1;// -1 skips the first healthbar container
+                int healthbar_index = ceil((1.0f - health_percentage) * (x_tile_amount)); 
+                int x_offset = (healthbar_index * spr_ptr->sprite.getTextureRect().width) + (spr_ptr->sprite.getTextureRect().width); // add extra offset to account for healthbar container
 
-                    spr_ptr->sprite.setTextureRect(textRect);
+                sf::IntRect textRect;
+                textRect = spr_ptr->sprite.getTextureRect();
+                textRect.left = x_offset;
 
-                    this->getComponent<PositionComponent>()->x = ent_ptr->getComponent<PositionComponent>()->x - (textRect.width/2);
-                    this->getComponent<PositionComponent>()->y = ent_ptr->getComponent<PositionComponent>()->y - (textRect.height*2);
+                spr_ptr->sprite.setTextureRect(textRect);
 
-                }
+                this->getComponent<PositionComponent>()->x = ent_ptr->getComponent<PositionComponent>()->x - spr_ptr->sprite.getTextureRect().width/2;
+                this->getComponent<PositionComponent>()->y = ent_ptr->getComponent<PositionComponent>()->y - 30;
+
+                if (hlt_ptr->currentHealth == hlt_ptr->maxHealth)
+                    this->getComponent<SpriteComponent>()->isVisible = false;
+                else
+                    this->getComponent<SpriteComponent>()->isVisible = true;
+
             }
+            
         }
 
     }

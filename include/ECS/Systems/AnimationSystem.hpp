@@ -17,10 +17,6 @@ public:
                 //  update sprite texture rectangle to match up with the animation index of AnimationComponent
                 sf::IntRect textRect = entity->getComponent<SpriteComponent>()->sprite.getTextureRect(); // get
                 textRect.left = textRect.width * entity->getComponent<AnimationComponent>()->animationIndex;         // update frame index     (x)
-                
-                if (entity->hasComponent<MageStateComponent>()) {
-                    textRect.top = textRect.height * entity->getComponent<MageStateComponent>()->state;               // update animation index (y)
-                }
 
                 if (entity->hasComponent<NinjaStateComponent>()) {
                     textRect.top = textRect.height * entity->getComponent<NinjaStateComponent>()->state;               // update animation index (y)

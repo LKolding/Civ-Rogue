@@ -8,6 +8,7 @@ public:
     EyeBugEntity() {
         this->addComponent(std::make_shared<PositionComponent>());
         this->addComponent(std::make_shared<SpriteComponent>());
+        this->addComponent(std::make_shared<HealthComponent>());
         this->addComponent(std::make_shared<CollisionComponent>());
         this->addComponent(std::make_shared<VelocityComponent>());
         this->addComponent(std::make_shared<AnimationComponent>());
@@ -15,8 +16,8 @@ public:
     }
 
     void update(float deltaTime) override {
-        return;
-        /*
+        
+
         static const float thinkInterval = 2.0f;
         static float thinkTimer = 0;
         
@@ -36,7 +37,7 @@ public:
             }
         } else {
             thinkTimer += deltaTime;
-        }*/
+        }
     }
 };
 

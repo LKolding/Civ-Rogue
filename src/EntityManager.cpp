@@ -3,9 +3,6 @@
 
 void EntityManager::setAllocator(std::shared_ptr<ResourceAllocator> allocator) {
         this->allocator_p = allocator;
-        // TODO TEMP
-        //this->entities.push_back(buildAxeChop(allocator, this->entities[0]));
-
 }
 
 void EntityManager::addEntity(std::shared_ptr<Entity> entity) {
@@ -13,7 +10,7 @@ void EntityManager::addEntity(std::shared_ptr<Entity> entity) {
     this->mappedEntities[entity->getComponent<UUIDComponent>()->ID] = entity;
     this->entities.push_back(std::move(entity));
     
-    if (this->entities.back()->hasComponent<HealthComponent>()) {
+    if (this->entities.back()->hasComponent<HealthComponent>()) { // if healthcompenent, create healthbar
         auto htl_ptr = buildHealthbar(allocator_p, this->entities.back());
         this->entities.push_back(std::move(htl_ptr));
         this->mappedEntities[this->entities.back()->getComponent<UUIDComponent>()->ID] = this->entities.back();

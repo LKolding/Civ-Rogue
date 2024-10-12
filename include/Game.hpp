@@ -6,9 +6,15 @@
 // system
 #include <vector>
 // my stuff
+
+// helpers and InputManager
+#include "input.hpp"
+#include "coordinate_calculators.hpp"
+#include "constants.h"
+// Game stuff
 #include "ResourceAllocator.hpp"
-#include "World.hpp"
 #include "Player.hpp"
+#include "World.hpp"
 
 // ecs
 #include "ECS/Systems/System.hpp"
@@ -24,11 +30,7 @@
 
 #include "EntityManager.hpp"
 #include "EntityFactory.hpp"
-// other
-#include "input.hpp"
-#include "coordinate_calculators.hpp"
 
-#include "constants.h"
 
 
 void inline renderSelectionBox(sf::RenderWindow &ren) {

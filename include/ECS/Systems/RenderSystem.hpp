@@ -7,8 +7,10 @@
 
 #include "ECS/Systems/System.hpp"
 #include "ECS/Entities/Entity.hpp"
-#include "ECS/Entities/Human.hpp"
 #include "ECS/Components/Components.hpp"
+
+
+#define DRAW_HITBOX true  // only draws box if entity has CollisionComponent or StaticCollisionComponent
 
 void inline drawSelectedBox(sf::RenderWindow &ren, float x, float y, int width, int height, sf::Color color = sf::Color::Black) {
     sf::RectangleShape hitbox;
@@ -26,8 +28,6 @@ void inline drawSelectedBox(sf::RenderWindow &ren, float x, float y, int width, 
     ren.draw(hitbox);
 }
 
-#define DRAW_HITBOX false  // only draws box if entity has CollisionComponent
-
 class RenderSystem {
 public:
     inline void update(sf::RenderWindow& ren, std::vector<std::weak_ptr<Entity>> entities) {
@@ -37,10 +37,6 @@ public:
                     // Use getComponent and dereference the shared_ptr to access the underlying component
                     auto spriteCompPtr = entity->getComponent<SpriteComponent>();
                     if (spriteCompPtr) {
-                        if (entity->hasComponent<PositionComponent>()) { // update sprite position
-                            spriteCompPtr->sprite.setPosition(entity->getComponent<PositionComponent>()->x, entity->getComponent<PositionComponent>()->y);
-                        }
-
                         if (entity->hasComponent<FlipComponent>()) {
                             // flip texture
                             if (entity->getComponent<FlipComponent>()->isFlipped && !entity->getComponent<SpriteComponent>()->hasBeenFlipped) {
@@ -53,8 +49,8 @@ public:
                                 entity->getComponent<SpriteComponent>()->hasBeenFlipped = false;
                             }
                         }
-
-                        ren.draw(spriteCompPtr->sprite);
+                        if (entity->getComponent<SpriteComponent>()->isVisible)
+                            ren.draw(spriteCompPtr->sprite);
 
                         // draw box around entity (if DRAW_HITBOX)
                         if ( DRAW_HITBOX && entity->hasComponent<CollisionComponent>()) {
@@ -66,6 +62,16 @@ public:
                             entity->getComponent<CollisionComponent>()->bounds.height
                             );
                         }    
+                        // draw box around entity (if DRAW_HITBOX)
+                        if ( DRAW_HITBOX && entity->hasComponent<StaticCollisionComponent>()) {
+                            drawSelectedBox(
+                            ren, 
+                            entity->getComponent<StaticCollisionComponent>()->bounds.left, 
+                            entity->getComponent<StaticCollisionComponent>()->bounds.top,
+                            entity->getComponent<StaticCollisionComponent>()->bounds.width,
+                            entity->getComponent<StaticCollisionComponent>()->bounds.height
+                            );
+                        }   
 
                         // draw box around entity (if selected)
                         if (entity->hasComponent<SelectableComponent>() && entity->getComponent<SelectableComponent>()->isSelected) {

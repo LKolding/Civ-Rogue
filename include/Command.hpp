@@ -4,6 +4,8 @@
 #include <string>
 #include <iostream>
 
+#include "ECS/Entities/Entity.hpp"
+
 /**
  * The Command interface declares a method for executing a command.
  */
@@ -14,7 +16,7 @@ class Command {
   virtual void Execute() const = 0;
 };
 /**
- * Some commands can implement simple operations on their own.
+ * Commands can implement simple operations on their own.
  */
 class SimpleCommand : public Command {
  private:
@@ -44,7 +46,7 @@ class Receiver {
 };
 
 /**
- * However, some commands can delegate more complex operations to other objects,
+ * Some commands can delegate more complex operations to other objects,
  * called "receivers."
  */
 class ComplexCommand : public Command {
@@ -73,6 +75,24 @@ class ComplexCommand : public Command {
     this->receiver_->DoSomething(this->a_);
     this->receiver_->DoSomethingElse(this->b_);
   }
+};
+
+//  Command to send to own troops to make them
+//  repeatly attack a certain target
+class AttackCommand : public Command {
+private:
+  std::weak_ptr<Entity> attacker_;
+  std::weak_ptr<Entity> target_;
+
+public:
+  AttackCommand(std::shared_ptr<Entity> attacker, std::shared_ptr<Entity> target) : attacker_(attacker), target_(target) {
+
+  }
+
+  void Execute() const override {
+    
+  }
+
 };
 
 /**
@@ -120,7 +140,4 @@ class Invoker {
     }
   }
 };
-/**
- * The client code can parameterize an invoker with any commands.
- */
 #endif

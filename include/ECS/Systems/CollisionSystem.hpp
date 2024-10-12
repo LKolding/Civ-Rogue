@@ -7,12 +7,63 @@
 #include "ECS/Entities/Entity.hpp"
 #include "ECS/Components/Components.hpp"
 
-bool inline checkCollision(const CollisionComponent& a, const CollisionComponent& b) {
+
+bool inline checkCollision(const sf::FloatRect& a, const sf::FloatRect& b) {
     //  AABB (axis-aligned bounding box) collision detection
-    return (a.bounds.left < b.bounds.left + b.bounds.width &&
-            a.bounds.left + a.bounds.width > b.bounds.left &&
-            a.bounds.top < b.bounds.top + b.bounds.height &&
-            a.bounds.top + a.bounds.height > b.bounds.top);
+    return (a.left < b.left  + b.width  &&
+            a.left + a.width > b.left   &&
+            a.top  < b.top   + b.height &&
+            a.top  + a.height> b.top );
+}
+
+void inline resolveStaticCollision(std::shared_ptr<Entity> entityA, std::shared_ptr<Entity> entityB) {
+    // First, determine which entity has the StaticCollisionComponent and which has the CollisionComponent
+    std::shared_ptr<StaticCollisionComponent> staticCollision;
+    std::shared_ptr<CollisionComponent> dynamicCollision;
+    std::shared_ptr<PositionComponent> dynamicPosition;
+
+    if (entityA->hasComponent<StaticCollisionComponent>()) {
+        staticCollision = entityA->getComponent<StaticCollisionComponent>();
+        dynamicCollision = entityB->getComponent<CollisionComponent>();
+        dynamicPosition = entityB->getComponent<PositionComponent>();
+    } else if (entityB->hasComponent<StaticCollisionComponent>()) {
+        staticCollision = entityB->getComponent<StaticCollisionComponent>();
+        dynamicCollision = entityA->getComponent<CollisionComponent>();
+        dynamicPosition = entityA->getComponent<PositionComponent>();
+    } else {
+        // No static collision detected, return early
+        return;
+    }
+
+    // Now resolve the collision using dynamicCollision and dynamicPosition
+    // For example, calculate overlap and adjust position of the dynamic entity
+
+    // Example logic (replace this with your actual collision resolution):
+    float overlapX = std::min(staticCollision->bounds.left + staticCollision->bounds.width, dynamicCollision->bounds.left + dynamicCollision->bounds.width) -
+                     std::max(staticCollision->bounds.left, dynamicCollision->bounds.left);
+
+    float overlapY = std::min(staticCollision->bounds.top + staticCollision->bounds.height, dynamicCollision->bounds.top + dynamicCollision->bounds.height) -
+                     std::max(staticCollision->bounds.top, dynamicCollision->bounds.top);
+
+    if (overlapX < overlapY) {
+        // Separate along the x-axis
+        if (dynamicCollision->bounds.left < staticCollision->bounds.left) {
+            dynamicPosition->x -= overlapX;
+        } else {
+            dynamicPosition->x += overlapX;
+        }
+    } else {
+        // Separate along the y-axis
+        if (dynamicCollision->bounds.top < staticCollision->bounds.top) {
+            dynamicPosition->y -= overlapY;
+        } else {
+            dynamicPosition->y += overlapY;
+        }
+    }
+
+    // Update collision box positions based on new entity positions
+    dynamicCollision->bounds.left = dynamicPosition->x - (dynamicCollision->bounds.width /2);
+    dynamicCollision->bounds.top  = dynamicPosition->y - (dynamicCollision->bounds.height/2);
 }
 
 void inline resolveCollision(std::shared_ptr<Entity> entityA, std::shared_ptr<Entity> entityB) {
@@ -55,10 +106,10 @@ void inline resolveCollision(std::shared_ptr<Entity> entityA, std::shared_ptr<En
     }
 
     // Update collision box positions based on new entity positions
-    collisionA->bounds.left = posA->x;
-    collisionA->bounds.top = posA->y;
-    collisionB->bounds.left = posB->x;
-    collisionB->bounds.top = posB->y;
+    collisionA->bounds.left = posA->x - (collisionA->bounds.width /2);
+    collisionA->bounds.top  = posA->y - (collisionA->bounds.height/2);
+    collisionB->bounds.left = posB->x - (collisionB->bounds.width /2);
+    collisionB->bounds.top  = posB->y - (collisionB->bounds.height/2);
 }
 
 
@@ -67,32 +118,23 @@ public:
     inline void update(float deltaTime, std::vector<std::weak_ptr<Entity>> entities) {
         for (auto& entity_p : entities) {
             if (auto entity = entity_p.lock()) {
-                // Check if the entity has both components
+                // Check if the entity has collision component
                 if (entity->hasComponent<CollisionComponent>()) {
-                    // update position
-                    auto posPtr = entity->getComponent<PositionComponent>();
-                    // half of texture (COLLISION BOX) width
-                    auto texWidth = entity->getComponent<CollisionComponent>()->bounds.width/2;
-                    // half of texture (COLLISION BOX) height
-                    auto texHeight = entity->getComponent<CollisionComponent>()->bounds.height/2;
-                    entity->getComponent<CollisionComponent>()->bounds.left = posPtr->x - texWidth;
-                    entity->getComponent<CollisionComponent>()->bounds.top  = posPtr->y - texHeight;
-                    
                     // Use getComponent and dereference the shared_ptr to access the underlying component
                     auto colPtr = entity->getComponent<CollisionComponent>();
-
                     // Make sure the pointer is valid
                     if (colPtr) {
                         for (auto& entity_check_p : entities) {
                             if (auto entity_check = entity_check_p.lock()) {
-                                if (entity_check->getComponent<UUIDComponent>()->ID == entity->getComponent<UUIDComponent>()->ID) {
-                                continue; // skip own collision component
-                                }
-                                if (!entity_check->hasComponent<CollisionComponent>()) {
-                                    continue; // skip entity if no CollisionComponent
-                                }
-                                if (checkCollision(*colPtr, *entity_check->getComponent<CollisionComponent>())) {
-                                    resolveCollision(entity, entity_check);
+                                // Static collision box check and resolve
+                                if (entity_check->hasComponent<StaticCollisionComponent>()) {
+                                    if (checkCollision(colPtr->bounds, entity_check->getComponent<StaticCollisionComponent>()->bounds))
+                                        resolveStaticCollision(entity, entity_check);
+                                } 
+                                else // normal collision detection and resolve
+                                if (entity_check->hasComponent<CollisionComponent>()) {
+                                    if (checkCollision(colPtr->bounds, entity_check->getComponent<CollisionComponent>()->bounds))
+                                        resolveCollision(entity, entity_check);
                                 }
                             }
                         }

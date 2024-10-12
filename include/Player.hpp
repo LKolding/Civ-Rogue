@@ -5,12 +5,14 @@
 
 #include "ECS/Entities/Entity.hpp"
 
+#include "input.hpp"
+
 
 //  Basically only holds the playerView
 struct Player {
     static inline sf::View playerView;
 
-    void update(float deltaTime);
+    void update(float deltaTime, std::shared_ptr<InputManager> inputManager);
     // x and y simply indicate direction, and should be of
     // value 1.0, 0.0 or -1.0
     void move(float x, float y, float dt);

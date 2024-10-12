@@ -7,7 +7,6 @@
 // my stuff
 #include "ResourceAllocator.hpp"
 #include "World.hpp"
-#include "ECS/Entities/Human.hpp"
 
 //  Chunks and tiles
 

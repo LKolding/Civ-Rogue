@@ -1,32 +1,28 @@
 #include "input.hpp"
 
-void InputManager::start(std::shared_ptr<Player> p) {
-    this->player = p;
+InputManager::InputManager() {
     this->keyState[sf::Keyboard::W] = false;
     this->keyState[sf::Keyboard::A] = false;
     this->keyState[sf::Keyboard::S] = false;
     this->keyState[sf::Keyboard::D] = false;
+
+    this->keyState[sf::Keyboard::Escape] = false;
+    this->keyState[sf::Keyboard::Space] = false;
+
+    this->mkeyState[sf::Mouse::Left] = false;
+    this-> mkeyState[sf::Mouse::Right] = false;
+
+    this->mouseWheelScroll = 0.0f;
 }
 
 void InputManager::update(float dt) {
-    float moveX = 0;
-    float moveY = 0;
-    for (auto& key : this->keyState) { // moveX and Y simply indicates direction
-        if (key.first == sf::Keyboard::W && key.second == true) { moveY -= 1.0f; }
-        if (key.first == sf::Keyboard::A && key.second == true) { moveX -= 1.0f; }
-        if (key.first == sf::Keyboard::S && key.second == true) { moveY += 1.0f; }
-        if (key.first == sf::Keyboard::D && key.second == true) { moveX += 1.0f; }
-    }
-    
-    // update player
-    this->player->move(moveX, moveY, dt);
+    return;
 }
 
 // Returns false if Escape (or another exit key) was pressed
 bool handle_event(
     sf::Event& event,
-    std::shared_ptr<InputManager> input,
-    std::weak_ptr<Player> player
+    std::shared_ptr<InputManager> input
     ) {
     //  exit
     if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
@@ -92,21 +88,12 @@ bool handle_event(
             input->keyState[sf::Keyboard::Space] = false;
         }
     }
-    //  mousewheel scroll
-    if (auto playerp = player.lock()) {
-        //  zoom w/ mousewheel
-        if (event.type == sf::Event::MouseWheelScrolled) {
-            if (event.mouseWheelScroll.delta > 0) {
-                if (playerp->playerView.getSize().x > 300)
-                    playerp->playerView.zoom(0.9f);  // Zoom in
-            } else if (event.mouseWheelScroll.delta < 0) {
-                if (playerp->playerView.getSize().x < 1000)
-                    playerp->playerView.zoom(1.1f);  // Zoom out
-            }
+
+    if (event.type == sf::Event::MouseWheelScrolled) {
+        if (event.mouseWheelScroll.wheel == sf::Mouse::VerticalWheel) {
+            input->mouseWheelScroll = event.mouseWheelScroll.delta;
         }
     }
-    
-
 
     return true; // return true if no exit button has been clicked
 }

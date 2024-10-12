@@ -10,7 +10,7 @@ public:
     inline void update(float deltaTime, std::vector<std::weak_ptr<Entity>> entities) {
         for (auto& entity_p : entities) {
             if (auto entity = entity_p.lock()) {
-                // Check if the entity has both components
+                // Update position based on velocity
                 if (entity->hasComponent<PositionComponent>() && entity->hasComponent<VelocityComponent>()) {
                     // Use getComponent and dereference the shared_ptr to access the underlying component
                     auto posPtr = entity->getComponent<PositionComponent>();
@@ -41,6 +41,29 @@ public:
                         }
                     }
                 }
+                // update sprite position
+                if (entity->hasComponent<PositionComponent>() && entity->hasComponent<SpriteComponent>()) {
+                    entity->getComponent<SpriteComponent>()->sprite.setPosition(entity->getComponent<PositionComponent>()->x, entity->getComponent<PositionComponent>()->y);
+                }
+                // update collisionbox position
+                if (entity->hasComponent<PositionComponent>() && entity->hasComponent<CollisionComponent>()) {
+                    //entity->getComponent<CollisionComponent>()->bounds.left = entity->getComponent<PositionComponent>()->x - entity->getComponent<CollisionComponent>()->bounds.getSize().x;
+                    //entity->getComponent<CollisionComponent>()->bounds.top = entity->getComponent<PositionComponent>()->y;
+                    //entity->getComponent<CollisionComponent>()->bounds = sf::FloatRect(sf::Vector2f(entity->getComponent<PositionComponent>()->x - entity->getComponent<CollisionComponent>()->bounds.getSize().x, entity->getComponent<PositionComponent>()->y - entity->getComponent<CollisionComponent>()->bounds.getSize().y), sf::Vector2f(entity->getComponent<CollisionComponent>()->bounds.getSize()));
+                }
+                /*
+                // update position
+                // Use getComponent and dereference the shared_ptr to access the underlying component
+                    auto colPtr = entity->getComponent<CollisionComponent>();
+                    auto posPtr = entity->getComponent<PositionComponent>();
+                    // half of texture (COLLISION BOX) width
+                    auto texWidth = colPtr->bounds.width/2;
+                    // half of texture (COLLISION BOX) height
+                    auto texHeight = colPtr->bounds.height/2;
+                    colPtr->bounds.left = posPtr->x - texWidth;
+                    colPtr->bounds.top  = posPtr->y - texHeight;
+                
+                */
             }
         }
     }

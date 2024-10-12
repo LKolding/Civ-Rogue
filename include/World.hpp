@@ -22,8 +22,8 @@
 
 // MY STUFF
 #include "ResourceAllocator.hpp"
-#include "Player.hpp"
 #include "Tile.hpp"
+#include "Player.hpp"
 
 #include "coordinate_calculators.hpp"
 #include "constants.h"

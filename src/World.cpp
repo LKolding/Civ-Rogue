@@ -39,19 +39,41 @@ void World::saveMapToTMX(const std::string& filePath) {
     mapNode.append_attribute("tileheight") = TILE_HEIGHT;
     mapNode.append_attribute("infinite") = "1";
 
-    // Add <tileset> element
+    /*
+    <tileset firstgid="1" name="grass" tilewidth="32" tileheight="32" tilecount="64" columns="8">
+  <image source="../assets/textures/tilesheets/TX Tileset Grass.png" width="256" height="256"/>
+    
+    */
+
+    // Add grass <tileset> element
     pugi::xml_node tilesetNode = mapNode.append_child("tileset");
     tilesetNode.append_attribute("firstgid") = 1;
-    tilesetNode.append_attribute("source")   = "../assets/tmx/tsx/grass.tsx";
     tilesetNode.append_attribute("name") = "grass";
+    tilesetNode.append_attribute("tilewidth") = 32;
+    tilesetNode.append_attribute("tileheight") = 32;
+    tilesetNode.append_attribute("source")   = "../assets/tmx/tsx/grass.tsx";
+    pugi::xml_node imageNode = tilesetNode.append_child("image");
+    imageNode.append_attribute("source") = "../assets/textures/tilesheets/TX Tileset Grass.png";
 
-    // Add <tileset> element
+    // Add health bar <tileset> element
     pugi::xml_node tilesetNode2 = mapNode.append_child("tileset");
-    tilesetNode2.append_attribute("name") = "health_bars";
     tilesetNode2.append_attribute("firstgid")  = 65;
-    tilesetNode2.append_attribute("source")    = "../assets/tmx/tsx/health_bars.tsx";
+    tilesetNode2.append_attribute("name") = "health_bars";
     tilesetNode2.append_attribute("tilewidth") = 48;
     tilesetNode2.append_attribute("tileheight")= 16;
+    tilesetNode2.append_attribute("source")    = "../assets/tmx/tsx/health_bars.tsx";
+    pugi::xml_node imageNode2 = tilesetNode2.append_child("image");
+    imageNode2.append_attribute("source") = "../assets/textures/UI/health_bars.png";
+
+    // Add melly_tileset <tileset> element
+    pugi::xml_node tilesetNode3 = mapNode.append_child("tileset");
+    tilesetNode3.append_attribute("firstgid")  = 129;
+    tilesetNode3.append_attribute("name") = "health_bars";
+    tilesetNode3.append_attribute("tilewidth") = 48;
+    tilesetNode3.append_attribute("tileheight")= 16;
+    tilesetNode3.append_attribute("source")    = "../assets/tmx/tsx/melly_tileset.tsx";
+    pugi::xml_node imageNode3 = tilesetNode3.append_child("image");
+    imageNode3.append_attribute("source") = "../assets/textures/tilesheets/melly_tileset.png";
 
     // Add <layer> for tile data
     pugi::xml_node layerNode = mapNode.append_child("layer");
@@ -173,7 +195,7 @@ void World::loadMap(tmx::Map& map) {
             }
             for (const auto& chunk : tileLayer.getChunks()) {   // iterate chunks
                 // Create new chunk struct directly in vector
-                this->chunks.push_back(std::move(processChunk(chunk, tileset)));  
+                this->chunks.push_back(processChunk(chunk, tileset));  
             }
         }
         // Object layer
@@ -214,7 +236,7 @@ void World::render(sf::RenderWindow &ren) {
             sf::Vector2f player_pos = player->playerView.getCenter();
             sf::Vector2i pos = getChunkCoords(player_pos);
             sf::Vector2i chunk_pos = getChunkCoords(sf::Vector2f(sprite->getPosition().x, sprite->getPosition().y));
-            //if (pos == chunk_pos)
+            if (pos == chunk_pos) //  uncomment this to only draw the chunk underneath the view
                 ren.draw(*sprite);
         }
 

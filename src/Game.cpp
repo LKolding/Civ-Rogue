@@ -1,11 +1,10 @@
 #include "Game.hpp"
 
-std::string GAME_PATH = "../saveGames/game1.tmx";
+std::string GAME_PATH = "../assets/tmx/maps/grass_chunk.tmx";
 const sf::Time targetFrameTime = sf::seconds(1.f / 60); // 60 fps
 
 struct CommonValues {
     const sf::FloatRect startViewRect = sf::FloatRect(sf::Vector2f(100.0f, 100.0f), sf::Vector2f(WINDOW_WIDTH*0.7, WINDOW_HEIGHT*0.7));
-    // 
 } commonValues;
 
 // Game class
@@ -24,7 +23,6 @@ Game::Game() {
     this->player = std::make_shared<Player>();
     this->inputManager = std::make_shared<InputManager>();
 
-    this->inputManager->start(this->player);
 }
 
 void Game::initializeGame(std::string &gameFilePath, sf::RenderWindow &ren) {
@@ -33,6 +31,7 @@ void Game::initializeGame(std::string &gameFilePath, sf::RenderWindow &ren) {
     ren.setView(this->player->playerView);
 
     this->world.initialize(this->allocator, this->player, gameFilePath);
+    this->world.generateRandomChunk(sf::Vector2f(0,0));
     this->world.createChunkSprites(this->allocator);
 
     //this->entityManager.createBorderEntities(this->allocator, sf::Vector2i(0,0));
@@ -47,6 +46,8 @@ void Game::initializeGame(std::string &gameFilePath, sf::RenderWindow &ren) {
     this->entityManager.addEntity(buildNinja(allocator));
     this->entityManager.addEntity(buildNinja(allocator));
     this->entityManager.addEntity(buildNinja(allocator));
+    this->entityManager.addEntity(buildEyeBug(allocator));
+    this->entityManager.addEntity(buildWell(allocator, 400, 400));
 
     // TEMP BUTTON FUNCTIONALITY
     /*
@@ -60,17 +61,18 @@ void Game::initializeGame(std::string &gameFilePath, sf::RenderWindow &ren) {
 void Game::updateSystems(float deltaTime) {
     static float collisionDetectionTimer = 0.0f;
     for (auto &system : this->systems) {
-        if (dynamic_cast<CollisionSystem*>(system.get())) {
+        if (dynamic_cast<CollisionSystem*>(system.get())) {  // check if collision system
             collisionDetectionTimer += deltaTime;
-            if (collisionDetectionTimer >= 0.3f) {
-                system->update(deltaTime, this->entityManager.getAllEntities());
+            if (collisionDetectionTimer >= 0.06f) {
+                system->update(deltaTime, this->entityManager.getAllEntities());// update on interval
                 collisionDetectionTimer = 0.0f;
             }
+        } else {  // if system is any other system than collision, simply update
+            system->update(deltaTime, this->entityManager.getAllEntities());
         }
-        system->update(deltaTime, this->entityManager.getAllEntities());
     }
 }
-
+//  Defines and declares sf::Event and processes it
 void Game::handleEvent(sf::RenderWindow &ren) {
     sf::Event event;
     while (ren.pollEvent(event)) {
@@ -127,8 +129,8 @@ void Game::handleEvent(sf::RenderWindow &ren) {
         }
         // Let handle_event function (defined in input.hpp) handle the event
         else {
-            if (!handle_event(event, this->inputManager, this->player)) {
-                this->world.saveMapToTMX(GAME_PATH);
+            if (!handle_event(event, this->inputManager)) {
+                //this->world.saveMapToTMX(GAME_PATH);
                 ren.close();
             }
         } 
@@ -151,14 +153,12 @@ void Game::gameLoop(sf::RenderWindow &ren) {
         this->updateSystems(deltaTime);
         this->entityManager.update(deltaTime);
 
-        this->player->update(deltaTime);
+        this->player->update(deltaTime, this->inputManager);
 
         ren.setView(this->player->playerView);
         ren.clear();
-        // render
-        this->world.render(ren);
-        this->render(ren);
 
+        this->render(ren);
         ren.setView(ren.getDefaultView());
         // draw ui
         ren.setView(this->player->playerView);
@@ -172,6 +172,7 @@ void Game::gameLoop(sf::RenderWindow &ren) {
 }
 
 void Game::render(sf::RenderWindow &ren) {
+    this->world.render(ren); // render all background tiles (all chunks)
     this->renderSystem->update(ren, this->entityManager.getAllEntities());
     this->renderUI(ren);
 }
