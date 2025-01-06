@@ -55,37 +55,45 @@ void Player::update(float deltaTime, std::shared_ptr<InputManager> inputManager)
         }
     }
     // check for input
-    float moveX = 0;
-    float moveY = 0;
-    if (inputManager->keyState[sf::Keyboard::W]) { moveY = -1.0f; } // up
-    if (inputManager->keyState[sf::Keyboard::A]) { moveX = -1.0f; } // left
-    if (inputManager->keyState[sf::Keyboard::S]) { moveY =  1.0f; } // down
-    if (inputManager->keyState[sf::Keyboard::D]) { moveX =  1.0f; } // right
-    // zoom
-    if (inputManager->mouseWheelScroll > 0.0f && this->playerView.getSize().x > 500) {
-        this->playerView.zoom(0.9f);  // Zoom in
-    } 
-    if (inputManager->mouseWheelScroll < 0.0f && this->playerView.getSize().x < 900) {
-        this->playerView.zoom(1.1f);  // Zoom out
-    }
+    float moveX = 0.0f;
+    float moveY = 0.0f;
+    bool lmclick = false;  // left mouse click
+    bool rmclick = false;  // right mouse click
+    // keyboard
+    if (inputManager->keyState[sf::Keyboard::W]) { moveY = -1.0f; }  // up
+    if (inputManager->keyState[sf::Keyboard::A]) { moveX = -1.0f; }  // left
+    if (inputManager->keyState[sf::Keyboard::S]) { moveY =  1.0f; }  // down
+    if (inputManager->keyState[sf::Keyboard::D]) { moveX =  1.0f; }  // right
+    // mouse
+    if (inputManager->mkeyState[sf::Mouse::Left])  { lmclick = true; }
+    if (inputManager->mkeyState[sf::Mouse::Right]) { rmclick = true; }
+    // zoom w/ mouse wheel
+    if (inputManager->mouseWheelScroll > 0.0f && this->playerView.getSize().x > 500) { this->playerView.zoom(0.9f); }  // Zoom in 
+    if (inputManager->mouseWheelScroll < 0.0f && this->playerView.getSize().x < 900) { this->playerView.zoom(1.1f); }  // Zoom out
     // reset mWheelScrollDelta
     inputManager->mouseWheelScroll = 0.0f;
-    
-    // update entity velocity if selected
+
+    // update entity if selected (make entity move w/ WASD and attack w/ m click)
     if (auto ent = this->entityFollow.lock()) {
+        // update animation
         if (moveX != 0.0 || moveY != 0.0)
             std::static_pointer_cast<NinjaEntity>(ent)->transitionState(NinjaStateComponent::WALK);
         else
             std::static_pointer_cast<NinjaEntity>(ent)->transitionState(NinjaStateComponent::IDLE);
+
+        // update X and Y velocity/direction
         ent->getComponent<VelocityComponent>()->xDir = moveX;
         ent->getComponent<VelocityComponent>()->yDir = moveY;
+
+        if (lmclick) {
+            //  attack / perform action
+            std::static_pointer_cast<NinjaEntity>(ent)->weapon_attack();
+        }
         
-    } else { // else simply update view member through move() method
+    } else { // else update view member through move() method
         if (moveX != 0.0f || moveY != 0.0f )
             this->move(moveX, moveY, deltaTime);
     }
-    
-
 }
 
 void Player::followUnit(std::shared_ptr<Entity>& entity) {
@@ -93,9 +101,12 @@ void Player::followUnit(std::shared_ptr<Entity>& entity) {
 }
 
 void Player::stopFollow() {
-    if (this->entityFollow.lock()) {
-        this->entityFollow.reset();
+    if (auto p = this->entityFollow.lock()) {
+        // reset entity movement
+        p->getComponent<VelocityComponent>()->xDir = 0.0f;
+        p->getComponent<VelocityComponent>()->yDir = 0.0f;
     }
+    this->entityFollow.reset();
 }
 
 bool Player::isFollowingUnit() {
@@ -103,17 +114,5 @@ bool Player::isFollowingUnit() {
         return true;
     } else {
         return false;
-    }
-}
-
-void Player::addObjectiveToSelectedUnits(sf::Vector2i pos) {
-    for (auto& entity_p : this->selectedEntities) {
-        if (auto entity = entity_p.second.lock()) { 
-            // if entity doesn't have objComp OR entity can be selected, and in fact is selected; skip
-            if (!entity->hasComponent<ObjectiveComponent>() || (entity->hasComponent<SelectableComponent>() && !entity->getComponent<SelectableComponent>()->isSelected)) {
-                continue;
-            }
-            entity->getComponent<ObjectiveComponent>()->addObjective(pos);
-        }
     }
 }

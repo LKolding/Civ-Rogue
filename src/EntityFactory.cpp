@@ -1,11 +1,11 @@
 #include "EntityFactory.hpp"
 
 // Ninja
-std::shared_ptr<NinjaEntity> buildNinja(std::shared_ptr<ResourceAllocator> allocator, const float &x,const float &y) {
+std::shared_ptr<NinjaEntity>  buildNinja(std::shared_ptr<ResourceAllocator> allocator, const float &x,const float &y) {
     auto ninja_ptr = std::make_shared<NinjaEntity>();
     //  Health
     if (auto health_ptr = ninja_ptr->getComponent<HealthComponent>()) {
-        health_ptr->currentHealth = 100;
+        health_ptr->currentHealth = 90;
         health_ptr->maxHealth = 100;
     }
     //  Position
@@ -57,9 +57,10 @@ std::shared_ptr<NinjaEntity> buildNinja(std::shared_ptr<ResourceAllocator> alloc
     if (auto flip_ptr = ninja_ptr->getComponent<FlipComponent>()) {
         flip_ptr->isFlipped = false;
     }
-    // temp objective
-    // ninja_ptr->addObjective(sf::Vector2f(400,400));
-
+    // InteractAble
+    if (auto int_ptr = ninja_ptr->getComponent<InteractableComponent>()) {
+        int_ptr->type = int_ptr->SELECTABLE;
+    }
     return ninja_ptr;
 }
 // Healthbar
@@ -132,7 +133,9 @@ std::shared_ptr<ButtonEntity> buildButton(std::shared_ptr<ResourceAllocator> all
     if (auto col_ptr = btn_ptr->getComponent<CollisionComponent>()) {
         col_ptr->bounds = btn_ptr->getComponent<SpriteComponent>()->sprite.getGlobalBounds();
     }
-
+    if (auto uid_ptr = btn_ptr->getComponent<UUIDComponent>()) {
+        uid_ptr->ID = reinterpret_cast<uint64_t>(&(*btn_ptr));
+    }
     return btn_ptr;
 }
 
@@ -149,7 +152,7 @@ std::shared_ptr<EyeBugEntity> buildEyeBug(std::shared_ptr<ResourceAllocator> all
         spr_ptr->sprite.setOrigin(sf::Vector2f(32/2, 32/2));
     }
     if (auto hlt_ptr = eye_ptr->getComponent<HealthComponent>()) {
-        hlt_ptr->currentHealth = 40;
+        hlt_ptr->currentHealth = 30;
         hlt_ptr->maxHealth = 40;
     }
     if (auto ani_ptr = eye_ptr->getComponent<AnimationComponent>()) {
@@ -158,6 +161,9 @@ std::shared_ptr<EyeBugEntity> buildEyeBug(std::shared_ptr<ResourceAllocator> all
         ani_ptr->frameTime = 0.1;
         ani_ptr->animationIndexMax = 96;
         
+    }
+    if (auto int_ptr = eye_ptr->getComponent<InteractableComponent>()) {
+        int_ptr->type = int_ptr->ATTACKABLE;
     }
     if (auto col_ptr = eye_ptr->getComponent<CollisionComponent>()) {
         col_ptr->bounds = eye_ptr->getComponent<SpriteComponent>()->sprite.getGlobalBounds();
@@ -173,7 +179,7 @@ std::shared_ptr<EyeBugEntity> buildEyeBug(std::shared_ptr<ResourceAllocator> all
     return eye_ptr;
 }
 
-std::shared_ptr<TreeEntity> buildTree(std::shared_ptr<ResourceAllocator> allocator, const float &x, const float &y) {
+std::shared_ptr<TreeEntity>   buildTree(std::shared_ptr<ResourceAllocator> allocator, const float &x, const float &y) {
     auto tre_ptr = std::make_shared<TreeEntity>();
 
     if (auto pos_ptr = tre_ptr->getComponent<PositionComponent>()) {
@@ -184,13 +190,18 @@ std::shared_ptr<TreeEntity> buildTree(std::shared_ptr<ResourceAllocator> allocat
     if (auto spr_ptr = tre_ptr->getComponent<SpriteComponent>()) {
         spr_ptr->sprite.setTexture(*allocator->loadTexture("../assets/textures/tilesheets/TX Plant.png"));
         spr_ptr->sprite.setTextureRect(sf::IntRect(0,0, 128+32, 128+32));
+        spr_ptr->sprite.setPosition(tre_ptr->getComponent<PositionComponent>()->x, tre_ptr->getComponent<PositionComponent>()->y);
     }
-
+    if (auto int_ptr = tre_ptr->getComponent<InteractableComponent>()) {
+        int_ptr->type = int_ptr->FELLABLE;
+    }
     if (auto hlt_ptr = tre_ptr->getComponent<HealthComponent>()) {
-        hlt_ptr->currentHealth = 180;
+        hlt_ptr->currentHealth = 160;
         hlt_ptr->maxHealth = 180;
     }
-    
+    if (auto col_ptr = tre_ptr->getComponent<StaticCollisionComponent>()) {
+        col_ptr->bounds = tre_ptr->getComponent<SpriteComponent>()->sprite.getGlobalBounds();
+    }
     if (auto uid_ptr = tre_ptr->getComponent<UUIDComponent>()) {
         uid_ptr->ID = reinterpret_cast<uint64_t>(&tre_ptr);
     }
@@ -235,6 +246,10 @@ std::shared_ptr<BluePointerEntity> buildBluePointer(std::shared_ptr<ResourceAllo
         lft_ptr->timeAlive = 0.0f;
         lft_ptr->deathTime = 2.0f;
     }
+    if ( auto pos_ptr = ptr_ptr->getComponent<PositionComponent>()) {
+        pos_ptr->x = ptr_ptr->getComponent<SpriteComponent>()->sprite.getPosition().x;
+        pos_ptr->y = ptr_ptr->getComponent<SpriteComponent>()->sprite.getPosition().y;
+    }
     if (auto uid_ptr = ptr_ptr->getComponent<UUIDComponent>()) {
         uid_ptr->ID = reinterpret_cast<uint64_t>(&(*ptr_ptr));
     }
@@ -267,4 +282,73 @@ std::shared_ptr<MossyWellEntity> buildWell(std::shared_ptr<ResourceAllocator> al
         uid_ptr->ID = reinterpret_cast<uint64_t>(&(*well_ptr));
     }
     return well_ptr;
+}
+
+std::shared_ptr<InventoryEntity> buildInventory(std::shared_ptr<ResourceAllocator> allocator, const float &x, const float &y) {
+    auto inv_ptr = std::make_shared<InventoryEntity>();
+
+    if (auto pos_ptr = inv_ptr->getComponent<PositionComponent>()) {
+        pos_ptr->x = x;
+        pos_ptr->y = y;
+    }
+    if (auto spr_ptr = inv_ptr->getComponent<SpriteComponent>()) {
+        spr_ptr->sprite.setTexture(*allocator->loadTexture("../assets/textures/UI/inventory_background.png"));
+        spr_ptr->sprite.setTextureRect(sf::IntRect(0,0, spr_ptr->sprite.getTexture()->getSize().x, spr_ptr->sprite.getTexture()->getSize().y));
+        spr_ptr->sprite.setPosition(inv_ptr->getComponent<PositionComponent>()->x, inv_ptr->getComponent<PositionComponent>()->y);
+        spr_ptr->isVisible = true;
+    }
+    //  Velocity
+    if (auto velo_ptr = inv_ptr->getComponent<VelocityComponent>()) {
+        velo_ptr->xSpeed = 17.0f;
+        velo_ptr->ySpeed = 17.0f;
+        velo_ptr->moveAmount = 10.0f;
+    }
+    if (auto uid_ptr = inv_ptr->getComponent<UUIDComponent>()) {
+        uid_ptr->ID = reinterpret_cast<uint64_t>(&(*inv_ptr));
+    }
+    return inv_ptr;
+}
+
+std::shared_ptr<IconEntity> buildIcon(std::shared_ptr<ResourceAllocator> allocator, std::string texture_name, const float &x, const float &y) {
+    auto ico_ptr = std::make_shared<IconEntity>();
+
+    if (auto pos_ptr = ico_ptr->getComponent<PositionComponent>()) {
+        pos_ptr->x = x;
+        pos_ptr->y = y;
+    }
+    if (auto spr_ptr = ico_ptr->getComponent<SpriteComponent>()) {
+        spr_ptr->isVisible = true;
+        spr_ptr->sprite.setTexture(*allocator->loadTexture("../assets/textures/UI/icon/" + texture_name));
+        spr_ptr->sprite.setScale(0.8, 0.8);
+        spr_ptr->sprite.setPosition(ico_ptr->getComponent<PositionComponent>()->x, ico_ptr->getComponent<PositionComponent>()->y);
+    }
+
+    if (auto uid_ptr = ico_ptr->getComponent<UUIDComponent>()) {
+        uid_ptr->ID = reinterpret_cast<uint64_t>(&(*ico_ptr));
+    }
+    return ico_ptr;
+}
+
+std::shared_ptr<WeaponEntity> buildWeapon(std::shared_ptr<ResourceAllocator> allocator, std::string texture_name, const float &x, const float &y) {
+    auto wea_ptr = std::make_shared<WeaponEntity>();
+
+    if (auto pos_ptr = wea_ptr->getComponent<PositionComponent>()) {
+        pos_ptr->x = x;
+        pos_ptr->y = y;
+    }
+    if (auto spr_ptr = wea_ptr->getComponent<SpriteComponent>()) {
+        spr_ptr->isVisible = false;
+        spr_ptr->sprite.setTexture(*allocator->loadTexture("../assets/textures/weapons/" + texture_name));
+        spr_ptr->sprite.setPosition(x, y);
+        spr_ptr->sprite.setScale(0.7,0.7);
+        spr_ptr->sprite.setOrigin(spr_ptr->sprite.getTexture()->getSize().x/2, spr_ptr->sprite.getTexture()->getSize().x/4 * 5);
+    }
+    // if (auto col_ptr = wea_ptr->getComponent<CollisionComponent>()) {
+    //     col_ptr->bounds = wea_ptr->getComponent<SpriteComponent>()->sprite.getGlobalBounds();
+    // }
+    if (auto uid_ptr = wea_ptr->getComponent<UUIDComponent>()) {
+        uid_ptr->ID = reinterpret_cast<uint64_t>(&(*wea_ptr));
+    }
+
+    return wea_ptr;
 }

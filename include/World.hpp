@@ -32,15 +32,13 @@
 
 class World {
 public:
-    // Loading, parsing, storing etc. of tmx
-
     void initialize(std::weak_ptr<ResourceAllocator> allocator, std::weak_ptr<Player> p, std::string& game_name);
     void saveMapToTMX(const std::string& filePath);
-    // Other
     
+    void generateRandomChunk(sf::Vector2f pos);
+    //  Render
     void createChunkSprites(std::shared_ptr<ResourceAllocator> allocator);
     void render(sf::RenderWindow &ren);
-    void generateRandomChunk(sf::Vector2f pos);
 
 private:
     void createGrassTileSprite(unsigned int &ID, sf::Vector2f pos, ResourceAllocator& allocator);

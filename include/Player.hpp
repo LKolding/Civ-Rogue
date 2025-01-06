@@ -9,7 +9,6 @@
 #include "input.hpp"
 
 
-//  Basically only holds the playerView
 struct Player {
     static inline sf::View playerView;
 

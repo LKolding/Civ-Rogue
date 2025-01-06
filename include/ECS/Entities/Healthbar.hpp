@@ -33,6 +33,7 @@ public:
                 sf::IntRect textRect;
                 textRect = spr_ptr->sprite.getTextureRect();
                 textRect.left = x_offset;
+                textRect.top = spr_ptr->sprite.getTextureRect().height*4;
 
                 spr_ptr->sprite.setTextureRect(textRect);
 

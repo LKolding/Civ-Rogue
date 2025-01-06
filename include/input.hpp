@@ -9,6 +9,7 @@ public:
     std::map<sf::Keyboard::Key, bool> keyState;
     float mouseWheelScroll; // sf mouseScroll.delta
     InputManager();
+    void reset();
     void update(float dt);
 
 };

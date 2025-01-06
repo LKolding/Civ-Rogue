@@ -2,6 +2,7 @@
 #define _NINJA_ENTITY_
 
 #include "ECS/Entities/Entity.hpp"
+#include "ECS/Entities/Weapon.hpp"
 
 #include "ECS/Components/Components.hpp"
 
@@ -19,22 +20,13 @@ public:
         this->addComponent(std::make_shared<CollisionComponent>());
         this->addComponent(std::make_shared<SelectableComponent>());
         this->addComponent(std::make_shared<VelocityComponent>());
-        this->addComponent(std::make_shared<ObjectiveComponent>());
         this->addComponent(std::make_shared<UUIDComponent>());
         this->addComponent(std::make_shared<FlipComponent>());
+        this->addComponent(std::make_shared<InteractableComponent>());
     }
 
-    void update(float deltatime) {
-        if (this->hasComponent<ObjectiveComponent>() && this->getComponent<ObjectiveComponent>()->location) {
-            if (this->getComponent<ObjectiveComponent>()->location->x != 0 || (int)this->getComponent<ObjectiveComponent>()->location->y != 0) {
-                this->transitionState(NinjaStateComponent::WALK);
-            }
-            if (this->getComponent<ObjectiveComponent>()->location->x == 0 && this->getComponent<ObjectiveComponent>()->location->y == 0) {
-                this->transitionState(NinjaStateComponent::IDLE);
-            }
-        }
-
-    }
+    // behavior
+    void update(float deltatime) { }
 
     void transitionState(NinjaStateComponent::State state) {
         switch (state) {
@@ -61,6 +53,25 @@ public:
 
         }
     }
+
+    //  Performs a default/melee (low dmg) attack
+    void attack() {
+
+    }
+
+    //  Performs the default attack with the equipped weapon
+    void weapon_attack() {
+        if (auto weaponp = this->equippedWeapon.lock()) {
+            weaponp->perform_attack(this->getComponent<PositionComponent>());
+        } 
+    }
+
+    void setEquippedWeapon(std::shared_ptr<WeaponEntity> weapon) {
+        this->equippedWeapon = weapon;
+    }
+
+private:
+    std::weak_ptr<WeaponEntity> equippedWeapon;
 };
 
 #endif

@@ -18,16 +18,15 @@ public:
             if (auto entity = entity_p.lock()) {
                 if (!entity->hasComponent<LifetimeComponent>())
                     continue;
-                if (!entity->hasComponent<DeletableComponent>())
-                    continue;
-                // update
+
                 if (auto lft_ptr = entity->getComponent<LifetimeComponent>()) {
-                    if (lft_ptr->timeAlive >= lft_ptr->deathTime) {
-                        entity->getComponent<DeletableComponent>()->markedForDeletion = true;
+                    // check if entity is dead and has deletableComponent
+                    if (lft_ptr->timeAlive >= lft_ptr->deathTime && entity->hasComponent<DeletableComponent>()) {
+                        entity->getComponent<DeletableComponent>()->markedForDeletion = true; // mark for deletion
                         
-                    } else {
-                        entity->getComponent<LifetimeComponent>()->timeAlive += deltaTime;
-                    }
+                    } 
+                    // update timer
+                    entity->getComponent<LifetimeComponent>()->timeAlive += deltaTime;
                 }
             }
         }

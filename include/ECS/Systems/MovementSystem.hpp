@@ -33,10 +33,10 @@ public:
                     }
                     // Mark the texture as flipped if traveling left or right
                     if (velPtr->xDir != 0.0f && entity->hasComponent<FlipComponent>()) {
-                        if (velPtr->xDir == 1.0f) {
+                        if (velPtr->xDir > 0.0f) {
                             entity->getComponent<FlipComponent>()->isFlipped = false;
                         } else 
-                        if (velPtr->xDir == -1.0f){
+                        if (velPtr->xDir < 0.0f){
                             entity->getComponent<FlipComponent>()->isFlipped = true;
                         }
                     }

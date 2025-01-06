@@ -31,7 +31,7 @@ public:
 private:
     // holds pointers to pre-rendered chunk textures
     std::unordered_map<std::pair<float,float>, std::shared_ptr<sf::Texture>, hash_pair> chunksTextures;
-    std::unordered_map<std::string, std::shared_ptr<tmx::Tileset>> tilesets;
-    std::unordered_map<std::string,  std::shared_ptr<sf::Texture>> textures;
+    std::unordered_map<std::string,  std::shared_ptr<tmx::Tileset>> tilesets;
+    std::unordered_map<std::string,  std::shared_ptr<sf::Texture>>  textures;
 };
 #endif

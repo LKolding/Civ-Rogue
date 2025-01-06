@@ -112,10 +112,18 @@ void inline resolveCollision(std::shared_ptr<Entity> entityA, std::shared_ptr<En
     collisionB->bounds.top  = posB->y - (collisionB->bounds.height/2);
 }
 
+const float COLLISION_SYSTEM_DELAY = 0.001; 
 
 class CollisionSystem: public System {
 public:
     inline void update(float deltaTime, std::vector<std::weak_ptr<Entity>> entities) {
+        // timer logic
+        this->collisionDetectionTimer += deltaTime;
+        if (collisionDetectionTimer < COLLISION_SYSTEM_DELAY) 
+            return;
+        else 
+            this->collisionDetectionTimer = 0.0f;
+        // system logic
         for (auto& entity_p : entities) {
             if (auto entity = entity_p.lock()) {
                 // Check if the entity has collision component
@@ -143,5 +151,7 @@ public:
             }
         }
     }
+private:
+    float collisionDetectionTimer = 0.0f;
 };
 #endif

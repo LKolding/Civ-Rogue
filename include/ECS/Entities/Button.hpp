@@ -9,11 +9,11 @@
 
 class ButtonEntity : public Entity {
 public:
-
     ButtonEntity() {
         this->addComponent(std::make_shared<PositionComponent>());
         this->addComponent(std::make_shared<SpriteComponent>());
         this->addComponent(std::make_shared<CollisionComponent>());
+        this->addComponent(std::make_shared<UUIDComponent>());
     }
     inline void click() {
         std::cout << "CLICKED\n";

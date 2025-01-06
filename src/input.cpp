@@ -7,10 +7,24 @@ InputManager::InputManager() {
     this->keyState[sf::Keyboard::D] = false;
 
     this->keyState[sf::Keyboard::Escape] = false;
-    this->keyState[sf::Keyboard::Space] = false;
+    this->keyState[sf::Keyboard::Space]  = false;
 
-    this->mkeyState[sf::Mouse::Left] = false;
-    this-> mkeyState[sf::Mouse::Right] = false;
+    this->mkeyState[sf::Mouse::Left]  = false;
+    this->mkeyState[sf::Mouse::Right] = false;
+
+    this->mouseWheelScroll = 0.0f;
+}
+void InputManager::reset() {
+    this->keyState[sf::Keyboard::W] = false;
+    this->keyState[sf::Keyboard::A] = false;
+    this->keyState[sf::Keyboard::S] = false;
+    this->keyState[sf::Keyboard::D] = false;
+
+    this->keyState[sf::Keyboard::Escape] = false;
+    this->keyState[sf::Keyboard::Space]  = false;
+
+    this->mkeyState[sf::Mouse::Left]  = false;
+    this->mkeyState[sf::Mouse::Right] = false;
 
     this->mouseWheelScroll = 0.0f;
 }
@@ -19,15 +33,15 @@ void InputManager::update(float dt) {
     return;
 }
 
-// Returns false if Escape (or another exit key) was pressed
+// Returns false if Escape was pressed (or another exit event happened) 
 bool handle_event(
     sf::Event& event,
     std::shared_ptr<InputManager> input
     ) {
+    //input->reset();
     //  exit
     if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
         return false;
-    
     //  m btn pressed
     if (event.type == sf::Event::MouseButtonPressed) {
         if (event.mouseButton.button == sf::Mouse::Left) {

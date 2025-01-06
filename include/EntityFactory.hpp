@@ -16,6 +16,9 @@
 #include "ECS/Entities/Tree.hpp"
 #include "ECS/Entities/BluePointer.hpp"
 #include "ECS/Entities/Well.hpp"
+#include "ECS/Entities/UI/Inventory.hpp"
+#include "ECS/Entities/UI/Icon.hpp"
+#include "ECS/Entities/Weapon.hpp"
 
 #include "ECS/Entities/Animations/AxeChop.hpp"
 
@@ -39,4 +42,11 @@ std::shared_ptr<AxeChopEntity> buildAxeChop(std::shared_ptr<ResourceAllocator> a
 std::shared_ptr<BluePointerEntity> buildBluePointer(std::shared_ptr<ResourceAllocator> allocator, const float &x = 100, const float &y = 100);
 
 std::shared_ptr<MossyWellEntity> buildWell(std::shared_ptr<ResourceAllocator> allocator, const float &x = 100, const float &y = 100);
+
+std::shared_ptr<InventoryEntity> buildInventory(std::shared_ptr<ResourceAllocator> allocator, const float &x = 100, const float &y = 100);
+
+std::shared_ptr<IconEntity> buildIcon(std::shared_ptr<ResourceAllocator> allocator, std::string texture_name, const float &x = 100, const float &y = 100);
+
+std::shared_ptr<WeaponEntity> buildWeapon(std::shared_ptr<ResourceAllocator> allocator, std::string texture_name, const float &x = 100, const float &y = 100);
+
 #endif

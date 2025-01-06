@@ -236,7 +236,7 @@ void World::render(sf::RenderWindow &ren) {
             sf::Vector2f player_pos = player->playerView.getCenter();
             sf::Vector2i pos = getChunkCoords(player_pos);
             sf::Vector2i chunk_pos = getChunkCoords(sf::Vector2f(sprite->getPosition().x, sprite->getPosition().y));
-            if (pos == chunk_pos) //  uncomment this to only draw the chunk underneath the view
+            //if (pos == chunk_pos) //  uncomment this to only draw the chunk underneath the view
                 ren.draw(*sprite);
         }
 

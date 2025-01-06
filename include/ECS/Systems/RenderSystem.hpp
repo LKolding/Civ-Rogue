@@ -34,9 +34,8 @@ public:
         for (auto& entity_p : entities) {
             if (auto entity = entity_p.lock()) {
                 if (entity->hasComponent<SpriteComponent>()) {
-                    // Use getComponent and dereference the shared_ptr to access the underlying component
-                    auto spriteCompPtr = entity->getComponent<SpriteComponent>();
-                    if (spriteCompPtr) {
+                    if (auto spriteCompPtr = entity->getComponent<SpriteComponent>()) {
+                        // handle flip behavior
                         if (entity->hasComponent<FlipComponent>()) {
                             // flip texture
                             if (entity->getComponent<FlipComponent>()->isFlipped && !entity->getComponent<SpriteComponent>()->hasBeenFlipped) {

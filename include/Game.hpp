@@ -21,7 +21,6 @@
 #include "ECS/Systems/MovementSystem.hpp"
 #include "ECS/Systems/AnimationSystem.hpp"
 #include "ECS/Systems/CollisionSystem.hpp"
-#include "ECS/Systems/ObjectiveSystem.hpp"
 #include "ECS/Systems/LifetimeSystem.hpp"
 
 #include "ECS/Systems/RenderSystem.hpp"
@@ -31,90 +30,41 @@
 #include "EntityManager.hpp"
 #include "EntityFactory.hpp"
 
+#include "game_functions.hpp"
 
 
-void inline renderSelectionBox(sf::RenderWindow &ren) {
-    //  renders a rectangle on top of the tile that the cursor
-    //  is currently hovering above
-    sf::Vector2f worldCoords = ren.mapPixelToCoords(sf::Mouse::getPosition(ren));
-
-    sf::RectangleShape rect1(sf::Vector2f(TILE_WIDTH/2, TILE_HEIGHT/2));
-    
-    sf::Vector2f rectPos;
-    // offset position of rectangle based on chunk
-    rectPos.x = getChunkCoords(worldCoords).x * CHUNK_WIDTH * (TILE_WIDTH / 2);  
-    rectPos.y = getChunkCoords(worldCoords).y * CHUNK_HEIGHT * (TILE_HEIGHT / 2);
-    // offset position of rectangle based on tile (within chunk)
-    rectPos.x+= getTileIndex(worldCoords).x * (TILE_WIDTH / 2);
-    rectPos.y+= getTileIndex(worldCoords).y * (TILE_HEIGHT / 2);
-
-    rect1.setPosition(rectPos);
-    rect1.setOutlineColor(sf::Color::Black);
-    rect1.setFillColor(sf::Color::Transparent);
-    rect1.setOutlineThickness(1.5);
-    rect1.setScale(0.9f, 0.9f);
-
-    ren.draw(rect1);
-}
-
-bool inline isEntityHovered(sf::RenderWindow &ren, std::weak_ptr<Entity> entity_p) {
-    // Returns true if the entity's CollisionComponents boundingbox is currently
-    // below sf::Mouse::getPosition()
-    if (auto entity = entity_p.lock()) {
-        sf::Vector2f worldCoords = ren.mapPixelToCoords(sf::Mouse::getPosition(ren));
-        if (!entity->hasComponent<SelectableComponent>()) {
-            return false;
-        }
-        auto spr_ptr = entity->getComponent<SpriteComponent>();
-        if (spr_ptr->sprite.getGlobalBounds().contains(worldCoords.x, worldCoords.y)) {
-            return true;
+//  Handles a few mouse press detection behaviors and space bar to follow unit mechanic
+void inline performEventBehavior(sf::Event event, sf::RenderWindow &ren, std::shared_ptr<Player> player, EntityManager& entityManager, std::shared_ptr<ResourceAllocator> allocator) {
+    // Follow Entity that is being hovered on Spacebar
+    if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space) {
+        if (player->isFollowingUnit()) {
+            player->stopFollow();
+        } else {
+            followEntity(ren, player, entityManager.getAllEntities());
         }
     }
-    
-    return false;
-}
-
-void inline selectUnits(sf::RenderWindow &ren, std::shared_ptr<Player> player, std::vector<std::weak_ptr<Entity>> entities_p) {
-    for (auto entity_p : entities_p) {
-        if (auto entity = entity_p.lock()) {
-            if (entity->hasComponent<CollisionComponent>() && isEntityHovered(ren, entity) && entity->hasComponent<SelectableComponent>()) {
-            entity->getComponent<SelectableComponent>()->isSelected = true;
-            player->selectUnit(entity);
-            }
-
+    //  LEFT MOUSE BTN (select units / add unit to selected)
+    if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
+        const auto mouse_pos = sf::Vector2i(ren.mapPixelToCoords(sf::Mouse::getPosition(ren)).x, ren.mapPixelToCoords(sf::Mouse::getPosition(ren)).y);
+        selectUnits(ren, player, entityManager.getAllEntities());
+    }
+    // deselect units
+    else if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Right) {
+        const auto mouse_pos = sf::Vector2i(ren.mapPixelToCoords(sf::Mouse::getPosition(ren)).x, ren.mapPixelToCoords(sf::Mouse::getPosition(ren)).y);
+        bool someEntityIsBeingHovered = false;
+        // iterates through all entites and checks if any are currently being hovered
+        for (auto entity : entityManager.getAllEntities()) { 
+            if ((someEntityIsBeingHovered = isEntityHovered(ren, entity)))
+                break;
         }
-        
+        if (someEntityIsBeingHovered) {
+            deselectUnits(ren, player, entityManager.getAllEntities());
+            
+        } else {
+            entityManager.addEntity(buildBluePointer(allocator, mouse_pos.x, mouse_pos.y));
+        }
     }
 }
-
-void inline deselectUnits(sf::RenderWindow &ren, std::shared_ptr<Player> player, std::vector<std::weak_ptr<Entity>> entities_p) {
-    for (auto entity_p : entities_p) {
-        if (auto entity = entity_p.lock()) {
-            if (entity->hasComponent<CollisionComponent>() && isEntityHovered(ren, entity) && entity->hasComponent<SelectableComponent>()) {
-                entity->getComponent<SelectableComponent>()->isSelected = false;
-                player->deselectUnit(entity);
-            }
-        }
-        
-    }
-}
-
-void inline followEntity(sf::RenderWindow &ren, std::shared_ptr<Player> player, std::vector<std::weak_ptr<Entity>> entities_p) {
-    for (auto entity_p : entities_p) {
-        if (auto entity = entity_p.lock()) {
-            if (entity->hasComponent<CollisionComponent>() && isEntityHovered(ren, entity)) {
-                player->followUnit(entity);
-                return;
-            }
-
-        }
-        
-    }
-}
-
-struct GameState {
-    enum State{INGAME, MENU} state;
-};
 
 class Game {
 public:
@@ -122,8 +72,6 @@ public:
     Game();
 
 private:
-    GameState gameState;
-
     std::shared_ptr<ResourceAllocator> allocator;
     World world;
 
@@ -131,8 +79,6 @@ private:
 
     std::vector<std::unique_ptr<System>> systems;
     std::unique_ptr<RenderSystem> renderSystem;
-
-    std::vector<std::shared_ptr<Entity>> buttons_vectorp;
 
     EntityManager entityManager;
     std::shared_ptr<InputManager> inputManager;
