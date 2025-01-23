@@ -3,13 +3,12 @@
 
 #include <vector>
 
-#include "ECS/Systems/System.hpp"
 #include "ECS/Entities/Entity.hpp"
 
 
-class AnimationSystem: public System {
+class AnimationSystem {
 public:
-    inline void update(float deltaTime, std::vector<std::weak_ptr<Entity>> entities) override {
+    inline void update(float deltaTime, std::vector<std::weak_ptr<Entity>> entities) {
         for (auto& entity_p : entities) {
             // Check if the entity has both components
             if (auto entity = entity_p.lock()) {

@@ -17,13 +17,14 @@
 class ResourceAllocator {
 public:
     sf::Font default_font;
-    void initialize(); // inits font
+    ResourceAllocator(); // inits font
     // Load a texture; if it's already loaded, return a shared pointer to it
     std::shared_ptr<sf::Texture> loadTexture(const std::string& filename);
     sf::Vector2u getSizeOfTexture(std::string filename);
 
     sf::IntRect locateTexOnSheet(int ID, std::string filename);
 
+    void loadTilesetsFromTMX(std::string filepath);
     void addChunkTexturePointer(std::shared_ptr<sf::Texture> tex, std::pair<float,float>& pos);
     void addTileset(const tmx::Tileset &tileset);
     tmx::Tileset& getTileset(std::string name);

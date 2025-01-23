@@ -1,7 +1,21 @@
 #include "ResourceAllocator.hpp"
 
-void ResourceAllocator::initialize() {
+void ResourceAllocator::loadTilesetsFromTMX(std::string filepath) {
+    tmx::Map map;
+
+    if (!map.load(filepath)) {
+        throw std::runtime_error("Couldn't load. World is left uninitialized...");
+    }
+    // Extract tileset(s) from .tmx file
+    const auto& tilesets = map.getTilesets();
+    for(const auto& tileset : tilesets) {
+        this->addTileset(tileset);
+    }
+}
+
+ResourceAllocator::ResourceAllocator() {
     this->default_font.loadFromFile("../assets/fonts/BD_Cartoon_Shout.ttf");
+    loadTilesetsFromTMX("../assets/tmx/maps/tilesets.tmx");
 }
 
 std::shared_ptr<sf::Texture> ResourceAllocator::loadTexture(const std::string& filename) {

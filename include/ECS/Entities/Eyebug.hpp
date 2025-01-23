@@ -12,7 +12,6 @@ public:
         this->addComponent(std::make_shared<CollisionComponent>());
         this->addComponent(std::make_shared<VelocityComponent>());
         this->addComponent(std::make_shared<AnimationComponent>());
-        this->addComponent(std::make_shared<InteractableComponent>());
         this->addComponent(std::make_shared<UUIDComponent>());
     }
 

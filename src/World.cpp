@@ -17,7 +17,6 @@ void World::initialize(std::weak_ptr<ResourceAllocator> allocator, std::weak_ptr
         if (auto alloc = allocator.lock()) {
             alloc->addTileset(tileset);
         }
-        
     }
 
     this->loadMap(map);
@@ -87,7 +86,7 @@ void World::saveMapToTMX(const std::string& filePath) {
     dataNode.append_attribute("encoding") = "csv";
 
     // chunks
-    for (Chunk& chunk : this->chunks) {
+    for (tmx::TileLayer::Chunk& chunk : this->chunks) {
         // Create chunk node
         pugi::xml_node chunkNode = dataNode.append_child("chunk");
         chunkNode.append_attribute("x") = chunk.position.x;
@@ -96,7 +95,7 @@ void World::saveMapToTMX(const std::string& filePath) {
         chunkNode.append_attribute("height") = CHUNK_HEIGHT;
 
         std::ostringstream csvStream;
-        for (Tile& tile : chunk.background_tiles) {
+        for (tmx::TileLayer::Tile& tile : chunk.tiles) {
             csvStream << std::to_string(tile.ID) + ",";
         }
 
@@ -119,15 +118,14 @@ void World::saveMapToTMX(const std::string& filePath) {
 // pos argument is in amount of tiles. The tile to pixel
 // conversion happens in this function
 void World::generateRandomChunk(sf::Vector2f pos) {
-    Chunk tchunk;
-    tchunk.position.x = pos.x * CHUNK_WIDTH;
-    tchunk.position.y = pos.y * CHUNK_HEIGHT;
+    tmx::TileLayer::Chunk tchunk;
+    tchunk.position = tmx::Vector2i(pos.x, pos.y);
+    tchunk.size = tmx::Vector2i(CHUNK_WIDTH, CHUNK_HEIGHT);
 
     for (int i = 0; i<CHUNK_SIZE; i++) {
-        Tile ttile;
+        tmx::TileLayer::Tile ttile;
         ttile.ID = rand() % 30 + 1;
-        ttile.isWalkable = true;
-        tchunk.background_tiles[i] = ttile;
+        tchunk.tiles.push_back(ttile);
     }
     this->chunks.push_back(std::move(tchunk));
 }
@@ -166,54 +164,33 @@ Chunk processChunk(const tmx::TileLayer::Chunk& chunk, const tmx::Tileset& tiles
 //  Also tries to extract playerPosition
 //  object and update the playerView pos.
 void World::loadMap(tmx::Map& map) {
-    if (!map.isInfinite()) {
-        std::cout << "Maps of fixed sizes not supported.\n";
-        return;
-    }
-    const auto& layers = map.getLayers(); // get layers
-    const auto& tilesets = map.getTilesets();
+    const auto& layers = map.getLayers();     // get layers
 
-    for (const auto& layer : layers) {
-        auto layerType = layer->getType();
-        // Tile layer
-        if (layerType == tmx::Layer::Type::Tile) {
+    for (const auto& layer : layers) {        // iterate layers
+        switch (layer->getType()) {
+
+        case tmx::Layer::Type::Tile: {
             const auto& tileLayer = layer->getLayerAs<tmx::TileLayer>();
-            if (!map.isInfinite()) {
-                std::cout << "Map is not infinite.\n";
-                return;
-            }
-            if (tileLayer.getName() != "background") {
-                std::cout << "Unknown tilelayer.\n";
-                return;
-            }
-            //  Load background tilesheet
-            tmx::Tileset tileset(std::string("tmx/tsx/"));
-            for (auto& tempTileset : tilesets) {
-                if (tempTileset.getName() == "grass") {
-                    tileset = tempTileset;
-                }
-            }
             for (const auto& chunk : tileLayer.getChunks()) {   // iterate chunks
-                // Create new chunk struct directly in vector
-                this->chunks.push_back(processChunk(chunk, tileset));  
+                this->chunks.push_back(chunk);  
             }
+            break;
         }
-        // Object layer
-        else if (layerType == tmx::Layer::Type::Object) {
-            const auto& objectLayer = layer->getLayerAs<tmx::ObjectGroup>();
 
+        case tmx::Layer::Type::Object: {
+            const auto& objectLayer = layer->getLayerAs<tmx::ObjectGroup>();
             if (objectLayer.getName() == "objects") {
-                for (const auto& object : objectLayer.getObjects()) { // iterate objects
-                    if (!this->playerPtr.lock()) {
-                        continue;
-                    }
+                for (const auto& object : objectLayer.getObjects()) {  // iterate objects
                     if (object.getName() == "playerLocation") {
                         this->playerPtr.lock()->setPosition(object.getPosition().x, object.getPosition().y);
                     }
                 }
             }
-        } else {
-            std::cout << "Unknown layer type. \n";
+            break;
+        }
+            
+        default:
+            break;
         }
     }
 }
@@ -229,49 +206,11 @@ void World::createChunkSprites(std::shared_ptr<ResourceAllocator> allocator) {
     }
 }
 
-void World::render(sf::RenderWindow &ren) {
+void World::render(std::unique_ptr<sf::RenderWindow>& ren) {
     // render chunks
     for (auto& sprite : this->chunkSprites) {
-        if (auto player = this->playerPtr.lock()) {
-            sf::Vector2f player_pos = player->playerView.getCenter();
-            sf::Vector2i pos = getChunkCoords(player_pos);
-            sf::Vector2i chunk_pos = getChunkCoords(sf::Vector2f(sprite->getPosition().x, sprite->getPosition().y));
-            //if (pos == chunk_pos) //  uncomment this to only draw the chunk underneath the view
-                ren.draw(*sprite);
-        }
-
-    }
-
-    /*
-    // Set up the minimap view
-    sf::View minimapView;
-    
-    // Define the minimap's size and the area of the world it will cover
-    if (auto player = this->playerPtr.lock()) {
-        sf::FloatRect minimapRect(player->playerView.getCenter().x-256, player->playerView.getCenter().y-256, 1024, 1024);
-        minimapView.reset(minimapRect);
-    }
-
-    // Set the viewport: this defines where the minimap appears in the window
-    minimapView.setViewport(sf::FloatRect(0.75f, 0.75f, 0.3f, 0.3f));  // Bottom-right corner
-
-    // Optionally zoom out the minimap view to show a larger part of the world
-    //minimapView.zoom(0.25f);  // Zoom out to show more of the map
-
-    // Render the game world again with the minimap view
-    ren.setView(minimapView);
-    // render chunks
-    if (auto player = this->playerPtr.lock()) {
-        for (auto& sprite : this->chunkSprites) {
-        sf::Vector2f player_pos = player->playerView.getCenter();
-        sf::Vector2i pos = getChunkCoords(player_pos);
         sf::Vector2i chunk_pos = getChunkCoords(sf::Vector2f(sprite->getPosition().x, sprite->getPosition().y));
-        //if (pos == chunk_pos)
-            ren.draw(*sprite);
-        }
-        // Reset back to the main game view (if needed to render UI or other elements)
-        ren.setView(player->playerView);
-    }*/
-    
-    
+            ren->draw(*sprite);
+
+    }
 }

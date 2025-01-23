@@ -45,10 +45,6 @@ std::shared_ptr<NinjaEntity>  buildNinja(std::shared_ptr<ResourceAllocator> allo
         velo_ptr->ySpeed = 17.0f;
         velo_ptr->moveAmount = 10.0f;
     }
-    // Selectable
-    if (auto select_ptr = ninja_ptr->getComponent<SelectableComponent>()) {
-        select_ptr->isSelected = false;
-    }
     // UUID
     if (auto uuid_ptr = ninja_ptr->getComponent<UUIDComponent>()) {
         uuid_ptr->ID = reinterpret_cast<uint64_t>(&ninja_ptr);
@@ -56,10 +52,6 @@ std::shared_ptr<NinjaEntity>  buildNinja(std::shared_ptr<ResourceAllocator> allo
     // FlipComponent
     if (auto flip_ptr = ninja_ptr->getComponent<FlipComponent>()) {
         flip_ptr->isFlipped = false;
-    }
-    // InteractAble
-    if (auto int_ptr = ninja_ptr->getComponent<InteractableComponent>()) {
-        int_ptr->type = int_ptr->SELECTABLE;
     }
     return ninja_ptr;
 }
@@ -162,9 +154,6 @@ std::shared_ptr<EyeBugEntity> buildEyeBug(std::shared_ptr<ResourceAllocator> all
         ani_ptr->animationIndexMax = 96;
         
     }
-    if (auto int_ptr = eye_ptr->getComponent<InteractableComponent>()) {
-        int_ptr->type = int_ptr->ATTACKABLE;
-    }
     if (auto col_ptr = eye_ptr->getComponent<CollisionComponent>()) {
         col_ptr->bounds = eye_ptr->getComponent<SpriteComponent>()->sprite.getGlobalBounds();
     }
@@ -191,9 +180,6 @@ std::shared_ptr<TreeEntity>   buildTree(std::shared_ptr<ResourceAllocator> alloc
         spr_ptr->sprite.setTexture(*allocator->loadTexture("../assets/textures/tilesheets/TX Plant.png"));
         spr_ptr->sprite.setTextureRect(sf::IntRect(0,0, 128+32, 128+32));
         spr_ptr->sprite.setPosition(tre_ptr->getComponent<PositionComponent>()->x, tre_ptr->getComponent<PositionComponent>()->y);
-    }
-    if (auto int_ptr = tre_ptr->getComponent<InteractableComponent>()) {
-        int_ptr->type = int_ptr->FELLABLE;
     }
     if (auto hlt_ptr = tre_ptr->getComponent<HealthComponent>()) {
         hlt_ptr->currentHealth = 160;

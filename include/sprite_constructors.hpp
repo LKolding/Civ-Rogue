@@ -4,6 +4,8 @@
 #include <memory>
 // sfml
 #include <SFML/Graphics.hpp>
+//tmx
+#include <tmxlite/TileLayer.hpp>
 // my stuff
 #include "ResourceAllocator.hpp"
 #include "World.hpp"
@@ -11,7 +13,7 @@
 //  Chunks and tiles
 
 inline std::unique_ptr<sf::Sprite> createTileSprite(
-    Tile& tile,                 // TILE STRUCT
+    tmx::TileLayer::Tile& tile,                 // TILE STRUCT
     tmx::Tileset& tileset,      // TMX TILESET
     sf::Vector2f& pos,          // SPRITE POSITION
     ResourceAllocator& allocator
@@ -33,7 +35,7 @@ inline std::unique_ptr<sf::Sprite> createTileSprite(
 
 // creates a RenderTexture with all tiles drawn to it
 inline std::unique_ptr<sf::RenderTexture> createChunkTexture(
-    Chunk& chunk, 
+    tmx::TileLayer::Chunk& chunk, 
     tmx::Tileset& tileset,
     ResourceAllocator& allocator
     ) {
@@ -42,7 +44,7 @@ inline std::unique_ptr<sf::RenderTexture> createChunkTexture(
     rchunkTexture->create(CHUNK_HEIGHT*TILE_HEIGHT, CHUNK_WIDTH*TILE_WIDTH);
     // iterator vars (used for tilepos)
     sf::Vector2f tileCoords = {0,0}; 
-    for (Tile& tile : chunk.background_tiles) {
+    for (tmx::TileLayer::Tile& tile : chunk.tiles) {
         auto tileSprite = createTileSprite(
             tile, 
             tileset,
@@ -63,7 +65,7 @@ inline std::unique_ptr<sf::RenderTexture> createChunkTexture(
 }
 
 inline std::unique_ptr<sf::Sprite> createChunkSprite(
-    Chunk& chunk, 
+    tmx::TileLayer::Chunk& chunk, 
     tmx::Tileset& tileset,
     ResourceAllocator& allocator
 ) {
@@ -74,8 +76,8 @@ inline std::unique_ptr<sf::Sprite> createChunkSprite(
 
     // sprite position calculation
     sf::Vector2f spritePos;
-    spritePos.x = chunk.position.x * TILE_WIDTH;
-    spritePos.y = chunk.position.y * TILE_HEIGHT;
+    spritePos.x = chunk.position.x * (TILE_WIDTH * CHUNK_WIDTH);
+    spritePos.y = chunk.position.y * (TILE_HEIGHT * CHUNK_HEIGHT);
 
     auto pchunkSprite = std::make_unique<sf::Sprite>();
     pchunkSprite->setTexture(*pchunkTex);

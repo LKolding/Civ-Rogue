@@ -10,10 +10,8 @@ public:
     float mouseWheelScroll; // sf mouseScroll.delta
     InputManager();
     void reset();
-    void update(float dt);
+    void update(sf::Event& event);
 
 };
 
-// Returns false if Escape (or another exit key) was pressed
-bool handle_event(sf::Event& event, std::shared_ptr<InputManager> input);
 #endif

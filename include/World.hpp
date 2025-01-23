@@ -5,6 +5,7 @@
 #include <tmxlite/Layer.hpp>
 #include <tmxlite/TileLayer.hpp>
 #include <tmxlite/ObjectGroup.hpp>
+#include <tmxlite/Types.hpp>
 
 // pugi
 #include "../src/tmxlite/detail/pugixml.hpp"
@@ -38,15 +39,15 @@ public:
     void generateRandomChunk(sf::Vector2f pos);
     //  Render
     void createChunkSprites(std::shared_ptr<ResourceAllocator> allocator);
-    void render(sf::RenderWindow &ren);
+    void render(std::unique_ptr<sf::RenderWindow> &ren);
 
 private:
     void createGrassTileSprite(unsigned int &ID, sf::Vector2f pos, ResourceAllocator& allocator);
     void loadMap(tmx::Map& map);
-    // test stuff
+    
     std::vector<std::unique_ptr<sf::Sprite>> chunkSprites;
-    // chunk models
-    std::vector<Chunk> chunks;
+    
+    std::vector<tmx::TileLayer::Chunk> chunks;
 
     std::weak_ptr<Player> playerPtr;
 };

@@ -7,7 +7,6 @@
 #include "ECS/Components/Components.hpp"
 
 
-
 class NinjaEntity: public Entity {
 public:
 
@@ -18,17 +17,15 @@ public:
         this->addComponent(std::make_shared<HealthComponent>());
         this->addComponent(std::make_shared<NinjaStateComponent>());
         this->addComponent(std::make_shared<CollisionComponent>());
-        this->addComponent(std::make_shared<SelectableComponent>());
         this->addComponent(std::make_shared<VelocityComponent>());
         this->addComponent(std::make_shared<UUIDComponent>());
         this->addComponent(std::make_shared<FlipComponent>());
-        this->addComponent(std::make_shared<InteractableComponent>());
     }
 
     // behavior
-    void update(float deltatime) { }
+    inline void update(float deltatime) { }
 
-    void transitionState(NinjaStateComponent::State state) {
+    inline void transitionState(NinjaStateComponent::State state) {
         switch (state) {
             case NinjaStateComponent::IDLE:
                 this->getComponent<NinjaStateComponent>()->state = state;
@@ -54,19 +51,14 @@ public:
         }
     }
 
-    //  Performs a default/melee (low dmg) attack
-    void attack() {
-
-    }
-
     //  Performs the default attack with the equipped weapon
-    void weapon_attack() {
+    inline void weapon_attack(sf::Vector2f mouse_pos) {
         if (auto weaponp = this->equippedWeapon.lock()) {
-            weaponp->perform_attack(this->getComponent<PositionComponent>());
+            weaponp->perform_attack(this->getComponent<PositionComponent>(), mouse_pos);
         } 
     }
 
-    void setEquippedWeapon(std::shared_ptr<WeaponEntity> weapon) {
+    inline void setEquippedWeapon(std::shared_ptr<WeaponEntity> weapon) {
         this->equippedWeapon = weapon;
     }
 

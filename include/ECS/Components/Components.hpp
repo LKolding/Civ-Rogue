@@ -24,10 +24,6 @@ struct EyeBugStateComponent { enum State { IDLE } state; };
 
 struct NinjaStateComponent { enum State { IDLE, WALK, ACTIVE } state; };
 
-struct InteractableComponent { enum InteractionType { ATTACKABLE, MINEABLE, FELLABLE, SELECTABLE } type; };
-
-struct SelectableComponent { float isSelected; };
-
 struct CollisionComponent { sf::FloatRect bounds; };
 
 struct StaticCollisionComponent { sf::FloatRect bounds; };
@@ -38,6 +34,6 @@ struct UUIDComponent { uint64_t ID; };
 
 struct LifetimeComponent { float timeAlive; float deathTime; };
 
-struct WeaponComponent { int damage; float useTime; float dmgMultiplier; };
+struct WeaponComponent { int damage; float useTime; float dmgMultiplier; bool isAttacking; };
 
 #endif

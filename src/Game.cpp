@@ -1,6 +1,5 @@
 #include "Game.hpp"
 
-std::string GAME_PATH = "../assets/tmx/maps/grass_chunk.tmx";
 const sf::Time targetFrameTime = sf::seconds(1.f / 60); // 60 fps
 
 struct CommonValues { // starting view rect values
@@ -8,19 +7,25 @@ struct CommonValues { // starting view rect values
 } commonValues;
 
 Game::Game() {
+    this->inputManager = std::make_unique<InputManager>();
     this->allocator = std::make_shared<ResourceAllocator>();
-    this->allocator->initialize();
+
+    this->movementSystem = std::make_unique<MovementSystem>();
+    this->animationSystem= std::make_unique<AnimationSystem>();
+    this->collisionSystem= std::make_unique<CollisionSystem>();
+
     this->entityManager.setAllocator(this->allocator);
 
-    this->player = std::make_shared<Player>();
-    this->inputManager = std::make_shared<InputManager>();
+    this->renderWindow = std::make_unique<sf::RenderWindow>(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "klunkabadul");
 }
 
-void Game::initializeGame(std::string &gameFilePath, sf::RenderWindow &ren) {
+void Game::initializeGame() {
     this->player = std::make_shared<Player>();                  // init player
     this->player->playerView.reset(commonValues.startViewRect); // init player view
 
-    this->world.initialize(this->allocator, this->player, gameFilePath);
+    std::string gameFileName = "../saveGames/game1.tmx";
+    this->world.initialize(this->allocator, this->player, gameFileName);
+
     //  Chunks generation
     this->world.generateRandomChunk(sf::Vector2f(0,0)); // center 
 
@@ -37,12 +42,6 @@ void Game::initializeGame(std::string &gameFilePath, sf::RenderWindow &ren) {
 
     //  Generate sprites for all chunks
     this->world.createChunkSprites(this->allocator);
-
-    this->systems.push_back(std::make_unique<MovementSystem>());
-    this->systems.push_back(std::make_unique<CollisionSystem>());
-    this->systems.push_back(std::make_unique<AnimationSystem>());
-    this->systems.push_back(std::make_unique<LifetimeSystem>());
-
     
     auto weapon = buildWeapon(this->allocator, "Elven sword.png"); // Create weapon
     auto ninja  = buildNinja(allocator);    // Create ninja
@@ -57,59 +56,52 @@ void Game::initializeGame(std::string &gameFilePath, sf::RenderWindow &ren) {
 }
 
 void Game::updateSystems(float deltaTime) {
-    for (auto &system : this->systems) {
-        system->update(deltaTime, this->entityManager.getAllEntities());
-        
-    }
+    this->animationSystem->update(deltaTime, this->entityManager.getAllEntities());
+    this->collisionSystem->update(deltaTime, this->entityManager.getAllEntities());
+    this->movementSystem->update(deltaTime, this->entityManager.getAllEntities());
+    this->interactionSystem->update(this->entityManager.getAllEntities(), sf::Mouse::getPosition(*this->renderWindow));
 }
 //  Defines and declares sf::Event. Then polls and processes it
-void Game::handleEvent(sf::RenderWindow &ren) {
+void Game::handleEventQueue() {
     sf::Event event;
-    while (ren.pollEvent(event)) {
-        if (event.type == sf::Event::Closed)
-            ren.close();
 
-        performEventBehavior(event, ren, this->player, this->entityManager, this->allocator);
-        // Let handle_event function (defined in input.hpp) handle the event
-        if (!handle_event(event, this->inputManager)) {
-            //this->world.saveMapToTMX(GAME_PATH);
-            ren.close();
-        }
+    while (this->renderWindow->pollEvent(event)) {
+
+        if (event.type == sf::Event::Closed || (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape))
+            this->renderWindow->close();
+
+        else
+            //  Lets inputManager take care of catching which key 
+            //  event it is and update the lookup table accordingly
+            this->inputManager->update(event);
+
     }
 }
 
-void Game::gameLoop(sf::RenderWindow &ren) {
-    while (ren.isOpen()) {
-        // FPS
-        sf::Time frameStartTime = this->clock.restart();
-        float deltaTime = frameStartTime.asSeconds();
-        // Set playerView
-        ren.setView(this->player->playerView);
+void Game::gameLoop() {
+    sf::Vector2f mousePos;
+    while (this->renderWindow->isOpen()) {
+        // 1.  Frame Start: Calculate deltaTime
+        sf::Time frameStartTime = clock.restart();
+        const float deltaTime = frameStartTime.asSeconds();
 
-        // Handle sf::Event
-        this->handleEvent(ren);
-        // Update input
-        this->inputManager->update(deltaTime);
-        // Update player
-        this->player->update(deltaTime, this->inputManager);
-        // Interation check
-        auto mousePos = ren.mapPixelToCoords(sf::Mouse::getPosition(ren));
-        checkForInteraction(mousePos, this->entityManager);
+        // 2.  Input
+        this->handleEventQueue();                                // Handle SFML event(s)
 
-        this->updateSystems(deltaTime);         // updates all systems (but renderSystem)
-        this->entityManager.update(deltaTime);
+        // 3.  Update systems, player & entities
+        this->updateSystems(deltaTime);                          // Update ECS systems
+        this->player->update(deltaTime, inputManager, mousePos); // Update player logic
+        this->entityManager.update(deltaTime);                   // Update all entities
 
-        //  Render
-        ren.setView(this->player->playerView);
-        ren.clear();
-        this->render(ren);                      // calls renderSystem.update()
-        // UI
-        ren.setView(ren.getDefaultView());      // change view
-        this->renderUI(ren);                    // render ui
-        ren.setView(this->player->playerView);  // reset view
+        // 4.  Render
+        this->renderWindow->clear();
 
-        ren.display();
-        // calculate fps
+        this->renderWindow->setView(player->playerView);         // Set view for world rendering
+        this->render();                                          // Render all game tiles & entities
+        
+        this->renderWindow->display();
+
+        // 5.  FPS mangement
         sf::Time frameTime = clock.getElapsedTime();
         if (frameTime < targetFrameTime) {
             sf::sleep(targetFrameTime - frameTime);
@@ -117,36 +109,17 @@ void Game::gameLoop(sf::RenderWindow &ren) {
     }
 }
 
-void Game::render(sf::RenderWindow &ren) {
-    this->world.render(ren); // render all background tiles (all chunks)
-    this->renderSystem->update(ren, this->entityManager.getAllEntities());
-    // draw icons (technicially part of UI, but gets drawn in relation to global mouse_pos)
-    for (auto &entp : this->entityManager.getAllIconEntities()) {
-        if (auto ent = entp.lock()) {
-            if (!ent->getComponent<SpriteComponent>()->isVisible)
-                continue;
-            ren.draw(ent->getComponent<SpriteComponent>()->sprite);
-        }
-    }
+void Game::render() {
+    this->world.render(this->renderWindow); // render all background tiles (all chunks)
+    this->renderSystem->update(this->renderWindow, this->entityManager.getAllEntities());
     
 }
 
-void Game::renderUI(sf::RenderWindow &ren) {
-    for (auto &entp : this->entityManager.getAllUIEntities()) {
-        if (auto ent = entp.lock()) {
-            if (!ent->getComponent<SpriteComponent>()->isVisible)
-                continue;
-            ren.draw(ent->getComponent<SpriteComponent>()->sprite);
-        }
-    }
-}
 
-// public methods
 int Game::run() {
-    sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "klunkabadul");
 
-    this->initializeGame(GAME_PATH, window);
-    this->gameLoop(window);
+    this->initializeGame();
+    this->gameLoop();  // keeps running until RenderWindow "window" closes
 
     return 0;
 

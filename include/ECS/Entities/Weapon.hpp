@@ -15,22 +15,27 @@ public:
     }
 
     void update(float dt) { 
-        this->getComponent<SpriteComponent>()->sprite.setPosition(this->getComponent<PositionComponent>()->x, this->getComponent<PositionComponent>()->y);
-    
+        
     }
 
-    void perform_attack(std::shared_ptr<PositionComponent> entityPosition) {
+    void perform_attack(std::shared_ptr<PositionComponent> entityPosition, sf::Vector2f mouse_pos) {
         //  Perform the sword swing (transform the sword sprite)
-        auto weaponSprite  = this->getComponent<SpriteComponent>();
-        auto swordPosition = this->getComponent<PositionComponent>(); // for syncing with sprite.pos
+        auto weaponSprite    = this->getComponent<SpriteComponent>();
+        auto swordPosition   = this->getComponent<PositionComponent>(); // for syncing with sprite.pos
         auto weaponComponent = this->getComponent<WeaponComponent>();
 
         if (!weaponSprite->isVisible)
             weaponSprite->isVisible = true;
 
-        //  Set sword's position to player's position and rotate around the handle
+        if (weaponComponent->isAttacking)
+            return;
+        else
+            weaponComponent->isAttacking = true;
+
+        //  Set the weapon's position to entityPosition argument
         swordPosition->x = entityPosition->x;
         swordPosition->y = entityPosition->y;
+
         if (weaponSprite->sprite.getRotation() < 250)
             weaponSprite->sprite.setRotation(0);
 

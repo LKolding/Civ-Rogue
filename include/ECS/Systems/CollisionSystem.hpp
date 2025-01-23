@@ -3,7 +3,6 @@
 
 #include <iostream>
 
-#include "ECS/Systems/System.hpp"
 #include "ECS/Entities/Entity.hpp"
 #include "ECS/Components/Components.hpp"
 
@@ -114,7 +113,7 @@ void inline resolveCollision(std::shared_ptr<Entity> entityA, std::shared_ptr<En
 
 const float COLLISION_SYSTEM_DELAY = 0.001; 
 
-class CollisionSystem: public System {
+class CollisionSystem {
 public:
     inline void update(float deltaTime, std::vector<std::weak_ptr<Entity>> entities) {
         // timer logic

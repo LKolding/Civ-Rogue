@@ -10,7 +10,6 @@ public:
         this->addComponent(std::make_shared<SpriteComponent>());
         this->addComponent(std::make_shared<StaticCollisionComponent>());
         this->addComponent(std::make_shared<UUIDComponent>());
-        this->addComponent(std::make_shared<InteractableComponent>());
     }
     void update(float dt) override { return; }
 };
