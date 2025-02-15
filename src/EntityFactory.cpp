@@ -40,10 +40,10 @@ std::shared_ptr<NinjaEntity>  buildNinja(std::shared_ptr<ResourceAllocator> allo
         colli_ptr->bounds.left = ninja_ptr->getComponent<PositionComponent>()->x - (colli_ptr->bounds.width/2);
     }
     //  Velocity
-    if (auto velo_ptr = ninja_ptr->getComponent<VelocityComponent>()) {
-        velo_ptr->xSpeed = 17.0f;
-        velo_ptr->ySpeed = 17.0f;
-        velo_ptr->moveAmount = 10.0f;
+    if (auto velo_ptr = ninja_ptr->getComponent<MovementComponent>()) {
+        velo_ptr->speed = 180.0f;
+        velo_ptr->xDir = 0.0f;
+        velo_ptr->yDir = 0.0f;
     }
     // UUID
     if (auto uuid_ptr = ninja_ptr->getComponent<UUIDComponent>()) {
@@ -52,6 +52,9 @@ std::shared_ptr<NinjaEntity>  buildNinja(std::shared_ptr<ResourceAllocator> allo
     // FlipComponent
     if (auto flip_ptr = ninja_ptr->getComponent<FlipComponent>()) {
         flip_ptr->isFlipped = false;
+    }
+    if (auto follow_ptr = ninja_ptr->getComponent<FollowComponent>()) {
+        follow_ptr->isFollowing = false;
     }
     return ninja_ptr;
 }
@@ -71,40 +74,12 @@ std::shared_ptr<HealthbarEntity> buildHealthbar(std::shared_ptr<ResourceAllocato
         spr_ptr->sprite.setTextureRect(sf::IntRect(0,0,tileset.getTileSize().x, tileset.getTileSize().y));
         spr_ptr->sprite.setOrigin(spr_ptr->sprite.getTextureRect().left/2, spr_ptr->sprite.getTextureRect().top/2);
     }
-    // DeletableComponent
-    if (auto del_ptr = hp_ptr->getComponent<DeletableComponent>()) {
-        del_ptr->markedForDeletion = false;
-    }
     // UUID
     if (auto uid_ptr = hp_ptr->getComponent<UUIDComponent>()) {
         uid_ptr->ID = reinterpret_cast<uint64_t>(&hp_ptr);
     }
 
     return hp_ptr;
-}
-// Border
-std::shared_ptr<BorderEntity> buildBorder(std::shared_ptr<ResourceAllocator> allocator, const float &x, const float &y) {
-    auto bor_ptr = std::make_shared<BorderEntity>();
-
-    if (auto pos_ptr = bor_ptr->getComponent<PositionComponent>()) {
-        pos_ptr->x = x;
-        pos_ptr->y = y;
-    }
-    if (auto spr_ptr = bor_ptr->getComponent<SpriteComponent>()) {
-        spr_ptr->sprite.setTexture(*allocator->loadTexture("../assets/effects/shadow_realm_border.png"));
-        spr_ptr->sprite.setTextureRect(sf::IntRect(sf::Vector2i(00,0), sf::Vector2i(256, 32)));
-    }
-    if (auto ani_ptr = bor_ptr->getComponent<AnimationComponent>()) {
-        ani_ptr->frameTime = 0.1f;
-        ani_ptr->animationIndex = 0;
-        ani_ptr->elapsedTime = 0.0f;
-        ani_ptr->animationIndexMax = 5;
-        
-    }
-    if (auto uid_ptr = bor_ptr->getComponent<UUIDComponent>()) {
-        uid_ptr->ID = reinterpret_cast<uint64_t>(&bor_ptr);
-    }
-    return bor_ptr;
 }
 // BUtton
 std::shared_ptr<ButtonEntity> buildButton(std::shared_ptr<ResourceAllocator> allocator, const float &x, const float &y) {
@@ -129,43 +104,6 @@ std::shared_ptr<ButtonEntity> buildButton(std::shared_ptr<ResourceAllocator> all
         uid_ptr->ID = reinterpret_cast<uint64_t>(&(*btn_ptr));
     }
     return btn_ptr;
-}
-
-std::shared_ptr<EyeBugEntity> buildEyeBug(std::shared_ptr<ResourceAllocator> allocator, const float &x, const float &y) {
-    auto eye_ptr = std::make_shared<EyeBugEntity>();
-
-    if (auto pos_ptr = eye_ptr->getComponent<PositionComponent>()) {
-        pos_ptr->x = x;
-        pos_ptr->y = y;
-    }
-    if (auto spr_ptr = eye_ptr->getComponent<SpriteComponent>()) {
-        spr_ptr->sprite.setTexture(*allocator->loadTexture("../assets/textures/characters/eyebug.png"));
-        spr_ptr->sprite.setTextureRect(sf::IntRect(sf::Vector2i(0,0), sf::Vector2i(32, 32)));
-        spr_ptr->sprite.setOrigin(sf::Vector2f(32/2, 32/2));
-    }
-    if (auto hlt_ptr = eye_ptr->getComponent<HealthComponent>()) {
-        hlt_ptr->currentHealth = 30;
-        hlt_ptr->maxHealth = 40;
-    }
-    if (auto ani_ptr = eye_ptr->getComponent<AnimationComponent>()) {
-        ani_ptr->animationIndex = 0;
-        ani_ptr->elapsedTime = 0.0f;
-        ani_ptr->frameTime = 0.1;
-        ani_ptr->animationIndexMax = 96;
-        
-    }
-    if (auto col_ptr = eye_ptr->getComponent<CollisionComponent>()) {
-        col_ptr->bounds = eye_ptr->getComponent<SpriteComponent>()->sprite.getGlobalBounds();
-    }
-    if (auto uid_ptr = eye_ptr->getComponent<UUIDComponent>()) {
-        uid_ptr->ID = reinterpret_cast<uint64_t>(&eye_ptr);
-    }
-    if (auto vel_ptr = eye_ptr->getComponent<VelocityComponent>()) {
-        vel_ptr->xSpeed = 17.0f;
-        vel_ptr->ySpeed = 17.0f;
-        vel_ptr->moveAmount = 2.0f;
-    }
-    return eye_ptr;
 }
 
 std::shared_ptr<TreeEntity>   buildTree(std::shared_ptr<ResourceAllocator> allocator, const float &x, const float &y) {
@@ -225,13 +163,6 @@ std::shared_ptr<BluePointerEntity> buildBluePointer(std::shared_ptr<ResourceAllo
         spr_ptr->sprite.setOrigin(sf::Vector2f(32/2, 32/2));
         spr_ptr->sprite.setPosition(x, y-20);
     }
-    if (auto del_ptr = ptr_ptr->getComponent<DeletableComponent>()) {
-        del_ptr->markedForDeletion = false;
-    }
-    if (auto lft_ptr = ptr_ptr->getComponent<LifetimeComponent>()) {
-        lft_ptr->timeAlive = 0.0f;
-        lft_ptr->deathTime = 2.0f;
-    }
     if ( auto pos_ptr = ptr_ptr->getComponent<PositionComponent>()) {
         pos_ptr->x = ptr_ptr->getComponent<SpriteComponent>()->sprite.getPosition().x;
         pos_ptr->y = ptr_ptr->getComponent<SpriteComponent>()->sprite.getPosition().y;
@@ -268,31 +199,6 @@ std::shared_ptr<MossyWellEntity> buildWell(std::shared_ptr<ResourceAllocator> al
         uid_ptr->ID = reinterpret_cast<uint64_t>(&(*well_ptr));
     }
     return well_ptr;
-}
-
-std::shared_ptr<InventoryEntity> buildInventory(std::shared_ptr<ResourceAllocator> allocator, const float &x, const float &y) {
-    auto inv_ptr = std::make_shared<InventoryEntity>();
-
-    if (auto pos_ptr = inv_ptr->getComponent<PositionComponent>()) {
-        pos_ptr->x = x;
-        pos_ptr->y = y;
-    }
-    if (auto spr_ptr = inv_ptr->getComponent<SpriteComponent>()) {
-        spr_ptr->sprite.setTexture(*allocator->loadTexture("../assets/textures/UI/inventory_background.png"));
-        spr_ptr->sprite.setTextureRect(sf::IntRect(0,0, spr_ptr->sprite.getTexture()->getSize().x, spr_ptr->sprite.getTexture()->getSize().y));
-        spr_ptr->sprite.setPosition(inv_ptr->getComponent<PositionComponent>()->x, inv_ptr->getComponent<PositionComponent>()->y);
-        spr_ptr->isVisible = true;
-    }
-    //  Velocity
-    if (auto velo_ptr = inv_ptr->getComponent<VelocityComponent>()) {
-        velo_ptr->xSpeed = 17.0f;
-        velo_ptr->ySpeed = 17.0f;
-        velo_ptr->moveAmount = 10.0f;
-    }
-    if (auto uid_ptr = inv_ptr->getComponent<UUIDComponent>()) {
-        uid_ptr->ID = reinterpret_cast<uint64_t>(&(*inv_ptr));
-    }
-    return inv_ptr;
 }
 
 std::shared_ptr<IconEntity> buildIcon(std::shared_ptr<ResourceAllocator> allocator, std::string texture_name, const float &x, const float &y) {

@@ -10,8 +10,6 @@ class BluePointerEntity: public Entity {
         this->addComponent(std::make_shared<PositionComponent>());
         this->addComponent(std::make_shared<SpriteComponent>());
         this->addComponent(std::make_shared<UUIDComponent>());
-        this->addComponent(std::make_shared<LifetimeComponent>());
-        this->addComponent(std::make_shared<DeletableComponent>());
         this->addComponent(std::make_shared<AnimationComponent>());
     }
 

@@ -28,7 +28,7 @@ public:
 
   //  virtual function implementation
   void execute(Entity& receiver) const override {
-    if (receiver.hasComponent<PositionComponent>() && receiver.hasComponent<VelocityComponent>()) {
+    if (receiver.hasComponent<PositionComponent>() && receiver.hasComponent<MovementComponent>()) {
       return;
     }
   }

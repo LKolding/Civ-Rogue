@@ -4,13 +4,7 @@
 #include <SFML/Graphics.hpp>  // for Sprite
 struct PositionComponent { float x, y; };
 
-struct VelocityComponent { 
-    // constant values
-    float xSpeed, ySpeed;
-    float moveAmount; // amount in pixels
-    // variables
-    float xDir, yDir; 
-};
+struct MovementComponent {float speed; float xDir, yDir; };
 
 struct SpriteComponent { sf::Sprite sprite; bool hasBeenFlipped = false; bool isVisible = true; };
 //  when entities are walking left or right (flips the texture)
@@ -28,12 +22,10 @@ struct CollisionComponent { sf::FloatRect bounds; };
 
 struct StaticCollisionComponent { sf::FloatRect bounds; };
 
-struct DeletableComponent { bool markedForDeletion; };
-
 struct UUIDComponent { uint64_t ID; };
 
-struct LifetimeComponent { float timeAlive; float deathTime; };
+struct WeaponComponent { int damage; float dmgMultiplier; float useTime; float elapsedTime; bool isAttacking; };
 
-struct WeaponComponent { int damage; float useTime; float dmgMultiplier; bool isAttacking; };
+struct FollowComponent { bool isFollowing; };
 
 #endif

@@ -17,7 +17,7 @@
 #include "World.hpp"
 
 // ecs
-#include "ECS/Systems/MovementSystem.hpp"
+#include "ECS/Systems/VelocitySystem.hpp"
 #include "ECS/Systems/AnimationSystem.hpp"
 #include "ECS/Systems/CollisionSystem.hpp"
 #include "ECS/Systems/InteractionSystem.hpp"
@@ -28,6 +28,7 @@
 #include "EntityFactory.hpp"
 
 #include "game_functions.hpp"
+#include "TextDraw.hpp"
   
 
 class Game {
@@ -46,11 +47,11 @@ private:
     std::unique_ptr<sf::RenderWindow> renderWindow;
     sf::Clock clock;
 
-    std::unique_ptr<MovementSystem> movementSystem;
-    std::unique_ptr<AnimationSystem>animationSystem;
-    std::unique_ptr<CollisionSystem>collisionSystem;
-    std::unique_ptr<InteractionSystem>interactionSystem;
-    std::unique_ptr<RenderSystem>   renderSystem;
+    VelocitySystem    movementSystem;
+    AnimationSystem   animationSystem;
+    CollisionSystem   collisionSystem;
+    InteractionSystem interactionSystem;
+    RenderSystem      renderSystem;
 
     std::unique_ptr<InputManager> inputManager;
 

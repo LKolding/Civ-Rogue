@@ -77,7 +77,7 @@ inline std::unique_ptr<sf::Sprite> createChunkSprite(
     // sprite position calculation
     sf::Vector2f spritePos;
     spritePos.x = chunk.position.x * (TILE_WIDTH * CHUNK_WIDTH);
-    spritePos.y = chunk.position.y * (TILE_HEIGHT * CHUNK_HEIGHT);
+    spritePos.y = chunk.position.y * (TILE_HEIGHT* CHUNK_HEIGHT);
 
     auto pchunkSprite = std::make_unique<sf::Sprite>();
     pchunkSprite->setTexture(*pchunkTex);

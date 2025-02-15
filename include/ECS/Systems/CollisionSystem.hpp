@@ -122,27 +122,26 @@ public:
             return;
         else 
             this->collisionDetectionTimer = 0.0f;
+        
         // system logic
         for (auto& entity_p : entities) {
             if (auto entity = entity_p.lock()) {
-                // Check if the entity has collision component
-                if (entity->hasComponent<CollisionComponent>()) {
-                    // Use getComponent and dereference the shared_ptr to access the underlying component
-                    auto colPtr = entity->getComponent<CollisionComponent>();
-                    // Make sure the pointer is valid
-                    if (colPtr) {
-                        for (auto& entity_check_p : entities) {
-                            if (auto entity_check = entity_check_p.lock()) {
-                                // Static collision box check and resolve
-                                if (entity_check->hasComponent<StaticCollisionComponent>()) {
-                                    if (checkCollision(colPtr->bounds, entity_check->getComponent<StaticCollisionComponent>()->bounds))
-                                        resolveStaticCollision(entity, entity_check);
-                                } 
-                                else // normal collision detection and resolve
-                                if (entity_check->hasComponent<CollisionComponent>()) {
-                                    if (checkCollision(colPtr->bounds, entity_check->getComponent<CollisionComponent>()->bounds))
-                                        resolveCollision(entity, entity_check);
-                                }
+                if (auto colPtr = entity->getComponent<CollisionComponent>()) {
+                    // update collision box to position component
+                    colPtr->bounds.left = entity->getComponent<PositionComponent>()->x;
+                    colPtr->bounds.top  = entity->getComponent<PositionComponent>()->y;
+                    
+                    for (auto& entity_check_p : entities) {
+                        if (auto entity_check = entity_check_p.lock()) {
+                            // Static collision box check and resolve
+                            if (entity_check->hasComponent<StaticCollisionComponent>()) {
+                                if (checkCollision(colPtr->bounds, entity_check->getComponent<StaticCollisionComponent>()->bounds))
+                                    resolveStaticCollision(entity, entity_check);
+                            } 
+                            else // normal collision detection and resolve
+                            if (entity_check->hasComponent<CollisionComponent>()) {
+                                if (checkCollision(colPtr->bounds, entity_check->getComponent<CollisionComponent>()->bounds))
+                                    resolveCollision(entity, entity_check);
                             }
                         }
                     }

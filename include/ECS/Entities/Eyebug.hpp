@@ -10,7 +10,7 @@ public:
         this->addComponent(std::make_shared<SpriteComponent>());
         this->addComponent(std::make_shared<HealthComponent>());
         this->addComponent(std::make_shared<CollisionComponent>());
-        this->addComponent(std::make_shared<VelocityComponent>());
+        this->addComponent(std::make_shared<MovementComponent>());
         this->addComponent(std::make_shared<AnimationComponent>());
         this->addComponent(std::make_shared<UUIDComponent>());
     }

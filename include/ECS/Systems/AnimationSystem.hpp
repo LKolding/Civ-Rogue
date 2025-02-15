@@ -18,7 +18,7 @@ public:
                 textRect.left = textRect.width * entity->getComponent<AnimationComponent>()->animationIndex;         // update frame index     (x)
 
                 if (entity->hasComponent<NinjaStateComponent>()) {
-                    textRect.top = textRect.height * entity->getComponent<NinjaStateComponent>()->state;               // update animation index (y)
+                    textRect.top = textRect.height * entity->getComponent<NinjaStateComponent>()->state;             // update animation index (y)
                 }
 
                 entity->getComponent<SpriteComponent>()->sprite.setTextureRect(textRect);                // set

@@ -13,18 +13,15 @@ class EntityManager {
 public:
 
     void setAllocator(std::shared_ptr<ResourceAllocator> allocator);
+    
     void addEntity(std::shared_ptr<Entity> entity);
     void killEntity(uint64_t ID);
-
-    // pos = pos of chunk
-    void createBorderEntities(std::shared_ptr<ResourceAllocator> allocator, sf::Vector2i pos); 
 
     void renderArrow(sf::Vector2f mouse);
     void update(float deltaTime);
 
     // Returns a vector containing weak_ptr to _all_ entities
     std::vector<std::weak_ptr<Entity>> getAllEntities();
-    std::weak_ptr<Entity> getEntity(uint64_t ID);
 
     std::vector<std::weak_ptr<Entity>> getAllUIEntities();
     std::vector<std::weak_ptr<Entity>> getAllIconEntities();

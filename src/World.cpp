@@ -130,9 +130,9 @@ void World::generateRandomChunk(sf::Vector2f pos) {
     this->chunks.push_back(std::move(tchunk));
 }
 
-//  processes tmx::tile and returns a tileModel
+//  processes tmx::tile and returns a tile struct
 //  generated from the tmx::tile information
-Tile   processTile(const tmx::TileLayer::Tile& tile,   const tmx::Tileset& tileset) {
+Tile processTile(const tmx::TileLayer::Tile& tile,   const tmx::Tileset& tileset) {
     Tile tileModel;
     tileModel.ID = tile.ID;
     
@@ -181,9 +181,7 @@ void World::loadMap(tmx::Map& map) {
             const auto& objectLayer = layer->getLayerAs<tmx::ObjectGroup>();
             if (objectLayer.getName() == "objects") {
                 for (const auto& object : objectLayer.getObjects()) {  // iterate objects
-                    if (object.getName() == "playerLocation") {
-                        this->playerPtr.lock()->setPosition(object.getPosition().x, object.getPosition().y);
-                    }
+                
                 }
             }
             break;
@@ -200,17 +198,16 @@ void World::createChunkSprites(std::shared_ptr<ResourceAllocator> allocator) {
         this->chunkSprites.push_back(createChunkSprite(
             chunk,
             allocator->getTileset("grass"),
-            *allocator // TODO: MAKE ALL USE WEAK PTR INSTEAD OF SHARED_PTR
+            *allocator
             )
         );
     }
 }
 
-void World::render(std::unique_ptr<sf::RenderWindow>& ren) {
+void World::render(std::unique_ptr<sf::RenderWindow>& ren) {    
     // render chunks
     for (auto& sprite : this->chunkSprites) {
-        sf::Vector2i chunk_pos = getChunkCoords(sf::Vector2f(sprite->getPosition().x, sprite->getPosition().y));
-            ren->draw(*sprite);
+        ren->draw(*sprite);
 
     }
 }

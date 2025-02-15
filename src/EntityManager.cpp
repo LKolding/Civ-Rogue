@@ -55,52 +55,10 @@ void EntityManager::renderArrow(sf::Vector2f mouse) {
     this->addEntity(buildBluePointer(this->allocator_p, mouse.x, mouse.y));
 }
 
-void EntityManager::createBorderEntities(std::shared_ptr<ResourceAllocator> allocator, sf::Vector2i pos) {
-    auto topBorder1 = buildBorder(allocator, pos.x, pos.y+10);
-    topBorder1->getComponent<SpriteComponent>()->sprite.scale(1.0f, -1.0);
-    auto topBorder2 = buildBorder(allocator, 256, pos.y+10);
-    topBorder2->getComponent<SpriteComponent>()->sprite.scale(1.0f, -1.0);
-
-    auto botBorder1 = buildBorder(allocator, pos.x, pos.y+15*32);
-    auto botBorder2 = buildBorder(allocator, 256, pos.y+15*32);
-
-    this->entities.push_back(std::move(topBorder1));
-    this->entities.push_back(std::move(topBorder2));
-    this->entities.push_back(std::move(botBorder1));
-    this->entities.push_back(std::move(botBorder2));
-    
-    auto lefBorder1 = buildBorder(allocator, pos.x, pos.y);
-    lefBorder1->getComponent<SpriteComponent>()->sprite.setRotation(90);  
-    auto lefBorder2 = buildBorder(allocator, pos.x, pos.y+240);
-    lefBorder2->getComponent<SpriteComponent>()->sprite.setRotation(90);  
-
-    this->entities.push_back(std::move(lefBorder1));
-    this->entities.push_back(std::move(lefBorder2));
-}
-
+// Updates all entities
 void EntityManager::update(float deltaTime) {
-    std::vector<uint64_t> entitiesToBeDeleted;
-
-    //  Add entities (if marked) to deletion tracker vector 
-    for (auto& ent : this->entities) {
-        if (!ent) { continue; }
-
-        if (ent->hasComponent<DeletableComponent>()) {
-            if (ent->getComponent<DeletableComponent>()->markedForDeletion) {
-                // add UUID of entity to list of entities marked for destruction
-                entitiesToBeDeleted.push_back(ent->getComponent<UUIDComponent>()->ID); 
-            }
-        }
-        ent->update(deltaTime);  // update entity
-        
-    }
-
-    // Properly delete entities that are marked for destruction
-    if (entitiesToBeDeleted.size() > 0) {
-        for (int i = 0; i < entitiesToBeDeleted.size(); ++i) {
-            this->killEntity(entitiesToBeDeleted[i]);
-        }
-        entitiesToBeDeleted.clear();
+    for (auto &ent : this->entities) {
+        ent->update(deltaTime);
     }
 }
 
@@ -112,11 +70,4 @@ std::vector<std::weak_ptr<Entity>> EntityManager::getAllEntities() {
     }
 
     return entities_vector;
-}
-
-
-//  The parameter ID is the same as UUIDComponent ID member
-//  and it meant to be used in junction with said value
-std::weak_ptr<Entity> EntityManager::getEntity(uint64_t ID) {
-    return this->mappedEntities[ID];
 }

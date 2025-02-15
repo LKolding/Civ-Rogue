@@ -5,8 +5,7 @@
 // my stuff
 #include "constants.h"
 
-// Chunk (& tile) definition
-// TODO: Move to sperate file
+
 struct Tile {
     unsigned int ID;
     bool isWalkable;

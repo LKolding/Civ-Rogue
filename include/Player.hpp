@@ -6,14 +6,17 @@
 #include "ECS/Entities/Entity.hpp"
 #include "ECS/Entities/Ninja.hpp"
 
+#include "constants.h"
 #include "input.hpp"
 
 
 struct Player {
-    static inline sf::View playerView;
-    static inline sf::Vector2f m_mouse_pos;
+public:
+    sf::View playerView;
 
-    void update(float deltaTime, std::unique_ptr<InputManager>& inputManager, sf::Vector2f mouse_pos);
+    Player();
+
+    void update(float deltaTime, std::unique_ptr<InputManager>& inputManager);
     // x and y simply indicate direction, and should be of
     // value 1.0, 0.0 or -1.0
     void move(float x, float y, float dt);
@@ -25,16 +28,18 @@ struct Player {
 
     void deselectUnit(std::shared_ptr<Entity> &entity);
 
-    void followUnit(std::shared_ptr<Entity>& entity);
+    void followUnit(std::shared_ptr<Entity> entity);
     void stopFollow();
     bool isFollowingUnit();
 
 private:
-    static inline sf::Vector2f pos;
  
-    static inline std::weak_ptr<Entity> entityp;
-    const static inline float moveSpeed = 400.0f; // View panning speed
-    void updateView();
+    std::shared_ptr<Entity> entityp;
+    const float moveSpeed = 400.0f; // View panning speed
+    const int viewMinX = 1920/4;    // View minimum X length
+    const int viewMaxX = 1920/2;    // View maximum X length
+    const int viewMinY = 1080/4;    // View minimum Y length
+    const int viewMaxY = 1080/2;    // View maximum Y length
 
 };
 #endif

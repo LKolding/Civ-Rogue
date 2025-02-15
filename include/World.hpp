@@ -47,7 +47,7 @@ private:
     
     std::vector<std::unique_ptr<sf::Sprite>> chunkSprites;
     
-    std::vector<tmx::TileLayer::Chunk> chunks;
+    std::vector<tmx::TileLayer::Chunk> chunks;  // tmxlite format
 
     std::weak_ptr<Player> playerPtr;
 };

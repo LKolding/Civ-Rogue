@@ -1,0 +1,27 @@
+#ifndef _WORLD_GEN_
+#define _WORLD_GEN_
+
+/*
+tiles:
+0-31  grass texture sheet
+
+32-63 
+
+*/
+
+#include <Types.hpp>
+
+
+struct Tile {
+    uint16_t ID;
+};
+
+struct Chunk {
+    
+};
+
+// 
+
+
+
+#endif

@@ -10,7 +10,7 @@ public:
         this->addComponent(std::make_shared<PositionComponent>());
         this->addComponent(std::make_shared<SpriteComponent>());
         this->addComponent(std::make_shared<UUIDComponent>());
-        this->addComponent(std::make_shared<VelocityComponent>());
+        this->addComponent(std::make_shared<MovementComponent>());
     }
 
     void update(float dt) {return;};
