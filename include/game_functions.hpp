@@ -9,21 +9,20 @@
 #include "constants.h"
 
 #include "Player.hpp"
-#include "EntityManager.hpp"
+#include "ECS/EntityManager.hpp"
 
-#include "ECS/Entities/Entity.hpp"
 #include "ECS/Components/Components.hpp"
 
 
-bool inline isEntityHovered(std::unique_ptr<sf::RenderWindow>& ren, std::weak_ptr<Entity> entity_p) {
-    if (auto entity = entity_p.lock()) {
-        sf::Vector2f worldCoords = ren->mapPixelToCoords(sf::Mouse::getPosition(*ren));
-        auto spr_ptr = entity->getComponent<SpriteComponent>();
-        if (spr_ptr->sprite.getGlobalBounds().contains(worldCoords.x, worldCoords.y)) {
-            return true;
-        }
-    }
-    return false;
-}
+// bool inline isEntityHovered(std::unique_ptr<sf::RenderWindow>& ren, std::weak_ptr<Entity> entity_p) {
+//     if (auto entity = entity_p.lock()) {
+//         sf::Vector2f worldCoords = ren->mapPixelToCoords(sf::Mouse::getPosition(*ren));
+//         auto spr_ptr = entity->getComponent<SpriteComponent>();
+//         // if (spr_ptr->sprite.getGlobalBounds().contains(worldCoords.x, worldCoords.y)) {
+//         //     return true;
+//         // }
+//     }
+//     return false;
+// }
 
 #endif

@@ -2,26 +2,59 @@
 #define _RENDER_SYSTEM_
 
 #include <memory>
+#include <typeindex>
 
 #include <SFML/Graphics.hpp>
 
-#include "ECS/Entities/Entity.hpp"
 #include "ECS/Components/Components.hpp"
+#include "ECS/EntityManager.hpp"
+#include "ECS/ComponentManager.hpp"
 
 
 #define DRAW_COLLISION_BOX false
 
-sf::FloatRect inline getBoundingBox(std::shared_ptr<Entity>& ent) {
-    if (ent->hasComponent<CollisionComponent>()) {
-        return ent->getComponent<CollisionComponent>()->bounds;
-    } else {
-        return ent->getComponent<StaticCollisionComponent>()->bounds;
-    }
-}
 
 class RenderSystem {
 public:
-    inline void update(std::unique_ptr<sf::RenderWindow>& ren, std::vector<std::weak_ptr<Entity>> entities) {
+    inline void update(std::unique_ptr<sf::RenderWindow>& renderWindow, std::shared_ptr<ResourceAllocator>& allocator, EntityManager& em, ComponentManager& cm) {
+        for (auto& ent : em.getAllEntities()) {
+            if ( cm.getComponent<PositionComponent>(ent) && cm.getComponent<SpriteComponent>(ent) ) {
+                PositionComponent* cposition = cm.getComponent<PositionComponent>(ent);
+                SpriteComponent* csprite = cm.getComponent<SpriteComponent>(ent);
+
+                // Sprite to be drawn
+                sf::Sprite sprite(*allocator->loadTexture(csprite->texturePath));
+                sprite.setOrigin(csprite->origin); // Necessary ?
+                sprite.setTextureRect(csprite->textureRectangle);
+                
+                // FLIP BEHAVIOR
+                if ( cm.getComponent<FlipComponent>(ent)) {
+                    FlipComponent* flip = cm.getComponent<FlipComponent>(ent);
+                    // Flip
+                    if (flip->isFlipped && !csprite->hasBeenFlipped) {
+                        sprite.setScale(sf::Vector2f(-1.0f, 1.0f));
+                        csprite->hasBeenFlipped = true;
+
+                    }
+                    // Un-flip
+                    if (!flip->isFlipped && csprite->hasBeenFlipped) {
+                        sprite.setScale(sf::Vector2f(1.0f, 1.0f));
+                        csprite->hasBeenFlipped = false;
+
+                    }
+                }
+
+                // Draw sprite
+                if (csprite->isVisible) {
+                    renderWindow->draw(sprite);
+                }
+                // Draw hitbox TODO
+
+            }
+        }
+    }
+    /*
+    inline void update2(std::unique_ptr<sf::RenderWindow>& ren, std::vector<std::weak_ptr<Entity>> entities) {
         for (auto& entity_p : entities) {
             if (auto entity = entity_p.lock()) {
                 //  Make sure the sprite position is
@@ -75,7 +108,7 @@ public:
                 }           
             }
         }
-    }
+    }*/
 };
 
 #endif

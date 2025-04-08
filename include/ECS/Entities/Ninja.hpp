@@ -1,14 +1,10 @@
 #ifndef _NINJA_ENTITY_
 #define _NINJA_ENTITY_
 
-#include "ECS/Entities/Entity.hpp"
-#include "ECS/Entities/Weapon.hpp"
-
 #include "ECS/Components/Components.hpp"
 
-#include <iostream>
 
-class NinjaEntity: public Entity {
+class NinjaEntity {
 public:
 
     NinjaEntity() {
@@ -24,7 +20,7 @@ public:
         this->addComponent(std::make_shared<FollowComponent>());
     }
 
-    // behavior
+    // behavior TODO: remove and make a proper system to manage this instead
     inline void update(float deltatime) { 
         if (auto position = this->getComponent<MovementComponent>()) {
             if (position->xDir != 0.0f || position->yDir != 0.0f) {
@@ -35,17 +31,7 @@ public:
         }
      }
 
-    //  Performs the default attack with the equipped weapon
-    inline void weapon_attack(sf::Vector2i mouse_pos) {
-        if (auto weaponp = this->equippedWeapon.lock()) {
-            weaponp->perform_attack(this->getComponent<PositionComponent>(), mouse_pos);
-        } 
-    }
-
-    inline void setEquippedWeapon(std::shared_ptr<WeaponEntity> weapon) {
-        this->equippedWeapon = weapon;
-    }
-
+    // TODO: Refactor all this logic into a dedicated system managing ALL states of ALL entities
     inline void transitionState(NinjaStateComponent::State state) {
         switch (state) {
             case NinjaStateComponent::IDLE:

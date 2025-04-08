@@ -12,4 +12,7 @@
 #define CHUNK_HEIGHT 16                     // Size in (amount of) tiles
 #define CHUNK_SIZE CHUNK_WIDTH*CHUNK_HEIGHT // Size in (amount of) tiles
 
+//  ENTITY_ID
+#define EntityID uint32_t
+
 #endif

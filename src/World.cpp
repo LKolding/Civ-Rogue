@@ -208,6 +208,5 @@ void World::render(std::unique_ptr<sf::RenderWindow>& ren) {
     // render chunks
     for (auto& sprite : this->chunkSprites) {
         ren->draw(*sprite);
-
     }
 }

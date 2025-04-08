@@ -16,15 +16,16 @@
 #include "Player.hpp"
 #include "World.hpp"
 
-// ecs
-#include "ECS/Systems/VelocitySystem.hpp"
+// // ecs
+// #include "ECS/Systems/VelocitySystem.hpp"
+// #include "ECS/Systems/CollisionSystem.hpp"
 #include "ECS/Systems/AnimationSystem.hpp"
-#include "ECS/Systems/CollisionSystem.hpp"
-#include "ECS/Systems/InteractionSystem.hpp"
+#include "ECS/Systems/CursorSystem.hpp"
 
 #include "ECS/Systems/RenderSystem.hpp"
 
-#include "EntityManager.hpp"
+#include "ECS/EntityManager.hpp"
+#include "ECS/ComponentManager.hpp"
 #include "EntityFactory.hpp"
 
 #include "game_functions.hpp"
@@ -39,19 +40,21 @@ public:
 
 private:
     std::shared_ptr<ResourceAllocator> allocator;
-
-    World world;
-    EntityManager entityManager;
     std::shared_ptr<Player> player;
 
     std::unique_ptr<sf::RenderWindow> renderWindow;
     sf::Clock clock;
 
-    VelocitySystem    movementSystem;
-    AnimationSystem   animationSystem;
-    CollisionSystem   collisionSystem;
-    InteractionSystem interactionSystem;
-    RenderSystem      renderSystem;
+    World world;
+    EntityManager entityManager;
+    ComponentManager componentManager;
+
+    // VelocitySystem    movementSystem;
+    AnimationSystem animationSystem;
+    // CollisionSystem   collisionSystem;
+    CursorSystem cursorSystem;
+
+    RenderSystem renderSystem;
 
     std::unique_ptr<InputManager> inputManager;
 

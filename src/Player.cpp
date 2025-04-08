@@ -43,46 +43,33 @@ void Player::update(float deltaTime, std::unique_ptr<InputManager>& inputManager
     inputManager->mouseWheelScroll = 0.0f;
 
     //  If following entity (make entity move w/ WASD and attack w/ m click)
-    if (this->entityp) {
-        this->playerView.setCenter(
-            sf::Vector2f(
-                this->entityp->getComponent<PositionComponent>()->x, 
-                this->entityp->getComponent<PositionComponent>()->y)
-                );
+    // if (this->entityp) {
+    //     this->playerView.setCenter(
+    //         sf::Vector2f(
+    //             this->entityp->getComponent<PositionComponent>()->x, 
+    //             this->entityp->getComponent<PositionComponent>()->y)
+    //             );
 
-        const auto& movementPtr = this->entityp->getComponent<MovementComponent>();
-        if (movementPtr->xDir != moveX || movementPtr->yDir != moveY) {
-            // update X and Y velocity/direction
-            movementPtr->xDir = moveX;
-            movementPtr->yDir = moveY;
-        }
+    //     const auto& movementPtr = this->entityp->getComponent<MovementComponent>();
+    //     if (movementPtr->xDir != moveX || movementPtr->yDir != moveY) {
+    //         // update X and Y velocity/direction
+    //         movementPtr->xDir = moveX;
+    //         movementPtr->yDir = moveY;
+    //     }
         
-        if (lmclick) {
-            std::static_pointer_cast<NinjaEntity>(this->entityp)->weapon_attack(sf::Mouse::getPosition());
-        }
-        
-    } else {  //  if not following entity
+    // } else {  //  if not following entity
         if (moveX != 0.0f || moveY != 0.0f )
             this->move(moveX, moveY, deltaTime);  // update view
 
-    }
-}
-
-void Player::followUnit(std::shared_ptr<Entity> entity) {
-    this->entityp = entity;
-    this->entityp->getComponent<FollowComponent>()->isFollowing = true;
+    // }
 }
 
 void Player::stopFollow() {
-    auto moveComp = this->entityp->getComponent<MovementComponent>();
-    moveComp->xDir = 0.0f;
-    moveComp->yDir = 0.0f;
-    this->entityp->getComponent<FollowComponent>()->isFollowing = false;
-    this->entityp = nullptr;
+    this->entityID = 0;
 }
 
 bool Player::isFollowingUnit() {
-    if (this->entityp)
+    if (this->entityID != 0)
         return true;
     else
         return false;

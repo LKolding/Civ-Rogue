@@ -3,8 +3,7 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "ECS/Entities/Entity.hpp"
-#include "ECS/Entities/Ninja.hpp"
+#include "ECS/EntityManager.hpp"  // for EntityID
 
 #include "constants.h"
 #include "input.hpp"
@@ -24,17 +23,16 @@ public:
     void setPosition(float x = 0, float y = 0);
     sf::Vector2f getPosition();
 
-    void selectUnit(std::shared_ptr<Entity> &entity);
+    void selectUnit(EntityID id);
 
-    void deselectUnit(std::shared_ptr<Entity> &entity);
+    void deselectUnit();
 
-    void followUnit(std::shared_ptr<Entity> entity);
     void stopFollow();
     bool isFollowingUnit();
 
 private:
  
-    std::shared_ptr<Entity> entityp;
+    EntityID entityID; // entity to follow
     const float moveSpeed = 400.0f; // View panning speed
     const int viewMinX = 1920/4;    // View minimum X length
     const int viewMaxX = 1920/2;    // View maximum X length
