@@ -3,8 +3,12 @@
 
 // sfml
 #include <SFML/Graphics.hpp>
+// imgui
+#include "imgui.h"
+#include "imgui-SFML.h"
 // system
 #include <vector>
+#include <memory>
 // my stuff
 
 // helpers and InputManager
@@ -18,11 +22,11 @@
 
 // // ecs
 // #include "ECS/Systems/VelocitySystem.hpp"
-// #include "ECS/Systems/CollisionSystem.hpp"
+#include "ECS/Systems/CollisionSystem.hpp"
 #include "ECS/Systems/AnimationSystem.hpp"
 #include "ECS/Systems/CursorSystem.hpp"
-
 #include "ECS/Systems/RenderSystem.hpp"
+#include "ECS/Systems/ViewpanSystem.hpp"
 
 #include "ECS/EntityManager.hpp"
 #include "ECS/ComponentManager.hpp"
@@ -39,6 +43,8 @@ public:
     Game();
 
 private:
+    std::vector<EntityID> hoveringEntities;  // all entities that are currently being hovered
+
     std::shared_ptr<ResourceAllocator> allocator;
     std::shared_ptr<Player> player;
 
@@ -51,10 +57,10 @@ private:
 
     // VelocitySystem    movementSystem;
     AnimationSystem animationSystem;
-    // CollisionSystem   collisionSystem;
+    CollisionSystem   collisionSystem;
     CursorSystem cursorSystem;
-
     RenderSystem renderSystem;
+    ViewpanSystem viewpanSystem;
 
     std::unique_ptr<InputManager> inputManager;
 

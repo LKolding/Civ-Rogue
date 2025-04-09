@@ -3,18 +3,23 @@
 
 #include <iostream>
 
-#include "ECS/Entities/Entity.hpp"
+#include "ECS/EntityManager.hpp"
+#include "ECS/ComponentManager.hpp"
 #include "ECS/Components/Components.hpp"
 
+// SYstem responsible for checking for and handling collisions
+// It handles both static and non-static bodies, but checks only
+// for collisions from moving bodies (if that makes sense?)
 
+// Calculation functions
 bool inline checkCollision(const sf::FloatRect& a, const sf::FloatRect& b) {
     //  AABB (axis-aligned bounding box) collision detection
-    return (a.left < b.left  + b.width  &&
-            a.left + a.width > b.left   &&
-            a.top  < b.top   + b.height &&
-            a.top  + a.height> b.top );
+    return (a.position.x < b.position.x  + b.size.x  &&
+            a.position.x + a.size.x > b.position.x   &&
+            a.position.y  < b.position.y   + b.size.y &&
+            a.position.y  + a.size.y > b.position.y );
 }
-
+/*
 void inline resolveStaticCollision(std::shared_ptr<Entity> entityA, std::shared_ptr<Entity> entityB) {
     // First, determine which entity has the StaticCollisionComponent and which has the CollisionComponent
     std::shared_ptr<StaticCollisionComponent> staticCollision;
@@ -64,88 +69,89 @@ void inline resolveStaticCollision(std::shared_ptr<Entity> entityA, std::shared_
     dynamicCollision->bounds.left = dynamicPosition->x - (dynamicCollision->bounds.width /2);
     dynamicCollision->bounds.top  = dynamicPosition->y - (dynamicCollision->bounds.height/2);
 }
-
-void inline resolveCollision(std::shared_ptr<Entity> entityA, std::shared_ptr<Entity> entityB) {
-    // Get shared_ptr to components
-    auto collisionA = entityA->getComponent<CollisionComponent>();
-    auto collisionB = entityB->getComponent<CollisionComponent>();
-    auto posA = entityA->getComponent<PositionComponent>();
-    auto posB = entityB->getComponent<PositionComponent>();
-
+*/
+void inline resolveCollision(PositionComponent& positionA, PositionComponent& positionB, BoundsComponent& collisionA, BoundsComponent& collisionB) {
     // Calculate the overlap on both the x and y axes
-    float overlapX = std::min(collisionA->bounds.left + collisionA->bounds.width, collisionB->bounds.left + collisionB->bounds.width) -
-                     std::max(collisionA->bounds.left, collisionB->bounds.left);
+    float overlapX = std::min(collisionA.bounds.position.x + collisionA.bounds.size.x, collisionB.bounds.position.x + collisionB.bounds.size.x) -
+                     std::max(collisionA.bounds.position.x, collisionB.bounds.position.x);
 
-    float overlapY = std::min(collisionA->bounds.top + collisionA->bounds.height, collisionB->bounds.top + collisionB->bounds.height) -
-                     std::max(collisionA->bounds.top, collisionB->bounds.top);
+    float overlapY = std::min(collisionA.bounds.position.y + collisionA.bounds.size.y, collisionB.bounds.position.y + collisionB.bounds.size.y) -
+                     std::max(collisionA.bounds.position.y, collisionB.bounds.position.y);
 
     // Move the entities apart along the axis with the smallest overlap
     if (overlapX < overlapY) {
         // Separate along the x-axis
-        if (collisionA->bounds.left < collisionB->bounds.left) {
+        if (collisionA.bounds.position.x < collisionB.bounds.position.x) {
             // Move entityA to the left, entityB to the right
-            posA->x -= overlapX / 2;
-            posB->x += overlapX / 2;
+            positionA.x -= overlapX / 2;
+            positionB.x += overlapX / 2;
         } else {
             // Move entityA to the right, entityB to the left
-            posA->x += overlapX / 2;
-            posB->x -= overlapX / 2;
+            positionA.x += overlapX / 2;
+            positionB.x -= overlapX / 2;
         }
     } else {
         // Separate along the y-axis
-        if (collisionA->bounds.top < collisionB->bounds.top) {
+        if (collisionA.bounds.position.y < collisionB.bounds.position.y) {
             // Move entityA up, entityB down
-            posA->y -= overlapY / 2;
-            posB->y += overlapY / 2;
+            positionA.y -= overlapY / 2;
+            positionB.y += overlapY / 2;
         } else {
             // Move entityA down, entityB up
-            posA->y += overlapY / 2;
-            posB->y -= overlapY / 2;
+            positionA.y += overlapY / 2;
+            positionB.y -= overlapY / 2;
         }
     }
 
     // Update collision box positions based on new entity positions
-    collisionA->bounds.left = posA->x - (collisionA->bounds.width /2);
-    collisionA->bounds.top  = posA->y - (collisionA->bounds.height/2);
-    collisionB->bounds.left = posB->x - (collisionB->bounds.width /2);
-    collisionB->bounds.top  = posB->y - (collisionB->bounds.height/2);
+    collisionA.bounds.position.x = positionA.x - (collisionA.bounds.size.x/2);
+    collisionA.bounds.position.y = positionA.y - (collisionA.bounds.size.y/2);
+    collisionB.bounds.position.x = positionB.x - (collisionB.bounds.size.x/2);
+    collisionB.bounds.position.y = positionB.y - (collisionB.bounds.size.y/2);
 }
 
 const float COLLISION_SYSTEM_DELAY = 0.001; 
 
 class CollisionSystem {
 public:
-    inline void update(float deltaTime, std::vector<std::weak_ptr<Entity>> entities) {
+    inline void update(float dt, EntityManager& em, ComponentManager& cm) {
         // timer logic
-        this->collisionDetectionTimer += deltaTime;
+        this->collisionDetectionTimer += dt;
         if (collisionDetectionTimer < COLLISION_SYSTEM_DELAY) 
             return;
-        else 
+        else
             this->collisionDetectionTimer = 0.0f;
-        
-        // system logic
-        for (auto& entity_p : entities) {
-            if (auto entity = entity_p.lock()) {
-                if (auto colPtr = entity->getComponent<CollisionComponent>()) {
-                    // update collision box to position component
-                    colPtr->bounds.left = entity->getComponent<PositionComponent>()->x;
-                    colPtr->bounds.top  = entity->getComponent<PositionComponent>()->y;
-                    
-                    for (auto& entity_check_p : entities) {
-                        if (auto entity_check = entity_check_p.lock()) {
-                            // Static collision box check and resolve
-                            if (entity_check->hasComponent<StaticCollisionComponent>()) {
-                                if (checkCollision(colPtr->bounds, entity_check->getComponent<StaticCollisionComponent>()->bounds))
-                                    resolveStaticCollision(entity, entity_check);
-                            } 
-                            else // normal collision detection and resolve
-                            if (entity_check->hasComponent<CollisionComponent>()) {
-                                if (checkCollision(colPtr->bounds, entity_check->getComponent<CollisionComponent>()->bounds))
-                                    resolveCollision(entity, entity_check);
-                            }
-                        }
+
+        for (auto ent : em.getAllEntities()) {
+            if (!cm.getComponent<CollisionComponent>(ent) | cm.getComponent<CollisionComponent>(ent)->isStaticBody)
+                continue; // skip if no collision component or static body
+            
+            for (auto ent2 : em.getAllEntities()) {
+                if (ent == ent2) // skip if check against itself
+                    continue;
+
+                if (!cm.getComponent<CollisionComponent>(ent2))
+                    continue; // skip if no collision component
+
+                // pointers to the first and the other body
+                BoundsComponent *bounds2 = cm.getComponent<BoundsComponent>(ent2);
+                BoundsComponent *pbounds1 = cm.getComponent<BoundsComponent>(ent);
+
+                // Collision checks
+                if (checkCollision(pbounds1->bounds, bounds2->bounds)) {
+                    // If bounds2 == static body
+                    if ( cm.getComponent<CollisionComponent>(ent2)->isStaticBody) {
+                        //resolveStaticCollision( );
+                        continue;
                     }
-                }
+                    // Else, resolve collision in normal manner
+                    resolveCollision(
+                        *cm.getComponent<PositionComponent>(ent),
+                        *cm.getComponent<PositionComponent>(ent2),
+                        *cm.getComponent<BoundsComponent>(ent),
+                        *cm.getComponent<BoundsComponent>(ent2)
+                    );       
+                };
             }
         }
     }

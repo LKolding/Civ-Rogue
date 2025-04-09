@@ -14,7 +14,9 @@ void ResourceAllocator::loadTilesetsFromTMX(std::string filepath) {
 }
 
 ResourceAllocator::ResourceAllocator() {
-    this->default_font.loadFromFile("../assets/fonts/BD_Cartoon_Shout.ttf");
+    if (!this->default_font.openFromFile("../assets/fonts/BD_Cartoon_Shout.ttf"))
+        printf("[Error] Couldn't load font\n");
+
     loadTilesetsFromTMX("../assets/tmx/maps/tilesets.tmx");
 }
 
@@ -44,14 +46,14 @@ sf::IntRect ResourceAllocator::locateTexOnSheet(int tileID, std::string filename
     sf::Vector2u sheet_size = this->getSizeOfTexture(filename);
     const int xTilesAmount = sheet_size.x / TILE_WIDTH;
     
-    loc.width  = TILE_WIDTH;
-    loc.height = TILE_HEIGHT;
+    loc.size.x  = TILE_WIDTH;
+    loc.size.y = TILE_HEIGHT;
     
     int row  = 1 + (tileID / xTilesAmount);
     int tile = 1 + (tileID % xTilesAmount);
     
-    loc.left = (TILE_WIDTH * tile);
-    loc.top  = (TILE_HEIGHT * row);
+    loc.position.x  = (TILE_WIDTH * tile);
+    loc.position.y  = (TILE_HEIGHT * row);
     
     return loc;
 }

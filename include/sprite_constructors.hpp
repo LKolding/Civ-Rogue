@@ -19,7 +19,7 @@ inline std::unique_ptr<sf::Sprite> createTileSprite(
     ResourceAllocator& allocator
     ) {
     // Tile sprite
-    auto ptileSprite = std::make_unique<sf::Sprite>(); 
+    auto ptileSprite = std::make_unique<sf::Sprite>(*allocator.loadTexture("../assets/textures/tilesheets/TX Tileset Grass.png")); 
     // Tileset tile
     const tmx::Tileset::Tile* tileset_tile = tileset.getTile(tile.ID);
     // extract size and position
@@ -27,8 +27,8 @@ inline std::unique_ptr<sf::Sprite> createTileSprite(
     tmx::Vector2u image_size = tileset_tile->imageSize;
     // update sprite
     ptileSprite->setPosition(pos);
-    ptileSprite->setTexture(*allocator.loadTexture("../assets/textures/tilesheets/TX Tileset Grass.png"));
-    ptileSprite->setTextureRect(sf::IntRect(tmx_texture_rect.x, tmx_texture_rect.y, image_size.x, image_size.y));
+    //ptileSprite->setTexture();
+    ptileSprite->setTextureRect({{(int)tmx_texture_rect.x, (int)tmx_texture_rect.y}, {(int)image_size.x, (int)image_size.y}}); // weird hack, but it works
     // return sprite
     return ptileSprite;
 }
@@ -41,7 +41,8 @@ inline std::unique_ptr<sf::RenderTexture> createChunkTexture(
     ) {
     // init RenderTexture
     auto rchunkTexture = std::make_unique<sf::RenderTexture>();
-    rchunkTexture->create(CHUNK_HEIGHT*TILE_HEIGHT, CHUNK_WIDTH*TILE_WIDTH);
+    if (!rchunkTexture->resize({CHUNK_HEIGHT*TILE_HEIGHT, CHUNK_WIDTH*TILE_WIDTH}))
+        printf("Something went wrong\n");
     // iterator vars (used for tilepos)
     sf::Vector2f tileCoords = {0,0}; 
     for (tmx::TileLayer::Tile& tile : chunk.tiles) {
@@ -79,8 +80,8 @@ inline std::unique_ptr<sf::Sprite> createChunkSprite(
     spritePos.x = chunk.position.x * (TILE_WIDTH * CHUNK_WIDTH);
     spritePos.y = chunk.position.y * (TILE_HEIGHT* CHUNK_HEIGHT);
 
-    auto pchunkSprite = std::make_unique<sf::Sprite>();
-    pchunkSprite->setTexture(*pchunkTex);
+    auto pchunkSprite = std::make_unique<sf::Sprite>(*pchunkTex);
+    //pchunkSprite->setTexture();
     pchunkSprite->setPosition(spritePos);
     return pchunkSprite;
 }

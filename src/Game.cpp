@@ -8,7 +8,7 @@ Game::Game() {
     this->inputManager = std::make_unique<InputManager>();
     this->allocator = std::make_shared<ResourceAllocator>();
 
-    this->renderWindow = std::make_unique<sf::RenderWindow>(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "klunkabadul", sf::Style::Default, sf::ContextSettings(0, 0, 2, 2, 1, 0, 0));
+    this->renderWindow = std::make_unique<sf::RenderWindow>(sf::VideoMode({static_cast<int>(WINDOW_WIDTH), static_cast<int>(WINDOW_HEIGHT)}), "klunkabadul");
     /*ContextSettings
     Parameters:
     depth – Depth buffer bits
@@ -46,40 +46,47 @@ void Game::initializeGame() {
     this->world.generateRandomChunk(sf::Vector2f(2,0)); // bot-right
     this->world.generateRandomChunk(sf::Vector2f(3,0)); // bot-right
 
-    //  Generate sprites for all chunks
+    // Generate sprites for all chunks
     this->world.createChunkSprites(this->allocator);
     
-    auto ninja = buildNinja(this->componentManager, this->entityManager);    // Create ninja
-
+    buildNinja(this->componentManager, this->entityManager);  // Create ninja
+    buildNinja(this->componentManager, this->entityManager);  // Create ninja
+    buildNinja(this->componentManager, this->entityManager);  // Create ninja
+    buildNinja(this->componentManager, this->entityManager);  // Create ninja
+    buildNinja(this->componentManager, this->entityManager);  // Create ninja
+    
 }
 
 void Game::updateSystems(float deltaTime) {
     animationSystem.update(deltaTime, this->entityManager, this->componentManager);
-    //collisionSystem.update(deltaTime, this->entityManager.getAllEntities());
+    cursorSystem.update(*this->renderWindow, this->entityManager, this->componentManager);
+    viewpanSystem.update(deltaTime, this->player->playerView, *this->inputManager);
+    collisionSystem.update(deltaTime, this->entityManager, this->componentManager);
     //movementSystem.update(deltaTime, this->entityManager.getAllEntities());
-
     //interactionSystem.update(this->entityManager.getAllEntities(), this->inputManager, this->renderWindow, this->player);
 
 }
 //  Defines and declares sf::Event. Then polls and processes it
 void Game::handleEventQueue() {
-    sf::Event event;
-    while (this->renderWindow->pollEvent(event)) {
+    while (const std::optional event = this->renderWindow->pollEvent()) {
 
-        if (event.type == sf::Event::Closed || (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape))
+        if (event->is<sf::Event::Closed>()) {
             this->renderWindow->close();
+        }
 
         //  Render arrow at position of mouse button click
         // else if (event.type == sf::Event::MouseButtonPressed && event.key.code == sf::Mouse::Left) {
         //     sf::Vector2i mousePos = sf::Mouse::getPosition(*this->renderWindow);
         //     this->entityManager.renderArrow(this->renderWindow->mapPixelToCoords(mousePos));
         // }
+
         //  Follow/unfollow
+        /*
         else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space) {
             if (player->isFollowingUnit()) {
                 player->stopFollow();
                 continue;
-            }
+            }*/
 
             // for (auto& ent : this->entityManager.getAllEntities()) {
             //     if (ent.lock()->hasComponent<FollowComponent>() && isEntityHovered(this->renderWindow, ent)) {
@@ -87,11 +94,11 @@ void Game::handleEventQueue() {
             //         return;
             //     }
             // }
-        
-        }
+
         //  Lets inputManager take care of catching which key 
         //  event it is and update the lookup table accordingly
-        this->inputManager->update(event);
+        if (event)
+            this->inputManager->update(event.__get());
     }
 }
 
@@ -106,7 +113,7 @@ void Game::gameLoop() {
 
         // 3.  Update systems, player & entities
         this->updateSystems(deltaTime);                          // Update ECS systems
-        this->player->update(deltaTime, inputManager);           // Update player logic
+        //this->player->update(deltaTime, inputManager);           // Update player logic
         //this->entityManager.update(deltaTime);                   // Update all entities
 
         // 4.  Render
@@ -120,8 +127,11 @@ void Game::gameLoop() {
         std::string following = this->player->isFollowingUnit() ? "controlling character" : "free cam";
         drawString(this->renderWindow, this->allocator, following);
 
-        //int entitiesAmount = this->entityManager.getAllEntities().size();
-        //drawString(this->renderWindow, this->allocator, "Entities: " + std::to_string(entitiesAmount), 25);
+        std::string mouse_coordinates = std::to_string(this->cursorSystem.mouse_pos.x) + ", "+ std::to_string(this->cursorSystem.mouse_pos.y);
+        drawString(this->renderWindow, this->allocator, mouse_coordinates, 50);
+
+        int entitiesAmount = this->entityManager.getAllEntities().size();
+        drawString(this->renderWindow, this->allocator, "Entities: " + std::to_string(entitiesAmount), 25);
 
         this->renderWindow->setView(player->playerView);  // reset view
         this->renderWindow->display();
@@ -138,7 +148,6 @@ void Game::render() {
     this->world.render(this->renderWindow);  // render all background tiles (all chunks)
     renderSystem.update(this->renderWindow, this->allocator, this->entityManager, this->componentManager);
 }
-
 
 int Game::run() {
     this->initializeGame();

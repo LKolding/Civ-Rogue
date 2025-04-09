@@ -2,12 +2,19 @@
 #define _COMPONENTS_
 
 #include <SFML/Graphics.hpp>  // for Sprite
-
+// World space
 struct PositionComponent { float x, y; };
-
-struct ChunkComponent {  };
+// A component containing the coordinates of the chunk in which
+// the entity is currently within. Maintained by MovementSystem
+struct ChunkComponent { int x, y; };
 
 struct MovementComponent {float speed; float xDir, yDir; };
+
+struct HealthComponent { int currentHealth, maxHealth; };
+
+struct WeaponComponent { int damage; float dmgMultiplier; float useTime; float elapsedTime; bool isAttacking; };
+
+struct BoundsComponent { sf::FloatRect bounds; };  // maintained by RenderSystem
 
 struct SpriteComponent {
     sf::IntRect textureRectangle;
@@ -23,23 +30,22 @@ struct AnimationComponent {
     int animationIndex; 
     int animationIndexMax; 
 };
-//  when entities are walking left or right (flips the texture horizontically)
+// When entities are walking left or right 
+// (flips the texture horizontically)
 struct FlipComponent { bool isFlipped = false; }; 
 
-struct HealthComponent { int currentHealth, maxHealth; };
-
+// State components crucial for, and directly tied to, sprite animations 
 struct EyeBugStateComponent { enum State { IDLE } state; };
-
 struct NinjaStateComponent { enum State { IDLE, WALK, ACTIVE } state; };
 
-struct CollisionComponent { sf::FloatRect bounds; };
+// Collision components
+struct CollisionComponent { bool isStaticBody = false; };
 
-struct StaticCollisionComponent { sf::FloatRect bounds; };
-
-struct WeaponComponent { int damage; float dmgMultiplier; float useTime; float elapsedTime; bool isAttacking; };
-
+// Entity behavior components
+struct ControlComponent {};
+// View can follow entity
 struct FollowComponent { bool isFollowing; };
-
+// Can be hovered
 struct HoverComponent { bool isHovered; };
 
 #endif

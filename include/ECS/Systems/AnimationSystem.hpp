@@ -22,10 +22,11 @@ public:
 
             // Calculate
             if (cm.getComponent<AnimationComponent>(ent)) {
-                textRect.left = textRect.width * cm.getComponent<AnimationComponent>(ent)->animationIndex;
+                textRect.position.x = textRect.size.x * cm.getComponent<AnimationComponent>(ent)->animationIndex;
+                
             }
             if (cm.getComponent<NinjaStateComponent>(ent)) {
-                textRect.top = textRect.height * cm.getComponent<NinjaStateComponent>(ent)->state;
+                textRect.position.y = textRect.size.y * cm.getComponent<NinjaStateComponent>(ent)->state;
             }
 
             // Update components

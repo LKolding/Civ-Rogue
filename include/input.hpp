@@ -2,6 +2,7 @@
 #define _INPUT_
 
 #include <SFML/Graphics.hpp>
+#include <map>
 
 class InputManager {
 public:
@@ -10,7 +11,7 @@ public:
     float mouseWheelScroll; // sf mouseScroll.delta
     InputManager();
     void reset();
-    void update(sf::Event& event);
+    void update(const sf::Event& event);
 
 };
 
