@@ -37,4 +37,5 @@ target_link_libraries(${PROJECT_NAME}
     ${LIB_DIR}/sfml/lib/libsfml-graphics.dylib
     ${LIB_DIR}/sfml/lib/libsfml-window.dylib
     ${LIB_DIR}/sfml/lib/libsfml-system.dylib
+    "-framework OpenGL"
 )

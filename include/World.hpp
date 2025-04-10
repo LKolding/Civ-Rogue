@@ -33,7 +33,7 @@
 
 class World {
 public:
-    void initialize(std::weak_ptr<ResourceAllocator> allocator, std::weak_ptr<Player> p, std::string& game_name);
+    void initialize(std::weak_ptr<ResourceAllocator> allocator, std::weak_ptr<Player> p, const std::string& game_name);
     void saveMapToTMX(const std::string& filePath);
     
     void generateRandomChunk(sf::Vector2f pos);

@@ -1,7 +1,7 @@
 #include "input.hpp"
 
 InputManager::InputManager() {
-    this->reset();
+    this->reset();  // initializes keymap(s)
 }
 void InputManager::reset() {
     this->keyState[sf::Keyboard::Key::W] = false;

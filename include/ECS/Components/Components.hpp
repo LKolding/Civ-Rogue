@@ -8,7 +8,7 @@ struct PositionComponent { float x, y; };
 // the entity is currently within. Maintained by MovementSystem
 struct ChunkComponent { int x, y; };
 
-struct MovementComponent {float speed; float xDir, yDir; };
+struct MovementComponent { float speed; float xDir, yDir; };
 
 struct HealthComponent { int currentHealth, maxHealth; };
 
@@ -17,9 +17,9 @@ struct WeaponComponent { int damage; float dmgMultiplier; float useTime; float e
 struct BoundsComponent { sf::FloatRect bounds; };  // maintained by RenderSystem
 
 struct SpriteComponent {
-    sf::IntRect textureRectangle;
+    sf::IntRect textureRectangle; // rect of the tilesheet
     sf::Vector2f origin;
-    std::string texturePath;
+    std::string texturePath;      // path to tilesheet
     bool hasBeenFlipped = false; 
     bool isVisible = true; 
 };
@@ -34,18 +34,30 @@ struct AnimationComponent {
 // (flips the texture horizontically)
 struct FlipComponent { bool isFlipped = false; }; 
 
+// ----------------------------
+// ----- State components -----
+// ----------------------------
 // State components crucial for, and directly tied to, sprite animations 
 struct EyeBugStateComponent { enum State { IDLE } state; };
 struct NinjaStateComponent { enum State { IDLE, WALK, ACTIVE } state; };
 
-// Collision components
+// -------------------------------
+// ----- Collision component -----
+// -------------------------------
+// (bounds is stored in BoundsComponent)
 struct CollisionComponent { bool isStaticBody = false; };
 
-// Entity behavior components
+// --------------------------------------
+// ----- Entity behavior components -----
+// --------------------------------------
+// Makes entity controllable
 struct ControlComponent {};
 // View can follow entity
-struct FollowComponent { bool isFollowing; };
+struct FollowComponent { bool isFollowing = false; };
 // Can be hovered
-struct HoverComponent { bool isHovered; };
+struct HoverComponent { bool isHovered = false; };
+// Entities can have an objective (a point in world space),
+// and will move towards the point, if hasObjective
+struct ObjectiveComponent { float x, y; bool hasObjective = false; };
 
 #endif

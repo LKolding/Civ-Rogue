@@ -15,9 +15,8 @@
 #include "ECS/Components/Components.hpp"
 
 
-bool inline isEntityHovered(sf::RenderWindow& ren, ComponentManager& cm, EntityID ent) {
+bool inline isEntityHovered(ComponentManager& cm, EntityID ent, sf::Vector2f mouse_pos) {
     if (ent) {
-        sf::Vector2f mouse_pos = ren.mapPixelToCoords(sf::Mouse::getPosition(ren));
         auto bounds = cm.getComponent<BoundsComponent>(ent)->bounds;
         if (bounds.contains(mouse_pos)) {
             return true;

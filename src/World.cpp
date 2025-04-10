@@ -1,7 +1,7 @@
 #include "World.hpp"
 
 
-void World::initialize(std::weak_ptr<ResourceAllocator> allocator, std::weak_ptr<Player> p, std::string& game_name) {
+void World::initialize(std::weak_ptr<ResourceAllocator> allocator, std::weak_ptr<Player> p, const std::string& game_name) {
     // Performs an initialization of the World object incl.
     // tilesets, chunks and tiles. Extracts from game file
     tmx::Map map;
@@ -161,34 +161,34 @@ Chunk processChunk(const tmx::TileLayer::Chunk& chunk, const tmx::Tileset& tiles
 
 //  Extracts chunks from map parameter and
 //  stores it in chunks vector of World.
-//  Also tries to extract playerPosition
-//  object and update the playerView pos.
 void World::loadMap(tmx::Map& map) {
     const auto& layers = map.getLayers();     // get layers
 
-    for (const auto& layer : layers) {        // iterate layers
-        switch (layer->getType()) {
-
-        case tmx::Layer::Type::Tile: {
-            const auto& tileLayer = layer->getLayerAs<tmx::TileLayer>();
-            for (const auto& chunk : tileLayer.getChunks()) {   // iterate chunks
-                this->chunks.push_back(chunk);  
+    for (const auto& layer : layers) {      // iterate layers
+        switch (layer->getType()) {         // check layer type
+            // TileLayer
+            case tmx::Layer::Type::Tile: {  
+                const auto& tileLayer = layer->getLayerAs<tmx::TileLayer>();
+                for (const auto& chunk : tileLayer.getChunks()) {   // iterate chunks
+                    this->chunks.push_back(chunk);  
+                }
+                break;
             }
-            break;
-        }
+            // ObjectLayer
+            case tmx::Layer::Type::Object: {  
+                const auto& objectLayer = layer->getLayerAs<tmx::ObjectGroup>();
+                if (objectLayer.getName() == "objects") {
+                    for (const auto& object : objectLayer.getObjects()) {  // iterate objects
 
-        case tmx::Layer::Type::Object: {
-            const auto& objectLayer = layer->getLayerAs<tmx::ObjectGroup>();
-            if (objectLayer.getName() == "objects") {
-                for (const auto& object : objectLayer.getObjects()) {  // iterate objects
-                
+                        if (object.getName() == "playerLocation") {
+                            this->playerPtr.lock()->playerView.setCenter({object.getPosition().x, object.getPosition().y});
+                        }
+                    }
+                break;
                 }
             }
-            break;
-        }
-            
-        default:
-            break;
+            default:
+                break;
         }
     }
 }

@@ -67,7 +67,7 @@ EntityID buildNinja(ComponentManager& cm, EntityManager& em) {
 
     EntityID id = em.createEntity();
 
-    const float XPOSITION = (float) 1 + (20 * functionCalls);
+    const float XPOSITION = 1;
     const float YPOSITION = 1;
     const int MAX_HEALTH = 100;
     const int TEX_SIZE = 32;
@@ -78,11 +78,14 @@ EntityID buildNinja(ComponentManager& cm, EntityManager& em) {
     cm.addComponent<SpriteComponent>(id, {{{0,0},{TEX_SIZE,TEX_SIZE}}, {TEX_SIZE/2, TEX_SIZE/2}, TEX_PATH, false, true});
     cm.addComponent<NinjaStateComponent>(id, {NinjaStateComponent::State::IDLE});
     cm.addComponent<AnimationComponent>(id, {0, 0.12f, 0, 5});  // these values are directly tied to the layout of the texture sheet
-    cm.addComponent<FlipComponent>(id, {false});
+    cm.addComponent<FlipComponent>(id, {});
     cm.addComponent<CollisionComponent>(id, {});
-    cm.addComponent<BoundsComponent>(id, {});
+    // Hitbox gets declared here
+    cm.addComponent<BoundsComponent>(id, {{{XPOSITION, YPOSITION},{(float)TEX_SIZE-10, (float)TEX_SIZE-10}}});
     cm.addComponent<MovementComponent>(id, {180.0f, 0.0f, 0.0f});
-    cm.addComponent<FollowComponent>(id, {false});
+    cm.addComponent<HoverComponent>(id, {});
+    cm.addComponent<FollowComponent>(id, {});
+    cm.addComponent<ObjectiveComponent>(id, {500, 500, true});
 
     return id;
 }

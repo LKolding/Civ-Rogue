@@ -18,35 +18,34 @@ class RenderSystem {
 public:
     inline void update(std::unique_ptr<sf::RenderWindow>& renderWindow, std::shared_ptr<ResourceAllocator>& allocator, EntityManager& em, ComponentManager& cm) {
         for (auto& ent : em.getAllEntities()) {
-            // If position and sprite components
+            // --------------------------------
+            // ----- Check for components -----
+            // --------------------------------
             if ( cm.getComponent<PositionComponent>(ent) && cm.getComponent<SpriteComponent>(ent) ) {
-                // Update bounds if necessary
-                if ( cm.getComponent<BoundsComponent>(ent)) {
-                    // Get position and size of entity
-                    sf::Vector2f pos {cm.getComponent<PositionComponent>(ent)->x, cm.getComponent<PositionComponent>(ent)->y};
-                    sf::Vector2f size{(float)cm.getComponent<SpriteComponent>(ent)->textureRectangle.size.x, (float)cm.getComponent<SpriteComponent>(ent)->textureRectangle.size.y};
-                    // Construct new component
-                    BoundsComponent newComp;
-                    newComp.bounds.position = pos;
-                    newComp.bounds.size = size;
+                // --------------------------------------
+                // ----- Update bounds if necessary -----
+                // --------------------------------------
+                if ( auto pbounds = cm.getComponent<BoundsComponent>(ent)) {
+                    // Get position
+                    sf::Vector2f pos {cm.getComponent<PositionComponent>(ent)->x - pbounds->bounds.size.x/2,  // x //  
+                                      cm.getComponent<PositionComponent>(ent)->y - pbounds->bounds.size.y/2}; // y
                     
-                    cm.removeComponent<BoundsComponent>(ent); // remove old component
-                    cm.addComponent<BoundsComponent>(ent, newComp); // add new
+                    // Get size
+                    // sf::Vector2f size{(float)pbounds->bounds.size.x, (float)pbounds->bounds.size.y};
+                    // Update bounds
+                    pbounds->bounds.position = pos;
+                    // pbounds->bounds.size = size;
                 }
+
                 // Pointers to components
                 PositionComponent* cposition = cm.getComponent<PositionComponent>(ent);
                 SpriteComponent* csprite = cm.getComponent<SpriteComponent>(ent);
                 
                 // Sprite to be drawn
                 sf::Sprite sprite(*allocator->loadTexture(csprite->texturePath));
-                //sprite.setOrigin(csprite->origin); // Necessary ?
+                sprite.setOrigin(csprite->origin); // Necessary ?
                 sprite.setTextureRect(csprite->textureRectangle);
                 sprite.setPosition({cposition->x, cposition->y});
-                
-                // Draw if hovered
-                if ( cm.getComponent<HoverComponent>(ent) && cm.getComponent<HoverComponent>(ent)->isHovered) {
-                    drawString(renderWindow, allocator, "hovering", 120);
-                }
 
                 // FLIP BEHAVIOR
                 if ( cm.getComponent<FlipComponent>(ent)) {
@@ -71,75 +70,23 @@ public:
                 }
                 // Draw hitbox TODO
                 if (DRAW_BOUNDS) {
-                    // create drawable shape
-                    sf::RectangleShape hitbox {{(float)csprite->textureRectangle.size.x, (float)csprite->textureRectangle.size.y}};
-                    hitbox.setPosition({cposition->x, cposition->y});
+                    // create drawable shape from BoundsComponent
+                    sf::RectangleShape hitbox {{(float)cm.getComponent<BoundsComponent>(ent)->bounds.size.x, (float)cm.getComponent<BoundsComponent>(ent)->bounds.size.y}};
+                    // hitbox.setPosition({cposition->x, cposition->y});
+                    hitbox.setPosition({cm.getComponent<BoundsComponent>(ent)->bounds.position.x, cm.getComponent<BoundsComponent>(ent)->bounds.position.y});
                     // appearance
                     hitbox.setFillColor(sf::Color::Transparent);
-                    hitbox.setOutlineColor(sf::Color::Black);
+                    hitbox.setOutlineColor(cm.getComponent<HoverComponent>(ent)->isHovered ? sf::Color::Green : sf::Color::Black);
+
+                    if (cm.getComponent<FollowComponent>(ent) && cm.getComponent<FollowComponent>(ent)->isFollowing)
+                        hitbox.setOutlineColor(sf::Color::Blue); // <---- Set hitbox color to blue if being followed
+
                     hitbox.setOutlineThickness(0.8f);
                     renderWindow->draw(hitbox);
                 }
-
             }
         }
     }
-    /*
-    inline void update2(std::unique_ptr<sf::RenderWindow>& ren, std::vector<std::weak_ptr<Entity>> entities) {
-        for (auto& entity_p : entities) {
-            if (auto entity = entity_p.lock()) {
-                //  Make sure the sprite position is
-                //  PositionComponent of the entity
-                if (auto posPtr = entity->getComponent<PositionComponent>()) {
-                    entity->getComponent<SpriteComponent>()->sprite.setPosition(posPtr->x, posPtr->y);
-                }
-                //  Handle flip behavior
-                if (entity->hasComponent<FlipComponent>()) {
-                    // flip texture
-                    if (entity->getComponent<FlipComponent>()->isFlipped && !entity->getComponent<SpriteComponent>()->hasBeenFlipped) {
-                        entity->getComponent<SpriteComponent>()->sprite.setScale(sf::Vector2f(-1.0f, 1.0f));
-                        entity->getComponent<SpriteComponent>()->hasBeenFlipped = true;
-                    }
-                    // unflip texture
-                    if (!entity->getComponent<FlipComponent>()->isFlipped && entity->getComponent<SpriteComponent>()->hasBeenFlipped) {
-                        entity->getComponent<SpriteComponent>()->sprite.setScale(sf::Vector2f(1.0f, 1.0f));
-                        entity->getComponent<SpriteComponent>()->hasBeenFlipped = false;
-                    }
-                }
-                //  Draw sprite
-                if (entity->getComponent<SpriteComponent>()->isVisible)
-                    ren->draw(entity->getComponent<SpriteComponent>()->sprite);
-
-                if (entity->hasComponent<FollowComponent>() && entity->getComponent<FollowComponent>()->isFollowing) {
-                    // get hitbox
-                    sf::FloatRect floatRect = getBoundingBox(entity);
-                    // create drawable shape
-                    sf::RectangleShape hitbox = sf::RectangleShape(floatRect.getSize());
-                    hitbox.setPosition(floatRect.left, floatRect.top);
-                    // appearance
-                    hitbox.setFillColor(sf::Color::Transparent);
-                    hitbox.setOutlineColor(sf::Color::Green);
-                    hitbox.setOutlineThickness(1.0f);
-                    ren->draw(hitbox);
-                }
-                
-                //  Draw hitbox
-                if (DRAW_COLLISION_BOX && (entity->hasComponent<CollisionComponent>() || entity->hasComponent<StaticCollisionComponent>())) {
-                    // get hitbox
-                    sf::FloatRect floatRect = getBoundingBox(entity);
-                    // create drawable shape
-                    sf::RectangleShape hitbox = sf::RectangleShape(floatRect.getSize());
-                    hitbox.setPosition(floatRect.left, floatRect.top);
-                    // appearance
-                    hitbox.setFillColor(sf::Color::Transparent);
-                    hitbox.setOutlineColor(sf::Color::Black);
-                    hitbox.setOutlineThickness(0.8f);
-                    ren->draw(hitbox);
-
-                }           
-            }
-        }
-    }*/
 };
 
 #endif

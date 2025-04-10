@@ -7,9 +7,13 @@
 #include "ECS/ComponentManager.hpp"
 #include "ECS/Components/Components.hpp"
 
-// SYstem responsible for checking for and handling collisions
-// It handles both static and non-static bodies, but checks only
-// for collisions from moving bodies (if that makes sense?)
+    // SYSTEM RESPONSIBLE FOR:
+    // checking for _and_ handling collisions
+    // It handles both static and non-static bodies, but checks only
+    // for when moving bodies are colliding with other moving or static bodies
+    // and not if static bodies are ever colliding with any other
+
+    const float COLLISION_SYSTEM_DELAY = 0.001;// <-- increase/decrease to have fun
 
 // Calculation functions
 bool inline checkCollision(const sf::FloatRect& a, const sf::FloatRect& b) {
@@ -110,7 +114,6 @@ void inline resolveCollision(PositionComponent& positionA, PositionComponent& po
     collisionB.bounds.position.y = positionB.y - (collisionB.bounds.size.y/2);
 }
 
-const float COLLISION_SYSTEM_DELAY = 0.001; 
 
 class CollisionSystem {
 public:

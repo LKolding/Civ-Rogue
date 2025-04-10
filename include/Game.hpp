@@ -21,12 +21,14 @@
 #include "World.hpp"
 
 // // ecs
-// #include "ECS/Systems/VelocitySystem.hpp"
+#include "ECS/Systems/VelocitySystem.hpp"
 #include "ECS/Systems/CollisionSystem.hpp"
 #include "ECS/Systems/AnimationSystem.hpp"
 #include "ECS/Systems/CursorSystem.hpp"
 #include "ECS/Systems/RenderSystem.hpp"
 #include "ECS/Systems/ViewpanSystem.hpp"
+#include "ECS/Systems/InputSystem.hpp"
+#include "ECS/Systems/ObjectiveSystem.hpp"
 
 #include "ECS/EntityManager.hpp"
 #include "ECS/ComponentManager.hpp"
@@ -34,7 +36,7 @@
 
 #include "game_functions.hpp"
 #include "TextDraw.hpp"
-  
+
 
 class Game {
 public:
@@ -55,12 +57,14 @@ private:
     EntityManager entityManager;
     ComponentManager componentManager;
 
-    // VelocitySystem    movementSystem;
+    VelocitySystem velocitySystem;
     AnimationSystem animationSystem;
-    CollisionSystem   collisionSystem;
+    CollisionSystem collisionSystem;
     CursorSystem cursorSystem;
     RenderSystem renderSystem;
     ViewpanSystem viewpanSystem;
+    InputSystem inputSystem;
+    ObjectiveSystem objectiveSystem;
 
     std::unique_ptr<InputManager> inputManager;
 
