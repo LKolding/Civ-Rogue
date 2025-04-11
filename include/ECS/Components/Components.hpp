@@ -23,12 +23,22 @@ struct SpriteComponent {
     bool hasBeenFlipped = false; 
     bool isVisible = true; 
 };
-
+// ---------------------
+// ----- Animation -----
+// ---------------------
 struct AnimationComponent { 
     float elapsedTime; 
     float frameTime; 
     int animationIndex; 
     int animationIndexMax; 
+};
+struct AnimationFrameData { // single animation (notice: this isn't a component!)
+    int rowIndex;
+    int frameCount;
+};
+struct AnimationMapComponent { //maps states to animations (AnimationFrameData)
+    std::unordered_map<std::string, AnimationFrameData> stateToAnimation;
+    int textureHeightPerRow;
 };
 // When entities are walking left or right 
 // (flips the texture horizontically)
@@ -39,7 +49,7 @@ struct FlipComponent { bool isFlipped = false; };
 // ----------------------------
 // State components crucial for, and directly tied to, sprite animations 
 struct EyeBugStateComponent { enum State { IDLE } state; };
-struct NinjaStateComponent { enum State { IDLE, WALK, ACTIVE } state; };
+struct StateComponent { std::string currentState; };
 
 // -------------------------------
 // ----- Collision component -----

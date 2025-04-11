@@ -61,28 +61,35 @@ std::shared_ptr<NinjaEntity> buildNinja(std::shared_ptr<ResourceAllocator> alloc
 }
 */
 
-EntityID buildNinja(ComponentManager& cm, EntityManager& em) {
-    static unsigned int functionCalls = 0;
-    functionCalls++;
-
+EntityID buildNinja(ComponentManager& cm, EntityManager& em, float x, float y) {
     EntityID id = em.createEntity();
 
-    const float XPOSITION = 1;
-    const float YPOSITION = 1;
+    const float XPOSITION = x;
+    const float YPOSITION = y;
     const int MAX_HEALTH = 100;
     const int TEX_SIZE = 32;
     const std::string TEX_PATH = "../assets/textures/characters/ninja_sheet.png";
     
     cm.addComponent<PositionComponent>(id, {XPOSITION, YPOSITION});
-    cm.addComponent<HealthComponent>(id, {MAX_HEALTH, MAX_HEALTH});
+    // cm.addComponent<HealthComponent>(id, {MAX_HEALTH, MAX_HEALTH});
     cm.addComponent<SpriteComponent>(id, {{{0,0},{TEX_SIZE,TEX_SIZE}}, {TEX_SIZE/2, TEX_SIZE/2}, TEX_PATH, false, true});
-    cm.addComponent<NinjaStateComponent>(id, {NinjaStateComponent::State::IDLE});
-    cm.addComponent<AnimationComponent>(id, {0, 0.12f, 0, 5});  // these values are directly tied to the layout of the texture sheet
+    cm.addComponent<StateComponent>(id, {"IDLE"});
+
+    cm.addComponent<AnimationComponent>(id, {0, 0.12f, 0, 5});
+    // construct animation map component (hopefully temporary solution)
+    AnimationMapComponent animMap;
+    animMap.textureHeightPerRow = TEX_SIZE;
+    animMap.stateToAnimation["IDLE"] = { 0,5 };
+    animMap.stateToAnimation["WALK"] = { 1,5 };
+    animMap.stateToAnimation["ATCK"] = { 2,0 };
+    
+    cm.addComponent<AnimationMapComponent>(id, animMap); //apply constructed component
     cm.addComponent<FlipComponent>(id, {});
+
     cm.addComponent<CollisionComponent>(id, {});
     // Hitbox gets declared here
-    cm.addComponent<BoundsComponent>(id, {{{XPOSITION, YPOSITION},{(float)TEX_SIZE-10, (float)TEX_SIZE-10}}});
-    cm.addComponent<MovementComponent>(id, {180.0f, 0.0f, 0.0f});
+    cm.addComponent<BoundsComponent>(id, {{{XPOSITION, YPOSITION},{(float)TEX_SIZE-12, (float)TEX_SIZE-12}}});
+    cm.addComponent<MovementComponent>(id, {120.0f, 0.0f, 0.0f});
     cm.addComponent<HoverComponent>(id, {});
     cm.addComponent<FollowComponent>(id, {});
     cm.addComponent<ObjectiveComponent>(id, {500, 500, true});

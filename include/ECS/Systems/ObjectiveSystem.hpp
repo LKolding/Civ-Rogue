@@ -23,16 +23,28 @@ public:
                 EntityID entityWithObjective = storage.indexToEntity.at(i);
                 // retrieve position component
                 auto cposition = cm.getComponent<PositionComponent>(entityWithObjective);
+                // retrieve movement component
+                auto cmovement = cm.getComponent<MovementComponent>(entityWithObjective);
+
                 // if not arrived
-                if (cposition->x != cobjective.x || cposition->y != cobjective.y) {
-                    // retrieve movement component
-                    auto cmovement = cm.getComponent<MovementComponent>(entityWithObjective);
+                if ((int)cposition->x != (int)cobjective.x || (int)cposition->y != (int)cobjective.y) {
                     // update movement component
-                    cmovement->xDir = cposition->x < cobjective.x ? 1.0f : -1.0f;
-                    cmovement->yDir = cposition->y < cobjective.y ? 1.0f : -1.0f;
+                    if ((int)cposition->x != (int)cobjective.x)
+                        cmovement->xDir = cposition->x < cobjective.x ? 1.0f : -1.0f;
+                    else
+                        cmovement->xDir = 0.0f;
+                        
+                    if ((int)cposition->y != (int)cobjective.y)
+                        cmovement->yDir = cposition->y < cobjective.y ? 1.0f : -1.0f;
+                    else
+                        cmovement->yDir = 0.0f;
+
                 // if arrived
                 } else {
+                    // reset
                     cobjective.hasObjective = false;
+                    cmovement->xDir = 0.0f;
+                    cmovement->yDir = 0.0f;
                 }
             }
 

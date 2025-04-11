@@ -50,25 +50,15 @@ public:
                 // FLIP BEHAVIOR
                 if ( cm.getComponent<FlipComponent>(ent)) {
                     FlipComponent* flip = cm.getComponent<FlipComponent>(ent);
-                    // Flip
-                    if (flip->isFlipped && !csprite->hasBeenFlipped) {
-                        sprite.setScale(sf::Vector2f(-1.0f, 1.0f));
-                        csprite->hasBeenFlipped = true;
-
-                    }
-                    // Un-flip
-                    if (!flip->isFlipped && csprite->hasBeenFlipped) {
-                        sprite.setScale(sf::Vector2f(1.0f, 1.0f));
-                        csprite->hasBeenFlipped = false;
-
-                    }
+                    // apply scale transformation regardless of change in value
+                    sprite.setScale({flip->isFlipped ? -1.f : 1.f, 1.f}); 
                 }
-
+                
                 // Draw sprite
                 if (csprite->isVisible) {
                     renderWindow->draw(sprite);
                 }
-                // Draw hitbox TODO
+                // Draw hitbox
                 if (DRAW_BOUNDS) {
                     // create drawable shape from BoundsComponent
                     sf::RectangleShape hitbox {{(float)cm.getComponent<BoundsComponent>(ent)->bounds.size.x, (float)cm.getComponent<BoundsComponent>(ent)->bounds.size.y}};

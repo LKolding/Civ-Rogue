@@ -16,6 +16,6 @@
 // Ninja
 //std::shared_ptr<NinjaEntity> buildNinja(std::shared_ptr<ResourceAllocator> allocator, const float &x = CHUNK_WIDTH*TILE_WIDTH/2 ,const float &y = CHUNK_HEIGHT*TILE_HEIGHT/2);
 
-EntityID buildNinja(ComponentManager& cm, EntityManager& em);
+EntityID buildNinja(ComponentManager& cm, EntityManager& em, float x = 0, float y = 0);
 
 #endif

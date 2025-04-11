@@ -29,6 +29,8 @@
 #include "ECS/Systems/ViewpanSystem.hpp"
 #include "ECS/Systems/InputSystem.hpp"
 #include "ECS/Systems/ObjectiveSystem.hpp"
+#include "ECS/Systems/StateSystem.hpp"
+#include "ECS/Systems/ImguiSystem.hpp"
 
 #include "ECS/EntityManager.hpp"
 #include "ECS/ComponentManager.hpp"
@@ -37,16 +39,13 @@
 #include "game_functions.hpp"
 #include "TextDraw.hpp"
 
-
-class Game {
+class Game
+{
 public:
-
     int run(); // game execution starts and ends here
     Game();
 
 private:
-    std::vector<EntityID> hoveringEntities;  // all entities that are currently being hovered
-
     std::shared_ptr<ResourceAllocator> allocator;
     std::shared_ptr<Player> player;
 
@@ -65,6 +64,8 @@ private:
     ViewpanSystem viewpanSystem;
     InputSystem inputSystem;
     ObjectiveSystem objectiveSystem;
+    StateSystem stateSystem;
+    ImguiSystem imguiSystem;
 
     std::unique_ptr<InputManager> inputManager;
 
@@ -77,7 +78,6 @@ private:
     void gameLoop();
     void render();
     void initialize();
-
 };
 
 #endif

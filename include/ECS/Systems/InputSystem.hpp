@@ -22,19 +22,17 @@ class InputSystem {
                         EntityID hoveredEntity = storage.indexToEntity.at(i);
                         cm.getComponent<FollowComponent>(hoveredEntity)->isFollowing = true;
                     }
-                }
-                
+                }   
             }
-            
         }
         // Mouse buttons
-        for (auto& key : im.mkeyState) {// <--- if hovered, UN-follow entity
+        for (auto& key : im.mkeyState) {
             if (key.first == sf::Mouse::Button::Right && key.second) {
                 auto& storage = cm.getStorage<HoverComponent>();
                 for (size_t i = 0; i < storage.components.size(); ++i) {
                     auto& component = storage.components[i];
 
-                    if (component.isHovered) {
+                    if (component.isHovered) { // <--- if hovered, UN-follow entity
                         EntityID hoveredEntity = storage.indexToEntity.at(i);
                         cm.getComponent<FollowComponent>(hoveredEntity)->isFollowing = false;
                     }

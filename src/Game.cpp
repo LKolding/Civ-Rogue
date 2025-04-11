@@ -8,7 +8,10 @@ Game::Game() {
     this->inputManager = std::make_unique<InputManager>();
     this->allocator = std::make_shared<ResourceAllocator>();
     this->renderWindow = std::make_unique<sf::RenderWindow>(sf::VideoMode({static_cast<int>(WINDOW_WIDTH), static_cast<int>(WINDOW_HEIGHT)}), "klunkabadul");
-    ImGui::SFML::Init(*this->renderWindow);
+    if (!ImGui::SFML::Init(*this->renderWindow)) // init imgui
+        std::cout << "[GAME ERROR] Could not initiliaze ImGui.\n";
+    else
+        this->renderWindow->resetGLStates();
 }
 
 void Game::initializeGame() {
@@ -38,25 +41,24 @@ void Game::initializeGame() {
     // Generate sprites for all chunks
     this->world.createChunkSprites(this->allocator);
     
-    buildNinja(this->componentManager, this->entityManager);  // Create ninja
-    buildNinja(this->componentManager, this->entityManager);  // Create ninja
-    buildNinja(this->componentManager, this->entityManager);  // Create ninja
-    buildNinja(this->componentManager, this->entityManager);  // Create ninja
-    buildNinja(this->componentManager, this->entityManager);  // Create ninja
-    buildNinja(this->componentManager, this->entityManager);  // Create ninja
-    buildNinja(this->componentManager, this->entityManager);  // Create ninja
-    buildNinja(this->componentManager, this->entityManager);  // Create ninja
+    // buildNinja(this->componentManager, this->entityManager);  // Create ninja
     
 }
 
 void Game::updateSystems(float deltaTime) {
-    animationSystem.update(deltaTime, this->entityManager, this->componentManager);
-    cursorSystem.update(*this->renderWindow, this->entityManager, this->componentManager);
-    viewpanSystem.update(deltaTime, this->player->playerView, *this->inputManager);
-    collisionSystem.update(deltaTime, this->entityManager, this->componentManager);
+    imguiSystem.update(this->entityManager, this->componentManager);
+
     inputSystem.update(*this->inputManager, this->componentManager);
+    cursorSystem.update(*this->renderWindow, this->entityManager, this->componentManager);
+
     velocitySystem.update(deltaTime, this->entityManager, this->componentManager);
+    collisionSystem.update(deltaTime, this->entityManager, this->componentManager);
+
+    animationSystem.update(deltaTime, this->entityManager, this->componentManager);
+    viewpanSystem.update(deltaTime, this->player->playerView, *this->inputManager);
     objectiveSystem.update(this->entityManager, this->componentManager);
+    stateSystem.update(this->entityManager, this->componentManager);
+
     //interactionSystem.update(this->entityManager.getAllEntities(), this->inputManager, this->renderWindow, this->player);
 
 }
@@ -84,47 +86,20 @@ void Game::gameLoop() {
         const float deltaTime = frameStartTime.asSeconds();
 
         // 2.  Input
-        this->handleEventQueue();                                // Handle SFML event(s)
+        this->handleEventQueue();                                // Handle event(s)
 
         // 3. ImGui
-        // mouse coordinates
-        const std::string mouse_coordinates = "(monitor)  " + std::to_string(this->cursorSystem.mouse_pos.x) + ", "+ std::to_string(this->cursorSystem.mouse_pos.y);
-        const std::string mouse_coordinates2= "(world)    " + std::to_string((int)this->cursorSystem.world_pos.x) + ", "+ std::to_string((int)this->cursorSystem.world_pos.y);
-        const std::string entities_amount   = "(entities) " + std::to_string(this->entityManager.getAllEntities().size());
-
         ImGui::SFML::Update(*this->renderWindow, frameStartTime);
 
-        ImGui::Begin("Debug");
-        // ImGui::Button("Look at this pretty button");
-
-        ImGui::TextColored({0.0, 0.5, 1.0, 1.0}, "Information:");
-        ImGui::BeginChild("Scrolling");
-        ImGui::Text("            mouse x,y");
-        ImGui::Text(mouse_coordinates.c_str());
-        ImGui::Text(mouse_coordinates2.c_str());
-        ImGui::Text(entities_amount.c_str());
-        ImGui::EndChild();
-        
-        ImGui::End();
-
-        // 4.  Update systems
+        // 4.  Update systems (incl. imgui system)
         this->updateSystems(deltaTime);
 
         // 5.  Render
         this->renderWindow->clear();
         this->renderWindow->setView(player->playerView);         // Set view for world rendering
         this->render();                                          // Render all game tiles & entities
-        
-        //imgui
-        ImGui::SFML::Render(*this->renderWindow);
 
-        // ------------------------------------
-        // ----- // Temp (UI/debug stuff) -----
-        // ------------------------------------
-        this->renderWindow->setView(this->renderWindow->getDefaultView());  // escape playerView
-        // isFollowing/freecam
-        std::string following = this->player->isFollowingUnit() ? "controlling character" : "free cam";
-        drawString(this->renderWindow, this->allocator, following);
+        ImGui::SFML::Render(*this->renderWindow);                // render imgui
 
         // Apply and display
         this->renderWindow->setView(player->playerView);  // reset view
@@ -142,6 +117,13 @@ void Game::gameLoop() {
 void Game::render() {
     this->world.render(this->renderWindow);  // render all background tiles (all chunks)
     renderSystem.update(this->renderWindow, this->allocator, this->entityManager, this->componentManager);
+
+    this->renderWindow->setView(this->renderWindow->getDefaultView());  // escape playerView
+    // isFollowing/freecam
+    std::string following = this->player->isFollowingUnit() ? "controlling character" : "free cam";
+    drawString(this->renderWindow, this->allocator, following);
+
+    
 }
 
 int Game::run() {
