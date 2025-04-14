@@ -11,6 +11,7 @@
 
 struct Player {
 public:
+    EntityID entityFollow; // entity to follow
     sf::View playerView;
 
     Player();
@@ -21,9 +22,6 @@ public:
     void stopFollow();
     void followUnit(EntityID id);
     bool isFollowingUnit();
-
-private:
-    EntityID entityID; // entity to follow
 
 };
 #endif

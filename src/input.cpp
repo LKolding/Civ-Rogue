@@ -19,6 +19,12 @@ void InputManager::reset() {
 }
 
 void InputManager::update(const sf::Event& event) {
+    //  mouse moved
+    if (auto e = event.getIf<sf::Event::MouseMoved>()) {
+        auto new_pos = sf::Mouse::getPosition();
+
+        // TODO (if necessary??)
+        }
     //  mouse pressed
     if (auto e = event.getIf<sf::Event::MouseButtonPressed>() ) {
         if (e->button == sf::Mouse::Button::Left) {

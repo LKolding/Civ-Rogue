@@ -18,65 +18,55 @@ void Game::initializeGame() {
     //  init player
     this->player = std::make_shared<Player>();
     //  read game file and initialize world
-    this->world.initialize(this->allocator, this->player, gamefilepath);
+    this->worldManager.initialize(this->allocator, this->player, gamefilepath);
 
     //  Chunks generation
-    this->world.generateRandomChunk(sf::Vector2f(0,0)); // center
-
-    this->world.generateRandomChunk(sf::Vector2f(1,0)); // right
-    this->world.generateRandomChunk(sf::Vector2f(0,1)); // top
-    this->world.generateRandomChunk(sf::Vector2f(1,1)); // top-right
-    
-    this->world.generateRandomChunk(sf::Vector2f(-1,0)); // left
-    this->world.generateRandomChunk(sf::Vector2f(0,-1)); // bottom
-    this->world.generateRandomChunk(sf::Vector2f(-1,-1));// bot-left
-    
-    this->world.generateRandomChunk(sf::Vector2f(-1,1)); // top-left
-    this->world.generateRandomChunk(sf::Vector2f(1,-1)); // bot-right
-
-    this->world.generateRandomChunk(sf::Vector2f(1,0)); // bot-right
-    this->world.generateRandomChunk(sf::Vector2f(2,0)); // bot-right
-    this->world.generateRandomChunk(sf::Vector2f(3,0)); // bot-right
+    this->worldManager.generateRandomChunk({0,0});  // center
+    this->worldManager.generateRandomChunk({1,0});  // right
+    this->worldManager.generateRandomChunk({-1,0}); // left
 
     // Generate sprites for all chunks
-    this->world.createChunkSprites(this->allocator);
-    
-    // buildNinja(this->componentManager, this->entityManager);  // Create ninja
+    this->worldManager.createChunkSprites(this->allocator);
     
 }
 
 void Game::updateSystems(float deltaTime) {
-    imguiSystem.update(this->entityManager, this->componentManager);
+    imguiSystem.update(*this->renderWindow, this->entityManager, this->componentManager);
 
-    inputSystem.update(*this->inputManager, this->componentManager);
+    inputSystem.update(*this->inputManager, this->componentManager, this->cursorSystem, *this->player);
     cursorSystem.update(*this->renderWindow, this->entityManager, this->componentManager);
 
     velocitySystem.update(deltaTime, this->entityManager, this->componentManager);
     collisionSystem.update(deltaTime, this->entityManager, this->componentManager);
 
     animationSystem.update(deltaTime, this->entityManager, this->componentManager);
-    viewpanSystem.update(deltaTime, this->player->playerView, *this->inputManager);
-    objectiveSystem.update(this->entityManager, this->componentManager);
     stateSystem.update(this->entityManager, this->componentManager);
+    
+    objectiveSystem.update(this->entityManager, this->componentManager);
 
-    //interactionSystem.update(this->entityManager.getAllEntities(), this->inputManager, this->renderWindow, this->player);
+    if (!this->player->isFollowingUnit())
+        viewpanSystem.update(deltaTime, this->player->playerView, *this->inputManager);
+
+    else 
+        controlSystem.update(this->entityManager, this->componentManager, *this->inputManager, *this->player);
 
 }
-//  Defines and declares sf::Event. Then polls and processes it
-void Game::handleEventQueue() {
+// Polls event from SFML, sends it to ImGui ProcessEvent() and to inputManager->update()
+// Also checks for Event::Closed and returns false if so, otherwise returns true; 
+bool Game::handleEventQueue() {
     while (const std::optional event = this->renderWindow->pollEvent()) {
-        if (!event)
-            continue;
-
+        // Event::Closed
         if (event->is<sf::Event::Closed>()) {
-            this->world.saveMapToTMX(gamefilepath);
+            this->worldManager.saveMapToTMX(gamefilepath);
             this->renderWindow->close();
+            return false;// <-- escape loop and send exit signal
         }
-
+        // ImGui
         ImGui::SFML::ProcessEvent(*this->renderWindow, *event);
+        // InputManager
         this->inputManager->update(*event);
-            
     }
+    return true;
 }
 
 void Game::gameLoop() {
@@ -86,7 +76,8 @@ void Game::gameLoop() {
         const float deltaTime = frameStartTime.asSeconds();
 
         // 2.  Input
-        this->handleEventQueue();                                // Handle event(s)
+        if (!this->handleEventQueue())                                // Handle event(s)
+            break;
 
         // 3. ImGui
         ImGui::SFML::Update(*this->renderWindow, frameStartTime);
@@ -101,8 +92,6 @@ void Game::gameLoop() {
 
         ImGui::SFML::Render(*this->renderWindow);                // render imgui
 
-        // Apply and display
-        this->renderWindow->setView(player->playerView);  // reset view
         this->renderWindow->display();
 
         // 6.  FPS mangement (currently unused eg. no frame cap applied)
@@ -115,14 +104,13 @@ void Game::gameLoop() {
 }
 
 void Game::render() {
-    this->world.render(this->renderWindow);  // render all background tiles (all chunks)
-    renderSystem.update(this->renderWindow, this->allocator, this->entityManager, this->componentManager);
+    this->worldManager.render(this->renderWindow);  // render all background tiles (all chunks)
+    renderSystem.update(*renderWindow, this->allocator, this->entityManager, this->componentManager);
 
     this->renderWindow->setView(this->renderWindow->getDefaultView());  // escape playerView
     // isFollowing/freecam
-    std::string following = this->player->isFollowingUnit() ? "controlling character" : "free cam";
-    drawString(this->renderWindow, this->allocator, following);
-
+    drawString(this->renderWindow, this->allocator, this->player->isFollowingUnit() ? "controlling character" : "free cam");
+    this->renderWindow->setView(player->playerView);  // reset view
     
 }
 

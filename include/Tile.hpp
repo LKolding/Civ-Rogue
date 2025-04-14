@@ -6,13 +6,35 @@
 #include "constants.h"
 
 
-struct Tile {
-    unsigned int ID;
-    bool isWalkable;
+// Coordinate definition
+struct Coord {
+    int32_t x, y;
+    bool operator==(const Coord& other) const { return x == other.x && y == other.y; }
 };
 
-struct Chunk {
-    sf::Vector2f position;
-    Tile background_tiles[CHUNK_SIZE];
+struct TileData {
+    unsigned int ID;
+    uint8_t flipFlags;
+    bool isWalkable;
+    float friction;
 };
+
+struct ChunkData {
+    Coord position;
+    TileData background_tiles[CHUNK_SIZE];
+};
+
+
+
+
+
+namespace std {
+    template <>
+    struct hash<Coord> {
+        std::size_t operator()(const Coord& c) const {
+            return std::hash<int>()(c.x) ^ (std::hash<int>()(c.y) << 1);
+        }
+    };
+}
+
 #endif

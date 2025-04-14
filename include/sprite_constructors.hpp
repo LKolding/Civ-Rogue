@@ -13,7 +13,7 @@
 //  Chunks and tiles
 
 inline std::unique_ptr<sf::Sprite> createTileSprite(
-    tmx::TileLayer::Tile& tile,                 // TILE STRUCT
+    TileData& tile,             // TILE STRUCT
     tmx::Tileset& tileset,      // TMX TILESET
     sf::Vector2f& pos,          // SPRITE POSITION
     ResourceAllocator& allocator
@@ -35,7 +35,7 @@ inline std::unique_ptr<sf::Sprite> createTileSprite(
 
 // creates a RenderTexture with all tiles drawn to it
 inline std::unique_ptr<sf::RenderTexture> createChunkTexture(
-    tmx::TileLayer::Chunk& chunk, 
+    ChunkData& chunk, 
     tmx::Tileset& tileset,
     ResourceAllocator& allocator
     ) {
@@ -45,7 +45,7 @@ inline std::unique_ptr<sf::RenderTexture> createChunkTexture(
         printf("Something went wrong\n");
     // iterator vars (used for tilepos)
     sf::Vector2f tileCoords = {0,0}; 
-    for (tmx::TileLayer::Tile& tile : chunk.tiles) {
+    for (TileData& tile : chunk.background_tiles) {
         auto tileSprite = createTileSprite(
             tile, 
             tileset,
@@ -66,7 +66,7 @@ inline std::unique_ptr<sf::RenderTexture> createChunkTexture(
 }
 
 inline std::unique_ptr<sf::Sprite> createChunkSprite(
-    tmx::TileLayer::Chunk& chunk, 
+    ChunkData& chunk, 
     tmx::Tileset& tileset,
     ResourceAllocator& allocator
 ) {

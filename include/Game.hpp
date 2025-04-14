@@ -11,16 +11,20 @@
 #include <memory>
 // my stuff
 
-// helpers and InputManager
+// InputManager
 #include "input.hpp"
+// helpers
 #include "coordinate_calculators.hpp"
+#include "game_functions.hpp"
 #include "constants.h"
+#include "TextDraw.hpp"
 // Game stuff
 #include "ResourceAllocator.hpp"
 #include "Player.hpp"
 #include "World.hpp"
 
-// // ecs
+// ecs
+// systems
 #include "ECS/Systems/VelocitySystem.hpp"
 #include "ECS/Systems/CollisionSystem.hpp"
 #include "ECS/Systems/AnimationSystem.hpp"
@@ -31,13 +35,12 @@
 #include "ECS/Systems/ObjectiveSystem.hpp"
 #include "ECS/Systems/StateSystem.hpp"
 #include "ECS/Systems/ImguiSystem.hpp"
-
+#include "ECS/Systems/ControlSystem.hpp"
+// entities / components + managers
 #include "ECS/EntityManager.hpp"
 #include "ECS/ComponentManager.hpp"
 #include "EntityFactory.hpp"
 
-#include "game_functions.hpp"
-#include "TextDraw.hpp"
 
 class Game
 {
@@ -52,7 +55,7 @@ private:
     std::unique_ptr<sf::RenderWindow> renderWindow;
     sf::Clock clock;
 
-    World world;
+    WorldManager worldManager;
     EntityManager entityManager;
     ComponentManager componentManager;
 
@@ -62,6 +65,7 @@ private:
     CursorSystem cursorSystem;
     RenderSystem renderSystem;
     ViewpanSystem viewpanSystem;
+    ControlSystem controlSystem;
     InputSystem inputSystem;
     ObjectiveSystem objectiveSystem;
     StateSystem stateSystem;
@@ -73,7 +77,7 @@ private:
 
     void updateSystems(float deltaTime);
 
-    void handleEventQueue();
+    bool handleEventQueue();
 
     void gameLoop();
     void render();

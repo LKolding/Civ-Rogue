@@ -41,7 +41,7 @@ public:
 
         //  -----> mouse wheel <-----
         if (im.mouseWheelScroll > 0.0f && playerView.getSize().x > viewMinX) { playerView.zoom(0.9f); }  // Zoom in 
-        if (im.mouseWheelScroll < 0.0f && playerView.getSize().x < viewMaxX) { playerView.zoom(1.1f); }  // Zoom out
+        if (im.mouseWheelScroll < 0.0f && playerView.getSize().x < viewMaxX + 10000) { playerView.zoom(1.1f); }  // Zoom out
         //  reset mWheelScrollDelta
         im.mouseWheelScroll = 0.0f;
 

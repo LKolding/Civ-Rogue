@@ -1,7 +1,94 @@
 #include "World.hpp"
 
 
-void World::initialize(std::weak_ptr<ResourceAllocator> allocator, std::weak_ptr<Player> p, const std::string& game_name) {
+// ----------------------
+// ----- DATA CLASS -----
+// ----------------------
+
+// Returns non-const pointer (direct access) to TileData of tile at passed Coord.
+// "tileCoord" refers to the global grid and is not relative to some chunk.
+TileData* World::getTile(Coord tileCoord) {
+    Coord chunkCoord = {
+        (int32_t)std::floor(tileCoord.x / static_cast<float>(CHUNK_WIDTH)),
+        (int32_t)std::floor(tileCoord.y / static_cast<float>(CHUNK_HEIGHT))
+    };
+
+    Coord localTile = {
+        tileCoord.x % CHUNK_WIDTH,
+        tileCoord.y % CHUNK_HEIGHT
+    };
+
+    // Fix for negative mod result
+    if (localTile.x < 0) localTile.x += CHUNK_WIDTH;
+    if (localTile.y < 0) localTile.y += CHUNK_HEIGHT;
+
+    auto it = m_chunks.find(chunkCoord);
+    if (it == m_chunks.end()) return nullptr;
+
+    ChunkData& chunk = it->second;
+    return &chunk.background_tiles[localTile.y * CHUNK_WIDTH + localTile.x];
+
+};
+
+// Returns nullptr if chunk is non-existant
+const ChunkData* World::getChunk(Coord chunkCoord) {
+    if (m_chunks.find(chunkCoord) == m_chunks.end())
+        return nullptr; 
+    return &m_chunks[chunkCoord];
+};
+
+// Returns false if chunk already exists
+bool World::loadChunk(ChunkData& data) {
+    if (m_chunks.find(data.position) != m_chunks.end())
+        return false;
+
+    // m_chunks[data.position] = data;
+    m_chunks.emplace(data.position, data);//<--TODO: this is probably REALLY inefficient
+    return true;
+}
+
+
+// -------------------
+// ----- MANAGER -----
+// -------------------
+bool WorldManager::loadChunkTMX(const tmx::TileLayer::Chunk& tmxdata) {
+    auto pchunk = this->world.getChunk({tmxdata.position.x, tmxdata.position.y});
+    if (pchunk) {
+        std::cout << "Chunk already exists!\n";
+        return false;
+    }
+
+    ChunkData temp;//<-- construct temp object to store later
+    temp.position.x = tmxdata.position.x;
+    temp.position.y = tmxdata.position.y;
+
+    for (size_t i = 0; i < tmxdata.tiles.size(); ++i) {
+        temp.background_tiles[i] = {tmxdata.tiles[i].ID, 0, true, 0.0f};//<-- GID, isWalkable, friction
+    }
+    // Store chunk
+    return this->world.loadChunk(temp);
+
+}
+
+tmx::TileLayer::Chunk WorldManager::getChunkTMX(Coord chunkCoord) {
+    auto pchunk = this->world.getChunk(chunkCoord);
+    if (!pchunk)
+        return {};
+
+    tmx::TileLayer::Chunk tmxChunk;
+    tmxChunk.position.x = pchunk->position.x;
+    tmxChunk.position.y = pchunk->position.y;
+
+    for (auto& tile : pchunk->background_tiles) {
+        tmx::TileLayer::Tile tempTile;
+        tempTile.ID = tile.ID;
+        tempTile.flipFlags = tile.flipFlags;
+        tmxChunk.tiles.push_back(tempTile);
+    }
+    return tmxChunk;
+}
+
+void WorldManager::initialize(std::weak_ptr<ResourceAllocator> allocator, std::weak_ptr<Player> p, const std::string& game_name) {
     // Performs an initialization of the World object incl.
     // tilesets, chunks and tiles. Extracts from game file
     tmx::Map map;
@@ -23,7 +110,7 @@ void World::initialize(std::weak_ptr<ResourceAllocator> allocator, std::weak_ptr
 }
 
 // TEMP FUNCTION BELOW
-void World::saveMapToTMX(const std::string& filePath) {
+void WorldManager::saveMapToTMX(const std::string& filePath) const {
     pugi::xml_document doc;
 
     // Create the <map> element
@@ -37,12 +124,6 @@ void World::saveMapToTMX(const std::string& filePath) {
     mapNode.append_attribute("tilewidth") = TILE_WIDTH;
     mapNode.append_attribute("tileheight") = TILE_HEIGHT;
     mapNode.append_attribute("infinite") = "1";
-
-    /*
-    <tileset firstgid="1" name="grass" tilewidth="32" tileheight="32" tilecount="64" columns="8">
-  <image source="../assets/textures/tilesheets/TX Tileset Grass.png" width="256" height="256"/>
-    
-    */
 
     // Add grass <tileset> element
     pugi::xml_node tilesetNode = mapNode.append_child("tileset");
@@ -86,16 +167,16 @@ void World::saveMapToTMX(const std::string& filePath) {
     dataNode.append_attribute("encoding") = "csv";
 
     // chunks
-    for (tmx::TileLayer::Chunk& chunk : this->chunks) {
+    for (auto& [coord, chunk] : this->world.m_chunks) {
         // Create chunk node
         pugi::xml_node chunkNode = dataNode.append_child("chunk");
-        chunkNode.append_attribute("x") = chunk.position.x;
-        chunkNode.append_attribute("y") = chunk.position.y;
-        chunkNode.append_attribute("width") = CHUNK_WIDTH;
+        chunkNode.append_attribute("x") = coord.x;
+        chunkNode.append_attribute("y") = coord.y;
+        chunkNode.append_attribute("width")  = CHUNK_WIDTH;
         chunkNode.append_attribute("height") = CHUNK_HEIGHT;
 
         std::ostringstream csvStream;
-        for (tmx::TileLayer::Tile& tile : chunk.tiles) {
+        for (const TileData& tile : chunk.background_tiles) {
             csvStream << std::to_string(tile.ID) + ",";
         }
 
@@ -115,62 +196,66 @@ void World::saveMapToTMX(const std::string& filePath) {
     doc.save_file(filePath.c_str());
 }
 
-// pos argument is in amount of tiles. The tile to pixel
-// conversion happens in this function
-void World::generateRandomChunk(sf::Vector2f pos) {
-    tmx::TileLayer::Chunk tchunk;
-    tchunk.position = tmx::Vector2i(pos.x, pos.y);
-    tchunk.size = tmx::Vector2i(CHUNK_WIDTH, CHUNK_HEIGHT);
-
-    for (int i = 0; i<CHUNK_SIZE; i++) {
-        tmx::TileLayer::Tile ttile;
-        ttile.ID = rand() % 30 + 1;
-        tchunk.tiles.push_back(ttile);
-    }
-    this->chunks.push_back(std::move(tchunk));
-}
-
-//  processes tmx::tile and returns a tile struct
-//  generated from the tmx::tile information
-Tile processTile(const tmx::TileLayer::Tile& tile,   const tmx::Tileset& tileset) {
-    Tile tileModel;
-    tileModel.ID = tile.ID;
-    
-    const auto& tileProperties = tileset.getTile(tile.ID)->properties;
-    for (const auto& property : tileProperties) {
-        if (property.getType() == tmx::Property::Type::Boolean) {
-            tileModel.isWalkable = property.getBoolValue();
-        }
+void WorldManager::generateRandomChunk(Coord pos) {
+    // NEW
+    const ChunkData* pchunk = world.getChunk(pos);
+    if (pchunk) {
+        std::cout << "Tried to generate new chunk at existing position (" << pos.x << ", " << pos.y << ")\n";
+        return; // return if chunk already exists
     }
 
-    return tileModel;
-}
-Chunk processChunk(const tmx::TileLayer::Chunk& chunk, const tmx::Tileset& tileset) {
-    Chunk chunkModel;
-    chunkModel.position.x = chunk.position.x;
-    chunkModel.position.y = chunk.position.y;
+    ChunkData tempChunk;
+    tempChunk.position = pos;
 
-    int tileCounter = 0;
-    for (const auto& tile : chunk.tiles) {
-        chunkModel.background_tiles[tileCounter] = std::move(processTile(tile, tileset));
-        tileCounter++;
+    for (int i = 0; i < CHUNK_SIZE; ++i) {
+        tempChunk.background_tiles[i].ID = rand() % 30 + 1;
+        tempChunk.background_tiles[i].flipFlags = 0;
+        tempChunk.background_tiles[i].isWalkable = true;
+        tempChunk.background_tiles[i].friction = 0.0f;
     }
 
-    return chunkModel;
+    world.loadChunk(tempChunk);
+
 }
+
+// // Processes tmx::tile and returns a tile struct generated from the tmx::tile information
+// TileData processTile(const tmx::TileLayer::Tile& tile, const tmx::Tileset& tileset) {
+//     TileData tileModel;
+//     tileModel.ID = tile.ID;
+//     const auto& tileProperties = tileset.getTile(tile.ID)->properties;
+//     for (const auto& property : tileProperties) {
+//         if (property.getType() == tmx::Property::Type::Boolean) {
+//             tileModel.isWalkable = property.getBoolValue();
+//         }
+//     }
+//     return tileModel;
+// }
+// ChunkData processChunk(const tmx::TileLayer::Chunk& chunk, const tmx::Tileset& tileset) {
+//     ChunkData chunkModel;
+//     chunkModel.position.x = chunk.position.x; // <-- implicit conversion !
+//     chunkModel.position.y = chunk.position.y;
+//     for (size_t i = 0; i < chunk.tiles.size(); ++i) {
+//         chunkModel.background_tiles[i] = processTile(chunk.tiles[i], tileset);
+//     }
+//     return chunkModel;
+// }
 
 //  Extracts chunks from map parameter and
 //  stores it in chunks vector of World.
-void World::loadMap(tmx::Map& map) {
+void WorldManager::loadMap(const tmx::Map& map) {
     const auto& layers = map.getLayers();     // get layers
 
     for (const auto& layer : layers) {      // iterate layers
-        switch (layer->getType()) {         // check layer type
+        switch (layer->getType()) {
             // TileLayer
             case tmx::Layer::Type::Tile: {  
                 const auto& tileLayer = layer->getLayerAs<tmx::TileLayer>();
-                for (const auto& chunk : tileLayer.getChunks()) {   // iterate chunks
-                    this->chunks.push_back(chunk);  
+                for (const auto& chunk : tileLayer.getChunks()) {
+                    //this->coordsToChunkIndex[{chunk.position.x, chunk.position.y}] = this->chunks.size();
+                    //this->chunks.push_back(chunk); // <-- store each chunk
+                    // NEW
+                    if (!this->loadChunkTMX(chunk))
+                        std::cout << "Couldn't load chunk\n";
                 }
                 break;
             }
@@ -179,7 +264,7 @@ void World::loadMap(tmx::Map& map) {
                 const auto& objectLayer = layer->getLayerAs<tmx::ObjectGroup>();
                 if (objectLayer.getName() == "objects") {
                     for (const auto& object : objectLayer.getObjects()) {  // iterate objects
-
+                        // Player location
                         if (object.getName() == "playerLocation") {
                             this->playerPtr.lock()->playerView.setCenter({object.getPosition().x, object.getPosition().y});
                         }
@@ -193,18 +278,17 @@ void World::loadMap(tmx::Map& map) {
     }
 }
 
-void World::createChunkSprites(std::shared_ptr<ResourceAllocator> allocator) {
-    for (auto& chunk : this->chunks) {
+void WorldManager::createChunkSprites(std::shared_ptr<ResourceAllocator> allocator) {
+    for (auto& chunk : this->world.m_chunks) {
         this->chunkSprites.push_back(createChunkSprite(
-            chunk,
+            chunk.second,
             allocator->getTileset("grass"),
             *allocator
-            )
-        );
+        ));
     }
 }
 
-void World::render(std::unique_ptr<sf::RenderWindow>& ren) {    
+void WorldManager::render(std::unique_ptr<sf::RenderWindow>& ren) const {    
     // render chunks
     for (auto& sprite : this->chunkSprites) {
         ren->draw(*sprite);

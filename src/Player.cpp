@@ -7,16 +7,16 @@ Player::Player() {
 }
 
 void Player::stopFollow() {
-    this->entityID = 0;
+    this->entityFollow = 0;
 }
 
 void Player::followUnit(EntityID id) {
-    if (!this->entityID)
-        this->entityID = id;
+    if (!this->entityFollow)
+        this->entityFollow = id;
 }
 
 bool Player::isFollowingUnit() {
-    if (this->entityID != 0)
+    if (this->entityFollow != 0)
         return true;
     else
         return false;

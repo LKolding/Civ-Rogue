@@ -22,27 +22,27 @@ public:
             ) {
                 return;
             }
-            // Create texture rectangle (sf::IntRect) to manipulate and apply to the SpriteComponent
-            sf::IntRect textRect = cm.getComponent<SpriteComponent>(ent)->textureRectangle;
+            sf::IntRect& textRect = cm.getComponent<SpriteComponent>(ent)->textureRectangle;
 
             // Calculate
             textRect.position.x = textRect.size.x * cm.getComponent<AnimationComponent>(ent)->animationIndex;
             textRect.position.y = textRect.size.y * cm.getComponent<AnimationMapComponent>(ent)->stateToAnimation[cm.getComponent<StateComponent>(ent)->currentState].rowIndex;
-            
-            // Update components
-            cm.getComponent<SpriteComponent>(ent)->textureRectangle = textRect;
-            cm.getComponent<AnimationComponent>(ent)->elapsedTime += deltaTime;
 
-            if (cm.getComponent<AnimationComponent>(ent)->elapsedTime >= cm.getComponent<AnimationComponent>(ent)->frameTime) {
-                cm.getComponent<AnimationComponent>(ent)->elapsedTime = 0.0f;
+            AnimationComponent* animComp = cm.getComponent<AnimationComponent>(ent);
+
+            // Update components
+            animComp->elapsedTime += deltaTime;
+
+            if (animComp->elapsedTime >= cm.getComponent<AnimationMapComponent>(ent)->stateToAnimation[cm.getComponent<StateComponent>(ent)->currentState].frameTime) {
+                animComp->elapsedTime = 0.0f;
 
                 // TODO add below in the if clause
                 // animationIndex >= (animationSheetWidth/textRect.width)-1) |
-                if (cm.getComponent<AnimationComponent>(ent)->animationIndex >= cm.getComponent<AnimationMapComponent>(ent)->stateToAnimation[cm.getComponent<StateComponent>(ent)->currentState].frameCount) {
-                    cm.getComponent<AnimationComponent>(ent)->animationIndex = 0;
+                if (animComp->animationIndex >= cm.getComponent<AnimationMapComponent>(ent)->stateToAnimation[cm.getComponent<StateComponent>(ent)->currentState].frameCount) {
+                    animComp->animationIndex = 0;
 
                 } else {
-                    cm.getComponent<AnimationComponent>(ent)->animationIndex++;
+                    animComp->animationIndex++;
                 }
             }
         }

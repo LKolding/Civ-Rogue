@@ -3,6 +3,8 @@
 
 #include <string>
 
+#include <SFML/Graphics.hpp>
+
 #include "imgui.h"
 
 #include "ECS/EntityManager.hpp"
@@ -11,7 +13,7 @@
 
 class ImguiSystem {
 public:
-    void update(EntityManager& em, ComponentManager& cm);
+    void update(const sf::RenderWindow& ren, EntityManager& em, ComponentManager& cm);
 };
 
 #endif

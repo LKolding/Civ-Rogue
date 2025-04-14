@@ -16,7 +16,7 @@
 
 class RenderSystem {
 public:
-    inline void update(std::unique_ptr<sf::RenderWindow>& renderWindow, std::shared_ptr<ResourceAllocator>& allocator, EntityManager& em, ComponentManager& cm) {
+    inline void update(sf::RenderWindow& renderWindow, std::shared_ptr<ResourceAllocator>& allocator, EntityManager& em, ComponentManager& cm) {
         for (auto& ent : em.getAllEntities()) {
             // --------------------------------
             // ----- Check for components -----
@@ -25,16 +25,13 @@ public:
                 // --------------------------------------
                 // ----- Update bounds if necessary -----
                 // --------------------------------------
-                if ( auto pbounds = cm.getComponent<BoundsComponent>(ent)) {
+                if (BoundsComponent* pbounds = cm.getComponent<BoundsComponent>(ent)) {
                     // Get position
-                    sf::Vector2f pos {cm.getComponent<PositionComponent>(ent)->x - pbounds->bounds.size.x/2,  // x //  
-                                      cm.getComponent<PositionComponent>(ent)->y - pbounds->bounds.size.y/2}; // y
-                    
-                    // Get size
-                    // sf::Vector2f size{(float)pbounds->bounds.size.x, (float)pbounds->bounds.size.y};
-                    // Update bounds
-                    pbounds->bounds.position = pos;
-                    // pbounds->bounds.size = size;
+                    if (PositionComponent* pposition = cm.getComponent<PositionComponent>(ent)) {
+                        sf::Vector2f pos {pposition->x - pbounds->bounds.size.x/2,  // x 
+                                          pposition->y - pbounds->bounds.size.y/2}; // y
+                        pbounds->bounds.position = pos; // apply
+                    }
                 }
 
                 // Pointers to components
@@ -56,23 +53,22 @@ public:
                 
                 // Draw sprite
                 if (csprite->isVisible) {
-                    renderWindow->draw(sprite);
+                    renderWindow.draw(sprite);
                 }
                 // Draw hitbox
                 if (DRAW_BOUNDS) {
                     // create drawable shape from BoundsComponent
                     sf::RectangleShape hitbox {{(float)cm.getComponent<BoundsComponent>(ent)->bounds.size.x, (float)cm.getComponent<BoundsComponent>(ent)->bounds.size.y}};
-                    // hitbox.setPosition({cposition->x, cposition->y});
                     hitbox.setPosition({cm.getComponent<BoundsComponent>(ent)->bounds.position.x, cm.getComponent<BoundsComponent>(ent)->bounds.position.y});
                     // appearance
                     hitbox.setFillColor(sf::Color::Transparent);
                     hitbox.setOutlineColor(cm.getComponent<HoverComponent>(ent)->isHovered ? sf::Color::Green : sf::Color::Black);
 
-                    if (cm.getComponent<FollowComponent>(ent) && cm.getComponent<FollowComponent>(ent)->isFollowing)
-                        hitbox.setOutlineColor(sf::Color::Blue); // <---- Set hitbox color to blue if being followed
+                    if (cm.getComponent<SelectComponent>(ent) && cm.getComponent<SelectComponent>(ent)->isSelected)
+                        hitbox.setOutlineColor(sf::Color::Blue); // <---- Set hitbox color to blue if selected
 
-                    hitbox.setOutlineThickness(0.8f);
-                    renderWindow->draw(hitbox);
+                    hitbox.setOutlineThickness(1.0f);
+                    renderWindow.draw(hitbox);
                 }
             }
         }

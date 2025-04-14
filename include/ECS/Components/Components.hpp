@@ -27,14 +27,14 @@ struct SpriteComponent {
 // ----- Animation -----
 // ---------------------
 struct AnimationComponent { 
-    float elapsedTime; 
-    float frameTime; 
+    float elapsedTime;
     int animationIndex; 
     int animationIndexMax; 
 };
 struct AnimationFrameData { // single animation (notice: this isn't a component!)
     int rowIndex;
     int frameCount;
+    float frameTime;
 };
 struct AnimationMapComponent { //maps states to animations (AnimationFrameData)
     std::unordered_map<std::string, AnimationFrameData> stateToAnimation;
@@ -61,9 +61,9 @@ struct CollisionComponent { bool isStaticBody = false; };
 // ----- Entity behavior components -----
 // --------------------------------------
 // Makes entity controllable
-struct ControlComponent {};
+struct ControlComponent { bool isControlled = false; };
 // View can follow entity
-struct FollowComponent { bool isFollowing = false; };
+struct SelectComponent { bool isSelected = false; };
 // Can be hovered
 struct HoverComponent { bool isHovered = false; };
 // Entities can have an objective (a point in world space),

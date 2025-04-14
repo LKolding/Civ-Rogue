@@ -6,9 +6,18 @@
 
 class InputManager {
 public:
+    // ------------------
+    // ----- Fields -----
+    // ------------------
+    
     std::map<sf::Mouse::Button, bool> mkeyState;
     std::map<sf::Keyboard::Key, bool> keyState;
-    float mouseWheelScroll; // sf mouseScroll.delta
+    float mouseWheelScroll;  // sf mouseScroll.delta
+
+    // -------------------
+    // ----- Methods -----
+    // -------------------
+
     InputManager();
     void reset();
     void update(const sf::Event& event);

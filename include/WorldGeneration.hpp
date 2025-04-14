@@ -12,11 +12,11 @@ tiles:
 #include <Types.hpp>
 
 
-struct Tile {
+struct TileData {
     uint16_t ID;
 };
 
-struct Chunk {
+struct ChunkData {
     
 };
 

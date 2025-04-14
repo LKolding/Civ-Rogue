@@ -22,7 +22,7 @@ public:
     inline void update(sf::RenderWindow& ren, EntityManager& em, ComponentManager& cm) {
         auto new_pos = sf::Mouse::getPosition(ren);
 
-        if (world_pos == ren.mapPixelToCoords(new_pos)) {
+        if (world_pos == ren.mapPixelToCoords(new_pos)) { // <- can I not just check against window coordinates here?
             return;  // skip if mouse hasn't moved
         } else {
             mouse_pos = new_pos;

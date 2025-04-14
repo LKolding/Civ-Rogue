@@ -3,12 +3,8 @@
 
 #include <SFML/Graphics.hpp>
 
-#include <memory>
-
-#include "coordinate_calculators.hpp"
 #include "constants.h"
 
-#include "Player.hpp"
 #include "ECS/EntityManager.hpp"
 #include "ECS/ComponentManager.hpp"
 

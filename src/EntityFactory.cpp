@@ -72,27 +72,28 @@ EntityID buildNinja(ComponentManager& cm, EntityManager& em, float x, float y) {
     
     cm.addComponent<PositionComponent>(id, {XPOSITION, YPOSITION});
     // cm.addComponent<HealthComponent>(id, {MAX_HEALTH, MAX_HEALTH});
-    cm.addComponent<SpriteComponent>(id, {{{0,0},{TEX_SIZE,TEX_SIZE}}, {TEX_SIZE/2, TEX_SIZE/2}, TEX_PATH, false, true});
+    cm.addComponent<SpriteComponent>(id, {{{0,0},{TEX_SIZE,TEX_SIZE}}, {TEX_SIZE/2, TEX_SIZE/2}, TEX_PATH});
     cm.addComponent<StateComponent>(id, {"IDLE"});
 
-    cm.addComponent<AnimationComponent>(id, {0, 0.12f, 0, 5});
+    cm.addComponent<AnimationComponent>(id, {0, 0, 5});
     // construct animation map component (hopefully temporary solution)
     AnimationMapComponent animMap;
     animMap.textureHeightPerRow = TEX_SIZE;
-    animMap.stateToAnimation["IDLE"] = { 0,5 };
-    animMap.stateToAnimation["WALK"] = { 1,5 };
-    animMap.stateToAnimation["ATCK"] = { 2,0 };
+    animMap.stateToAnimation["IDLE"] = { 0, 5, 0.22f };
+    animMap.stateToAnimation["WALK"] = { 1, 5, 0.08f };
+    animMap.stateToAnimation["ATCK"] = { 2, 0 };
     
     cm.addComponent<AnimationMapComponent>(id, animMap); //apply constructed component
     cm.addComponent<FlipComponent>(id, {});
 
-    cm.addComponent<CollisionComponent>(id, {});
     // Hitbox gets declared here
     cm.addComponent<BoundsComponent>(id, {{{XPOSITION, YPOSITION},{(float)TEX_SIZE-12, (float)TEX_SIZE-12}}});
+    cm.addComponent<CollisionComponent>(id, {});
+    
     cm.addComponent<MovementComponent>(id, {120.0f, 0.0f, 0.0f});
     cm.addComponent<HoverComponent>(id, {});
-    cm.addComponent<FollowComponent>(id, {});
-    cm.addComponent<ObjectiveComponent>(id, {500, 500, true});
+    cm.addComponent<SelectComponent>(id, {});
+    cm.addComponent<ObjectiveComponent>(id, {});
 
     return id;
 }
