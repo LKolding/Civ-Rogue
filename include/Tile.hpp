@@ -25,9 +25,7 @@ struct ChunkData {
 };
 
 
-
-
-
+// Custom hash function
 namespace std {
     template <>
     struct hash<Coord> {

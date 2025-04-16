@@ -13,7 +13,7 @@
     // for when moving bodies are colliding with other moving or static bodies
     // and not if static bodies are ever colliding with any other
 
-    const float COLLISION_SYSTEM_DELAY = 0.001;// <-- increase/decrease to have fun
+const float COLLISION_SYSTEM_DELAY = 0.005;// <-- increase/decrease to have fun
 
 // Calculation functions
 bool inline checkCollision(const sf::FloatRect& a, const sf::FloatRect& b) {
@@ -137,11 +137,11 @@ public:
                     continue; // skip if no collision component
 
                 // pointers to the first and the other body
-                BoundsComponent *bounds2 = cm.getComponent<BoundsComponent>(ent2);
                 BoundsComponent *pbounds1 = cm.getComponent<BoundsComponent>(ent);
+                BoundsComponent *pbounds2 = cm.getComponent<BoundsComponent>(ent2);
 
                 // Collision checks
-                if (checkCollision(pbounds1->bounds, bounds2->bounds)) {
+                if (checkCollision(pbounds1->bounds, pbounds2->bounds)) {
                     // If bounds2 == static body
                     if ( cm.getComponent<CollisionComponent>(ent2)->isStaticBody) {
                         //resolveStaticCollision( );
@@ -151,8 +151,8 @@ public:
                     resolveCollision(
                         *cm.getComponent<PositionComponent>(ent),
                         *cm.getComponent<PositionComponent>(ent2),
-                        *cm.getComponent<BoundsComponent>(ent),
-                        *cm.getComponent<BoundsComponent>(ent2)
+                        *pbounds1,
+                        *pbounds2
                     );       
                 };
             }

@@ -22,19 +22,23 @@
 #include <random>
 
 // MY STUFF
-#include "ResourceAllocator.hpp"
+#include "ResourceManager.hpp"
 #include "Tile.hpp"
 #include "Player.hpp"
+
+#include "ECS/EntityManager.hpp"
+#include "ECS/ComponentManager.hpp"
+#include "ECS/Components/Components.hpp"
 
 #include "coordinate_calculators.hpp"
 #include "constants.h"
 #include "sprite_constructors.hpp"
 
-
+// World data (basically just a wrapper for unordered_map of chunks)
 class World {
 public:
     std::unordered_map<Coord, ChunkData> m_chunks;
-    // Returns nullptr if chunk is non-existant
+    // Returns nullptr if chunk is non-existent
     const ChunkData* getChunk(Coord chunkCoord);
     TileData*  getTile(Coord tileCoord);
 
@@ -44,29 +48,28 @@ public:
 // WorldManager
 class WorldManager {
 public:
-    // NEW
+    World world;
+
+    // TMX stuff
+    // Loads chunk from tmxdata and converts it into internal ChunkData class
     bool loadChunkTMX(const tmx::TileLayer::Chunk& tmxdata);
     // Converts and returns chunk from internal ChunkData class into tmx::Chunk 
     tmx::TileLayer::Chunk getChunkTMX(Coord chunkCoord);
+    void saveMapToTMX(const std::string& filePath, EntityManager& em, ComponentManager& cm) const;
 
-
-    void initialize(std::weak_ptr<ResourceAllocator> allocator, std::weak_ptr<Player> p, const std::string& game_name);
-    void saveMapToTMX(const std::string& filePath) const;
+    void initialize(std::weak_ptr<ResourceManager> allocator, std::weak_ptr<Player> p, const std::string& game_name);
     
     void generateRandomChunk(Coord pos);
     //  Render
-    void createChunkSprites(std::shared_ptr<ResourceAllocator> allocator);
+    void createChunkSprites(std::shared_ptr<ResourceManager> allocator);
     void render(std::unique_ptr<sf::RenderWindow> &ren) const;
 
 private:
-    void createGrassTileSprite(unsigned int &ID, sf::Vector2f pos, ResourceAllocator& allocator);
+    void createGrassTileSprite(unsigned int &ID, sf::Vector2f pos, ResourceManager& allocator);
     void loadMap(const tmx::Map& map);
     
     std::vector<std::unique_ptr<sf::Sprite>> chunkSprites;
-
-    // NEW
-    World world;
-
     std::weak_ptr<Player> playerPtr;
+    std::weak_ptr<ResourceManager> resourceAllocatorPtr;
 };
 #endif

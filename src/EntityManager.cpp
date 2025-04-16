@@ -15,7 +15,7 @@ EntityID EntityManager::createEntity() {
 
 void EntityManager::destroyEntity(EntityID id) {
     freeIDs.push_back(id);
-    
+
 }
 
 
@@ -26,8 +26,3 @@ std::vector<EntityID> EntityManager::getAllEntities() {
     }
     return entities;
 }
-
-/*
-void EntityManager::renderArrow(sf::Vector2f mouse) {
-    this->addEntity(buildBluePointer(this->allocator_p, mouse.x, mouse.y));
-}*/

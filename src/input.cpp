@@ -1,9 +1,6 @@
 #include "input.hpp"
 
 InputManager::InputManager() {
-    this->reset();  // initializes keymap(s)
-}
-void InputManager::reset() {
     this->keyState[sf::Keyboard::Key::W] = false;
     this->keyState[sf::Keyboard::Key::A] = false;
     this->keyState[sf::Keyboard::Key::S] = false;
@@ -11,20 +8,23 @@ void InputManager::reset() {
 
     this->keyState[sf::Keyboard::Key::Escape] = false;
     this->keyState[sf::Keyboard::Key::Space]  = false;
-
+    this->keyState[sf::Keyboard::Key::LShift] = false;
+    
     this->mkeyState[sf::Mouse::Button::Left]  = false;
     this->mkeyState[sf::Mouse::Button::Right] = false;
     this->mkeyState[sf::Mouse::Button::Middle] = false;
     this->mouseWheelScroll = 0.0f;
+
+    this->reset(); 
+}
+
+void InputManager::reset() {
+    keyJustPressed.clear();
+    keyJustReleased.clear();
+    this->mouseWheelScroll = 0.0f;
 }
 
 void InputManager::update(const sf::Event& event) {
-    //  mouse moved
-    if (auto e = event.getIf<sf::Event::MouseMoved>()) {
-        auto new_pos = sf::Mouse::getPosition();
-
-        // TODO (if necessary??)
-        }
     //  mouse pressed
     if (auto e = event.getIf<sf::Event::MouseButtonPressed>() ) {
         if (e->button == sf::Mouse::Button::Left) {
@@ -39,6 +39,13 @@ void InputManager::update(const sf::Event& event) {
     }
     //  key  pressed
     if (auto e = event.getIf<sf::Event::KeyPressed>()) {
+        // Update keyJustPressed map
+        auto key = e->code;
+        if (!keyState[key]) // only trigger justPressed if it wasn't already held
+            keyJustPressed[key] = true;
+        keyState[key] = true;
+
+
         if (e->code == sf::Keyboard::Key::W) {
             this->keyState[sf::Keyboard::Key::W] = true;
         } else
@@ -56,6 +63,9 @@ void InputManager::update(const sf::Event& event) {
         } else
         if (e->code == sf::Keyboard::Key::Space) {
             this->keyState[sf::Keyboard::Key::Space] = true;
+        } else
+        if (e->code == sf::Keyboard::Key::LShift) {
+            this->keyState[sf::Keyboard::Key::LShift] = true;
         }
     }
     //  mouse released
@@ -72,6 +82,11 @@ void InputManager::update(const sf::Event& event) {
     }
     //  key  released
     if (auto e = event.getIf<sf::Event::KeyReleased>()) {
+        // Update keyJustReleased map
+        sf::Keyboard::Key key = e->code;
+        keyJustReleased[key] = true;
+        keyState[key] = false;
+
         if (e->code == sf::Keyboard::Key::W) {
             this->keyState[sf::Keyboard::Key::W] = false;
         } else
@@ -89,6 +104,9 @@ void InputManager::update(const sf::Event& event) {
         } else
         if (e->code == sf::Keyboard::Key::Space) {
             this->keyState[sf::Keyboard::Key::Space] = false;
+        } else
+        if (e->code == sf::Keyboard::Key::LShift) {
+            this->keyState[sf::Keyboard::Key::LShift] = false;
         }
     }
     //  mousewheel

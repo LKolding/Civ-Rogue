@@ -7,19 +7,18 @@
 //tmx
 #include <tmxlite/TileLayer.hpp>
 // my stuff
-#include "ResourceAllocator.hpp"
+#include "ResourceManager.hpp"
 #include "World.hpp"
 
-//  Chunks and tiles
 
 inline std::unique_ptr<sf::Sprite> createTileSprite(
     TileData& tile,             // TILE STRUCT
     tmx::Tileset& tileset,      // TMX TILESET
     sf::Vector2f& pos,          // SPRITE POSITION
-    ResourceAllocator& allocator
+    ResourceManager& allocator
     ) {
     // Tile sprite
-    auto ptileSprite = std::make_unique<sf::Sprite>(*allocator.loadTexture("../assets/textures/tilesheets/TX Tileset Grass.png")); 
+    auto ptileSprite = std::make_unique<sf::Sprite>(*allocator.loadTexture(tileset.getImagePath()));//<- texture
     // Tileset tile
     const tmx::Tileset::Tile* tileset_tile = tileset.getTile(tile.ID);
     // extract size and position
@@ -27,8 +26,7 @@ inline std::unique_ptr<sf::Sprite> createTileSprite(
     tmx::Vector2u image_size = tileset_tile->imageSize;
     // update sprite
     ptileSprite->setPosition(pos);
-    //ptileSprite->setTexture();
-    ptileSprite->setTextureRect({{(int)tmx_texture_rect.x, (int)tmx_texture_rect.y}, {(int)image_size.x, (int)image_size.y}}); // weird hack, but it works
+    ptileSprite->setTextureRect({{(int)tmx_texture_rect.x, (int)tmx_texture_rect.y}, {(int)image_size.x, (int)image_size.y}});
     // return sprite
     return ptileSprite;
 }
@@ -37,7 +35,7 @@ inline std::unique_ptr<sf::Sprite> createTileSprite(
 inline std::unique_ptr<sf::RenderTexture> createChunkTexture(
     ChunkData& chunk, 
     tmx::Tileset& tileset,
-    ResourceAllocator& allocator
+    ResourceManager& allocator
     ) {
     // init RenderTexture
     auto rchunkTexture = std::make_unique<sf::RenderTexture>();
@@ -68,7 +66,7 @@ inline std::unique_ptr<sf::RenderTexture> createChunkTexture(
 inline std::unique_ptr<sf::Sprite> createChunkSprite(
     ChunkData& chunk, 
     tmx::Tileset& tileset,
-    ResourceAllocator& allocator
+    ResourceManager& allocator
 ) {
     // create texture and store pointer to it
     auto pchunkTex = std::make_shared<sf::Texture>(createChunkTexture(chunk, tileset, allocator)->getTexture());

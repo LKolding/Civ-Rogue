@@ -5,7 +5,7 @@
 // sfml
 #include <SFML/Graphics.hpp>
 // my stuff
-#include "ResourceAllocator.hpp"
+#include "ResourceManager.hpp"
 
 #include "ECS/Components/Components.hpp"
 #include "ECS/EntityManager.hpp"

@@ -23,27 +23,26 @@ public:
                 return;
             }
             sf::IntRect& textRect = cm.getComponent<SpriteComponent>(ent)->textureRectangle;
+            // Get component pointers
+            AnimationMapComponent* animapComp = cm.getComponent<AnimationMapComponent>(ent);
+            AnimationComponent* animComp = cm.getComponent<AnimationComponent>(ent);
+            StateComponent* stateComp = cm.getComponent<StateComponent>(ent);
 
             // Calculate
-            textRect.position.x = textRect.size.x * cm.getComponent<AnimationComponent>(ent)->animationIndex;
-            textRect.position.y = textRect.size.y * cm.getComponent<AnimationMapComponent>(ent)->stateToAnimation[cm.getComponent<StateComponent>(ent)->currentState].rowIndex;
+            textRect.position.x = textRect.size.x * animComp->animationIndex;
+            textRect.position.y = textRect.size.y * animapComp->stateToAnimation[stateComp->currentState].rowIndex;
 
-            AnimationComponent* animComp = cm.getComponent<AnimationComponent>(ent);
-
-            // Update components
+            // Update component(s)
             animComp->elapsedTime += deltaTime;
 
-            if (animComp->elapsedTime >= cm.getComponent<AnimationMapComponent>(ent)->stateToAnimation[cm.getComponent<StateComponent>(ent)->currentState].frameTime) {
+            if (animComp->elapsedTime >= animapComp->stateToAnimation[stateComp->currentState].frameTime) {
                 animComp->elapsedTime = 0.0f;
 
-                // TODO add below in the if clause
-                // animationIndex >= (animationSheetWidth/textRect.width)-1) |
-                if (animComp->animationIndex >= cm.getComponent<AnimationMapComponent>(ent)->stateToAnimation[cm.getComponent<StateComponent>(ent)->currentState].frameCount) {
-                    animComp->animationIndex = 0;
-
-                } else {
+                if (animComp->animationIndex >= animapComp->stateToAnimation[stateComp->currentState].frameCount)
+                    animComp->animationIndex = 0;//<-- if reached end of animation, reset animationIndex
+                else 
                     animComp->animationIndex++;
-                }
+                
             }
         }
     }

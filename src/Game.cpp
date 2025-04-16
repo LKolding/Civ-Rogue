@@ -1,15 +1,20 @@
 #include "Game.hpp"
 
 
-const sf::Time targetFrameTime = sf::seconds(1.f / 60);  // 60 fps (unused)
+const sf::Time targetFrameTime = sf::seconds(1.f / 120); // 120 fps
 const char* gamefilepath = "../saveGames/game1.tmx"; 
 
+
 Game::Game() {
+    if (!sf::Shader::isAvailable())
+        std::cout << "Shaders are not available. Will proceed regardless...\n";
+
     this->inputManager = std::make_unique<InputManager>();
-    this->allocator = std::make_shared<ResourceAllocator>();
+    this->allocator = std::make_shared<ResourceManager>();
     this->renderWindow = std::make_unique<sf::RenderWindow>(sf::VideoMode({static_cast<int>(WINDOW_WIDTH), static_cast<int>(WINDOW_HEIGHT)}), "klunkabadul");
+
     if (!ImGui::SFML::Init(*this->renderWindow)) // init imgui
-        std::cout << "[GAME ERROR] Could not initiliaze ImGui.\n";
+        throw std::runtime_error("[GAME ERROR] Could not initiliaze ImGui");
     else
         this->renderWindow->resetGLStates();
 }
@@ -19,12 +24,8 @@ void Game::initializeGame() {
     this->player = std::make_shared<Player>();
     //  read game file and initialize world
     this->worldManager.initialize(this->allocator, this->player, gamefilepath);
-
     //  Chunks generation
     this->worldManager.generateRandomChunk({0,0});  // center
-    this->worldManager.generateRandomChunk({1,0});  // right
-    this->worldManager.generateRandomChunk({-1,0}); // left
-
     // Generate sprites for all chunks
     this->worldManager.createChunkSprites(this->allocator);
     
@@ -44,12 +45,14 @@ void Game::updateSystems(float deltaTime) {
     
     objectiveSystem.update(this->entityManager, this->componentManager);
 
-    if (!this->player->isFollowingUnit())
-        viewpanSystem.update(deltaTime, this->player->playerView, *this->inputManager);
+    viewzoomSystem.update(this->player->playerView, *this->inputManager);
 
+    if (!this->player->isFollowingUnit()) // I should make a minimap system...
+        viewpanSystem.update(deltaTime, *this->player, *this->inputManager);
     else 
         controlSystem.update(this->entityManager, this->componentManager, *this->inputManager, *this->player);
 
+    chunkgenSystem.update(this->entityManager, this->componentManager, this->worldManager);
 }
 // Polls event from SFML, sends it to ImGui ProcessEvent() and to inputManager->update()
 // Also checks for Event::Closed and returns false if so, otherwise returns true; 
@@ -57,7 +60,7 @@ bool Game::handleEventQueue() {
     while (const std::optional event = this->renderWindow->pollEvent()) {
         // Event::Closed
         if (event->is<sf::Event::Closed>()) {
-            this->worldManager.saveMapToTMX(gamefilepath);
+            this->worldManager.saveMapToTMX(gamefilepath, this->entityManager, this->componentManager);
             this->renderWindow->close();
             return false;// <-- escape loop and send exit signal
         }
@@ -69,7 +72,7 @@ bool Game::handleEventQueue() {
     return true;
 }
 
-void Game::gameLoop() {
+void Game::gameLoop() {    
     while (this->renderWindow->isOpen()) {
         // 1.  Frame start: Calculate deltaTime
         sf::Time frameStartTime = clock.restart();
@@ -77,39 +80,62 @@ void Game::gameLoop() {
 
         // 2.  Input
         if (!this->handleEventQueue())                                // Handle event(s)
-            break;
+            break;//<-- break (upon sf::Event::Closed)
 
         // 3. ImGui
-        ImGui::SFML::Update(*this->renderWindow, frameStartTime);
+        ImGui::SFML::Update(*this->renderWindow, frameStartTime);     // Update imgui
 
-        // 4.  Update systems (incl. imgui system)
-        this->updateSystems(deltaTime);
+        // 4.  Update systems (incl. imgui system[!] )
+        this->updateSystems(deltaTime);                               // Update systems
 
         // 5.  Render
         this->renderWindow->clear();
         this->renderWindow->setView(player->playerView);         // Set view for world rendering
-        this->render();                                          // Render all game tiles & entities
+        this->render();                                          // Render all game tiles, entities and minimap
 
         ImGui::SFML::Render(*this->renderWindow);                // render imgui
+        this->renderWindow->display();                           // display
 
-        this->renderWindow->display();
+        this->inputManager->reset();                             // reset inputManager
 
         // 6.  FPS mangement (currently unused eg. no frame cap applied)
         sf::Time frameTime = clock.getElapsedTime();
         if (frameTime < targetFrameTime) {
             //sf::sleep(targetFrameTime - frameTime);
         }
+
     } // while loop
     ImGui::SFML::Shutdown();
 }
 
 void Game::render() {
-    this->worldManager.render(this->renderWindow);  // render all background tiles (all chunks)
+    // ----------------------
+    // ----- BACKGROUND -----
+    // ----------------------
+
+    sf::Color BLUE_COLOR = {8, 85, 177, 255};
+    this->renderWindow->clear(BLUE_COLOR);  // blue background
+
+    this->worldManager.render(this->renderWindow); // render all background tiles (all chunks)
     renderSystem.update(*renderWindow, this->allocator, this->entityManager, this->componentManager);
 
     this->renderWindow->setView(this->renderWindow->getDefaultView());  // escape playerView
     // isFollowing/freecam
-    drawString(this->renderWindow, this->allocator, this->player->isFollowingUnit() ? "controlling character" : "free cam");
+    drawString(this->renderWindow, this->allocator, this->player->isFollowingUnit() ? "controlling character : ESC to stop" : "free cam");
+    // Minimap
+    sf::RectangleShape minimapBackground;
+    minimapBackground.setSize({(float)(WINDOW_WIDTH)*(this->player->minimapView.getViewport().size.x), (float)(WINDOW_HEIGHT)*(this->player->minimapView.getViewport().size.y)});
+    minimapBackground.setPosition({(WINDOW_WIDTH)*0.75f, 0});
+    minimapBackground.setFillColor(BLUE_COLOR);
+    minimapBackground.setOutlineColor(sf::Color::White);
+    minimapBackground.setOutlineThickness(5.0f);
+    this->renderWindow->draw(minimapBackground);
+
+    this->player->minimapView.setCenter(this->player->playerView.getCenter()); // syncronize views
+
+    this->renderWindow->setView(this->player->minimapView);
+    this->worldManager.render(this->renderWindow);    // render minimap
+
     this->renderWindow->setView(player->playerView);  // reset view
     
 }
@@ -117,7 +143,5 @@ void Game::render() {
 int Game::run() {
     this->initializeGame();
     this->gameLoop();  // keeps running until RenderWindow closes
-
     return 0;
-
 }

@@ -1,11 +1,12 @@
-#include "ResourceAllocator.hpp"
+#include "ResourceManager.hpp"
 
-void ResourceAllocator::loadTilesetsFromTMX(std::string filepath) {
+// May throw exception
+void ResourceManager::loadTilesetsFromTMX(const std::string& filepath) {
     tmx::Map map;
 
-    if (!map.load(filepath)) {
-        throw std::runtime_error("Couldn't load. World is left uninitialized...");
-    }
+    if (!map.load(filepath))
+        throw std::runtime_error("[GAME ERROR] Couldn't load. World is left uninitialized...");
+    
     // Extract tileset(s) from .tmx file
     const auto& tilesets = map.getTilesets();
     for(const auto& tileset : tilesets) {
@@ -13,14 +14,14 @@ void ResourceAllocator::loadTilesetsFromTMX(std::string filepath) {
     }
 }
 
-ResourceAllocator::ResourceAllocator() {
+ResourceManager::ResourceManager() {
     if (!this->default_font.openFromFile("../assets/fonts/BD_Cartoon_Shout.ttf"))
-        printf("[Error] Couldn't load font\n");
+        throw std::runtime_error("[GAME ERROR] Couldn't load font");
 
-    loadTilesetsFromTMX("../assets/tmx/maps/tilesets.tmx");
+    loadTilesetsFromTMX("../assets/tilesets/tilesets.tmx");
 }
 
-std::shared_ptr<sf::Texture> ResourceAllocator::loadTexture(const std::string& filename) {
+std::shared_ptr<sf::Texture> ResourceManager::loadTexture(const std::string& filename) {
         auto it = textures.find(filename);
         if (it != textures.end()) {
             return it->second; // Return existing texture if already loaded
@@ -36,11 +37,11 @@ std::shared_ptr<sf::Texture> ResourceAllocator::loadTexture(const std::string& f
         return nullptr; // Return null if loading failed
     }
 
-sf::Vector2u ResourceAllocator::getSizeOfTexture(std::string filename) {
+sf::Vector2u ResourceManager::getSizeOfTexture(const std::string& filename) {
     return this->textures[filename].get()->getSize();
 }
 
-sf::IntRect ResourceAllocator::locateTexOnSheet(int tileID, std::string filename) {
+sf::IntRect ResourceManager::locateTexOnSheet(int tileID, std::string filename) {
     sf::IntRect loc;
     
     sf::Vector2u sheet_size = this->getSizeOfTexture(filename);
@@ -58,15 +59,28 @@ sf::IntRect ResourceAllocator::locateTexOnSheet(int tileID, std::string filename
     return loc;
 }
 
-void ResourceAllocator::addTileset(const tmx::Tileset &tileset) {
+void ResourceManager::addShader(const std::string& filename) {
+    std::shared_ptr<sf::Shader> shader = std::make_shared<sf::Shader>();
+     
+    if (!shader->loadFromFile(filename, sf::Shader::Type::Fragment))
+        std::cout << "Could not load shaderfile\n";
+
+    this->m_shaders[filename] = shader;
+}
+// Should probably return weak ptr ?
+sf::Shader* ResourceManager::getShader(const std::string& filename) {
+    return this->m_shaders[filename].get();
+}
+
+void ResourceManager::addTileset(const tmx::Tileset &tileset) {
     this->loadTexture(tileset.getImagePath());
     this->tilesets.insert({tileset.getName(), std::make_shared<tmx::Tileset>(tileset)});
 }
 
-tmx::Tileset& ResourceAllocator::getTileset(std::string name) {
+tmx::Tileset& ResourceManager::getTileset(const std::string& name) {
     return *this->tilesets[name];
 }
 
-void ResourceAllocator::addChunkTexturePointer(std::shared_ptr<sf::Texture> tex, std::pair<float,float>& pos) {
+void ResourceManager::addChunkTexturePointer(std::shared_ptr<sf::Texture> tex, std::pair<float,float>& pos) {
     chunksTextures[pos] = tex;
 }

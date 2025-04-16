@@ -19,7 +19,7 @@
 #include "constants.h"
 #include "TextDraw.hpp"
 // Game stuff
-#include "ResourceAllocator.hpp"
+#include "ResourceManager.hpp"
 #include "Player.hpp"
 #include "World.hpp"
 
@@ -31,11 +31,13 @@
 #include "ECS/Systems/CursorSystem.hpp"
 #include "ECS/Systems/RenderSystem.hpp"
 #include "ECS/Systems/ViewpanSystem.hpp"
+#include "ECS/Systems/ViewzoomSystem.hpp"
 #include "ECS/Systems/InputSystem.hpp"
 #include "ECS/Systems/ObjectiveSystem.hpp"
 #include "ECS/Systems/StateSystem.hpp"
 #include "ECS/Systems/ImguiSystem.hpp"
 #include "ECS/Systems/ControlSystem.hpp"
+#include "ECS/Systems/ChunkgenSystem.hpp"
 // entities / components + managers
 #include "ECS/EntityManager.hpp"
 #include "ECS/ComponentManager.hpp"
@@ -49,7 +51,7 @@ public:
     Game();
 
 private:
-    std::shared_ptr<ResourceAllocator> allocator;
+    std::shared_ptr<ResourceManager> allocator;
     std::shared_ptr<Player> player;
 
     std::unique_ptr<sf::RenderWindow> renderWindow;
@@ -65,11 +67,13 @@ private:
     CursorSystem cursorSystem;
     RenderSystem renderSystem;
     ViewpanSystem viewpanSystem;
+    ViewzoomSystem viewzoomSystem;
     ControlSystem controlSystem;
     InputSystem inputSystem;
     ObjectiveSystem objectiveSystem;
     StateSystem stateSystem;
     ImguiSystem imguiSystem;
+    ChunkgenSystem chunkgenSystem;
 
     std::unique_ptr<InputManager> inputManager;
 
@@ -81,7 +85,6 @@ private:
 
     void gameLoop();
     void render();
-    void initialize();
 };
 
 #endif

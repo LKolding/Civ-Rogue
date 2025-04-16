@@ -16,7 +16,7 @@
 
 class RenderSystem {
 public:
-    inline void update(sf::RenderWindow& renderWindow, std::shared_ptr<ResourceAllocator>& allocator, EntityManager& em, ComponentManager& cm) {
+    inline void update(sf::RenderWindow& renderWindow, std::shared_ptr<ResourceManager>& allocator, EntityManager& em, ComponentManager& cm) {
         for (auto& ent : em.getAllEntities()) {
             // --------------------------------
             // ----- Check for components -----
@@ -50,24 +50,23 @@ public:
                     // apply scale transformation regardless of change in value
                     sprite.setScale({flip->isFlipped ? -1.f : 1.f, 1.f}); 
                 }
-                
                 // Draw sprite
                 if (csprite->isVisible) {
                     renderWindow.draw(sprite);
                 }
-                // Draw hitbox
+                // Draw hitbox/selected box
                 if (DRAW_BOUNDS) {
+                    if (!cm.getComponent<HoverComponent>(ent)->isHovered && !cm.getComponent<SelectComponent>(ent)->isSelected)
+                        continue;// <-- skip if neither selected nor hovered
+
                     // create drawable shape from BoundsComponent
                     sf::RectangleShape hitbox {{(float)cm.getComponent<BoundsComponent>(ent)->bounds.size.x, (float)cm.getComponent<BoundsComponent>(ent)->bounds.size.y}};
                     hitbox.setPosition({cm.getComponent<BoundsComponent>(ent)->bounds.position.x, cm.getComponent<BoundsComponent>(ent)->bounds.position.y});
                     // appearance
                     hitbox.setFillColor(sf::Color::Transparent);
-                    hitbox.setOutlineColor(cm.getComponent<HoverComponent>(ent)->isHovered ? sf::Color::Green : sf::Color::Black);
+                    hitbox.setOutlineColor(cm.getComponent<HoverComponent>(ent)->isHovered ? sf::Color::Green : sf::Color::Blue);//<- green if hovered, blue if selected
 
-                    if (cm.getComponent<SelectComponent>(ent) && cm.getComponent<SelectComponent>(ent)->isSelected)
-                        hitbox.setOutlineColor(sf::Color::Blue); // <---- Set hitbox color to blue if selected
-
-                    hitbox.setOutlineThickness(1.0f);
+                    hitbox.setOutlineThickness(cm.getComponent<HoverComponent>(ent)->isHovered ? 1.5f : 1.0f);
                     renderWindow.draw(hitbox);
                 }
             }

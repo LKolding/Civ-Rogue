@@ -30,17 +30,18 @@ public:
         }
 
         for (auto& ent : em.getAllEntities()) {  // iterate entities
-            if (cm.getComponent<HoverComponent>(ent)) {
-                // -----------------------
-                // ----- Hover logic -----
-                // -----------------------
-                // If being hovered
-                if (isEntityHovered(cm, ent, this->world_pos)) {
-                    cm.getComponent<HoverComponent>(ent)->isHovered = true;
-                // If not, AND the hover component is set to true, switch it
-                } else if ( cm.getComponent<HoverComponent>(ent)->isHovered) {
-                    cm.getComponent<HoverComponent>(ent)->isHovered = false;  //switch
-                }
+            auto phover = cm.getComponent<HoverComponent>(ent); 
+            if (!phover)
+                continue;
+            // -----------------------
+            // ----- Hover logic -----
+            // -----------------------
+            // If being hovered
+            if (isEntityHovered(cm, ent, this->world_pos)) {
+                phover->isHovered = true;
+            // If not, AND the hover component is set to true, switch it
+            } else if (phover->isHovered) {
+                phover->isHovered = false;  //switch
             }
         }
 

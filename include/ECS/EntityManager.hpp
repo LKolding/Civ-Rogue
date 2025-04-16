@@ -3,10 +3,8 @@
 
 #include <memory>
 #include <vector>
-#include <typeinfo>
-#include <typeindex>
 
-#include "ResourceAllocator.hpp"
+#include "ResourceManager.hpp"
 
 #include "constants.h" // EntityID
 
@@ -14,15 +12,10 @@
 //  MANAGER CLASS
 class EntityManager {
 public:
-    
     EntityID createEntity();
     void destroyEntity(EntityID id);
 
     std::vector<EntityID> getAllEntities();
-
-    //void renderArrow(sf::Vector2f mouse);
-
-
 
 private:
     EntityID nextID;

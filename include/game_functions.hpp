@@ -12,13 +12,11 @@
 
 
 bool inline isEntityHovered(ComponentManager& cm, EntityID ent, sf::Vector2f mouse_pos) {
-    if (ent) {
-        auto bounds = cm.getComponent<BoundsComponent>(ent)->bounds;
-        if (bounds.contains(mouse_pos)) {
-            return true;
-        }
-    }
-    return false;
+    auto bounds = cm.getComponent<BoundsComponent>(ent)->bounds;
+    if (bounds.contains(mouse_pos))
+        return true;
+    else
+        return false;
 }
 
 #endif

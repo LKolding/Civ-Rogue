@@ -80,7 +80,7 @@ EntityID buildNinja(ComponentManager& cm, EntityManager& em, float x, float y) {
     AnimationMapComponent animMap;
     animMap.textureHeightPerRow = TEX_SIZE;
     animMap.stateToAnimation["IDLE"] = { 0, 5, 0.22f };
-    animMap.stateToAnimation["WALK"] = { 1, 5, 0.08f };
+    animMap.stateToAnimation["WALK"] = { 1, 5, 0.06f };
     animMap.stateToAnimation["ATCK"] = { 2, 0 };
     
     cm.addComponent<AnimationMapComponent>(id, animMap); //apply constructed component
@@ -90,10 +90,11 @@ EntityID buildNinja(ComponentManager& cm, EntityManager& em, float x, float y) {
     cm.addComponent<BoundsComponent>(id, {{{XPOSITION, YPOSITION},{(float)TEX_SIZE-12, (float)TEX_SIZE-12}}});
     cm.addComponent<CollisionComponent>(id, {});
     
-    cm.addComponent<MovementComponent>(id, {120.0f, 0.0f, 0.0f});
+    cm.addComponent<MovementComponent>(id, {120.0f, 1.0f, 0.0f, 0.0f});//<-- speed, speedMult, xdir, ydir
     cm.addComponent<HoverComponent>(id, {});
     cm.addComponent<SelectComponent>(id, {});
     cm.addComponent<ObjectiveComponent>(id, {});
+    cm.addComponent<ControlComponent>(id, {});
 
     return id;
 }

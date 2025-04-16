@@ -4,11 +4,8 @@
 #include <SFML/Graphics.hpp>  // for Sprite
 // World space
 struct PositionComponent { float x, y; };
-// A component containing the coordinates of the chunk in which
-// the entity is currently within. Maintained by MovementSystem
-struct ChunkComponent { int x, y; };
 
-struct MovementComponent { float speed; float xDir, yDir; };
+struct MovementComponent { float speed; float speedMult; float xDir, yDir; };
 
 struct HealthComponent { int currentHealth, maxHealth; };
 
@@ -26,6 +23,7 @@ struct SpriteComponent {
 // ---------------------
 // ----- Animation -----
 // ---------------------
+
 struct AnimationComponent { 
     float elapsedTime;
     int animationIndex; 
@@ -47,6 +45,7 @@ struct FlipComponent { bool isFlipped = false; };
 // ----------------------------
 // ----- State components -----
 // ----------------------------
+
 // State components crucial for, and directly tied to, sprite animations 
 struct EyeBugStateComponent { enum State { IDLE } state; };
 struct StateComponent { std::string currentState; };
@@ -54,20 +53,21 @@ struct StateComponent { std::string currentState; };
 // -------------------------------
 // ----- Collision component -----
 // -------------------------------
+
 // (bounds is stored in BoundsComponent)
 struct CollisionComponent { bool isStaticBody = false; };
 
 // --------------------------------------
 // ----- Entity behavior components -----
 // --------------------------------------
-// Makes entity controllable
+
+// Can be controlled
 struct ControlComponent { bool isControlled = false; };
 // View can follow entity
 struct SelectComponent { bool isSelected = false; };
 // Can be hovered
 struct HoverComponent { bool isHovered = false; };
-// Entities can have an objective (a point in world space),
-// and will move towards the point, if hasObjective
+// Entities can have an objective (a point in world space), and will move towards the point, if hasObjective == true
 struct ObjectiveComponent { float x, y; bool hasObjective = false; };
 
 #endif

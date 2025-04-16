@@ -10,14 +10,11 @@ class VelocitySystem {
 public:
     inline void update(float dt, EntityManager& em, ComponentManager& cm) {
         for (auto& ent : em.getAllEntities()) {
-            if ( !cm.getComponent<PositionComponent>(ent) | !cm.getComponent<MovementComponent>(ent) ) {
-                continue;
-            }
-
+            if ( !cm.getComponent<PositionComponent>(ent) | !cm.getComponent<MovementComponent>(ent) )
+                continue;//<-- skip
             // Pointers to components
             auto p_movecomponent = cm.getComponent<MovementComponent>(ent);
             auto p_poscomponent  = cm.getComponent<PositionComponent>(ent);
-
             // Flip behavior
             if (auto p_flipcomponent = cm.getComponent<FlipComponent>(ent)) {
                 // Moving right
@@ -28,11 +25,10 @@ public:
                     p_flipcomponent->isFlipped = false;
                 } 
             }
-            
             // Declarations
             float x = p_movecomponent->xDir;
             float y = p_movecomponent->yDir;
-            float speed = p_movecomponent->speed;
+            float speed = p_movecomponent->speed * p_movecomponent->speedMult;
             // Calculation
             float length = std::sqrt(x * x + y * y);
 

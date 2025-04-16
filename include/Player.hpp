@@ -11,13 +11,13 @@
 
 struct Player {
 public:
-    EntityID entityFollow; // entity to follow
+    std::optional<EntityID> entityFollow; // entity to follow
     sf::View playerView;
+    sf::View minimapView;
 
     Player();
 
-    void setPosition(float x = 0, float y = 0);
-    sf::Vector2f getPosition();
+    void move(float x = 0, float y = 0);
 
     void stopFollow();
     void followUnit(EntityID id);
