@@ -14,7 +14,20 @@
 
 #define DRAW_BOUNDS true
 
+
+struct DrawableSprite {
+    sf::Sprite sprite;
+    float y; // Usually position.y + sprite.getGlobalBounds().height
+};
+
+// ------------------
+// ----- System -----
+// ------------------
+
 class RenderSystem {
+private:
+    std::vector<DrawableSprite> spritesToBeDrawn;
+
 public:
     inline void update(sf::RenderWindow& renderWindow, std::shared_ptr<ResourceManager>& allocator, EntityManager& em, ComponentManager& cm) {
         for (auto& ent : em.getAllEntities()) {
@@ -37,7 +50,10 @@ public:
                 // Pointers to components
                 PositionComponent* cposition = cm.getComponent<PositionComponent>(ent);
                 SpriteComponent* csprite = cm.getComponent<SpriteComponent>(ent);
-                
+
+                if (!csprite->isVisible)
+                    continue;//<-- skip if sprite isn't visible
+
                 // Sprite to be drawn
                 sf::Sprite sprite(*allocator->loadTexture(csprite->texturePath));
                 sprite.setOrigin(csprite->origin); // Necessary ?
@@ -50,10 +66,10 @@ public:
                     // apply scale transformation regardless of change in value
                     sprite.setScale({flip->isFlipped ? -1.f : 1.f, 1.f}); 
                 }
-                // Draw sprite
-                if (csprite->isVisible) {
-                    renderWindow.draw(sprite);
-                }
+
+                // Store sprite so it can be drawn after processing all sprites
+                this->spritesToBeDrawn.push_back({sprite, cposition->y});//+ sprite.getGlobalBounds().size.y
+
                 // Draw hitbox/selected box
                 if (DRAW_BOUNDS) {
                     if (!cm.getComponent<HoverComponent>(ent)->isHovered && !cm.getComponent<SelectComponent>(ent)->isSelected)
@@ -65,13 +81,26 @@ public:
                     // appearance
                     hitbox.setFillColor(sf::Color::Transparent);
                     hitbox.setOutlineColor(cm.getComponent<HoverComponent>(ent)->isHovered ? sf::Color::Green : sf::Color::Blue);//<- green if hovered, blue if selected
-
                     hitbox.setOutlineThickness(cm.getComponent<HoverComponent>(ent)->isHovered ? 1.5f : 1.0f);
                     renderWindow.draw(hitbox);
                 }
             }
+        } // for loop
+    
+        // Sort all DrawableSprites
+        std::sort(spritesToBeDrawn.begin(), spritesToBeDrawn.end(), [](const DrawableSprite& a, const DrawableSprite& b) {
+            return a.y < b.y;
+        });
+
+        for (const auto& [sprite, y] : this->spritesToBeDrawn) {
+            renderWindow.draw(sprite); // Draw each sprite
         }
+        // reset sprite container
+        this->spritesToBeDrawn.clear();
+        this->spritesToBeDrawn.shrink_to_fit();
+
     }
+
 };
 
 #endif

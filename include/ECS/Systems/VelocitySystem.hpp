@@ -10,7 +10,7 @@ class VelocitySystem {
 public:
     inline void update(float dt, EntityManager& em, ComponentManager& cm) {
         for (auto& ent : em.getAllEntities()) {
-            if ( !cm.getComponent<PositionComponent>(ent) | !cm.getComponent<MovementComponent>(ent) )
+            if ( !cm.getComponent<PositionComponent>(ent) || !cm.getComponent<MovementComponent>(ent) )
                 continue;//<-- skip
             // Pointers to components
             auto p_movecomponent = cm.getComponent<MovementComponent>(ent);

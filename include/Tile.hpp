@@ -6,12 +6,6 @@
 #include "constants.h"
 
 
-// Coordinate definition
-struct Coord {
-    int32_t x, y;
-    bool operator==(const Coord& other) const { return x == other.x && y == other.y; }
-};
-
 struct TileData {
     unsigned int ID;
     uint8_t flipFlags;

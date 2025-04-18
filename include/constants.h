@@ -12,14 +12,23 @@
 #define CHUNK_HEIGHT 16                     // Size in (amount of) tiles
 #define CHUNK_SIZE CHUNK_WIDTH*CHUNK_HEIGHT // Size in (amount of) tiles
 
-// sf::View (player view values)
+//  sf::View (player view values)
 #define PANNING_SPEED 300
 #define viewMinX 1920/4    // View minimum X length
 #define viewMaxX 1920/2    // View maximum X length
 #define viewMinY 1080/4    // View minimum Y length
 #define viewMaxY 1080/2    // View maximum Y length
 
+//  sf::Color(s)
+inline sf::Color BLUE_COLOR = {8, 85, 177, 255};
+
 //  ENTITY_ID
 #define EntityID uint32_t
+
+// Coordinate definition
+struct Coord {
+    int32_t x, y;
+    bool operator==(const Coord& other) const { return x == other.x && y == other.y; }
+};
 
 #endif

@@ -9,18 +9,19 @@
 
 #include "constants.h"
 
+
 class AnimationSystem {
 public:
     inline void update(float deltaTime, EntityManager& em, ComponentManager& cm) {
         for (auto& ent : em.getAllEntities()) {
             // Check for Animation-, AnimationMap-, Sprite- and StateComponent
             if (
-                !cm.getComponent<AnimationComponent>(ent) | 
-                !cm.getComponent<SpriteComponent>(ent) | 
-                !cm.getComponent<AnimationMapComponent>(ent) |
+                !cm.getComponent<AnimationComponent>(ent) || 
+                !cm.getComponent<SpriteComponent>(ent) || 
+                !cm.getComponent<AnimationMapComponent>(ent) ||
                 !cm.getComponent<StateComponent>(ent)
             ) {
-                return;
+                continue;
             }
             sf::IntRect& textRect = cm.getComponent<SpriteComponent>(ent)->textureRectangle;
             // Get component pointers

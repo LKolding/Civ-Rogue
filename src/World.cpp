@@ -6,7 +6,7 @@
 
 // Returns non-const pointer (direct access) to TileData of tile at passed Coord.
 // "tileCoord" refers to the global grid and is not relative to some chunk.
-TileData* World::getTile(Coord tileCoord) {
+const TileData* World::getTile(Coord tileCoord) {
     Coord chunkCoord = {
         (int32_t)std::floor(tileCoord.x / static_cast<float>(CHUNK_WIDTH)),
         (int32_t)std::floor(tileCoord.y / static_cast<float>(CHUNK_HEIGHT))
@@ -49,6 +49,7 @@ bool World::loadChunk(ChunkData& data) {
 // -------------------
 // ----- MANAGER -----
 // -------------------
+
 bool WorldManager::loadChunkTMX(const tmx::TileLayer::Chunk& tmxdata) {
     auto pchunk = this->world.getChunk({tmxdata.position.x, tmxdata.position.y});
     if (pchunk) {
@@ -86,11 +87,10 @@ tmx::TileLayer::Chunk WorldManager::getChunkTMX(Coord chunkCoord) {
     return tmxChunk;
 }
 
-void WorldManager::initialize(std::weak_ptr<ResourceManager> allocator, std::weak_ptr<Player> p, const std::string& game_name) {
+void WorldManager::initialize(std::weak_ptr<ResourceManager> allocator, const std::string& game_name) {
     // Performs an initialization of the World object incl.
     // tilesets, chunks and tiles. Extracts from game file
     tmx::Map map;
-    this->playerPtr = p;
     this->resourceAllocatorPtr = allocator;
 
     if (!map.load(game_name)) {
@@ -174,11 +174,11 @@ void WorldManager::saveMapToTMX(const std::string& filePath, EntityManager& em, 
     pugi::xml_node objectsNode = mapNode.append_child("objectgroup");
     objectsNode.append_attribute("name") = "objects";
     
-    pugi::xml_node playerLocationNode = objectsNode.append_child("object");
-    // playerLocationNode.append_attribute("id") = "1";
-    playerLocationNode.append_attribute("name") = "playerLocation";
-    playerLocationNode.append_attribute("x") = (int) this->playerPtr.lock()->playerView.getCenter().x;
-    playerLocationNode.append_attribute("y") = (int) this->playerPtr.lock()->playerView.getCenter().y;
+    // pugi::xml_node playerLocationNode = objectsNode.append_child("object");
+    // // playerLocationNode.append_attribute("id") = "1";
+    // playerLocationNode.append_attribute("name") = "playerLocation";
+    // playerLocationNode.append_attribute("x") = (int) this->rplayer.playerView.getCenter().x;
+    // playerLocationNode.append_attribute("y") = (int) this->rplayer.playerView.getCenter().y;
     
     pugi::xml_node entitiesNode = mapNode.append_child("objectgroup");
     entitiesNode.append_attribute("name") = "entities";
@@ -241,9 +241,9 @@ void WorldManager::loadMap(const tmx::Map& map) {
                 if (objectLayer.getName() == "objects") {
                     for (const auto& object : objectLayer.getObjects()) {  // iterate objects
                         // Player location
-                        if (object.getName() == "playerLocation") {
-                            this->playerPtr.lock()->playerView.setCenter({object.getPosition().x, object.getPosition().y});
-                        }
+                        // if (object.getName() == "playerLocation") {
+                        //     this->rplayer.playerView.setCenter({object.getPosition().x, object.getPosition().y});
+                        // }
                     }
                 break;
                 }
@@ -264,9 +264,9 @@ void WorldManager::createChunkSprites(std::shared_ptr<ResourceManager> allocator
     }
 }
 
-void WorldManager::render(std::unique_ptr<sf::RenderWindow>& ren) const {    
+void WorldManager::render(sf::RenderWindow& ren) const {    
     // render chunks
     for (auto& sprite : this->chunkSprites) {
-        ren->draw(*sprite);
+        ren.draw(*sprite);
     }
 }

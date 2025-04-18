@@ -38,6 +38,7 @@
 #include "ECS/Systems/ImguiSystem.hpp"
 #include "ECS/Systems/ControlSystem.hpp"
 #include "ECS/Systems/ChunkgenSystem.hpp"
+#include "ECS/Systems/MinimapSystem.hpp"
 // entities / components + managers
 #include "ECS/EntityManager.hpp"
 #include "ECS/ComponentManager.hpp"
@@ -74,6 +75,8 @@ private:
     StateSystem stateSystem;
     ImguiSystem imguiSystem;
     ChunkgenSystem chunkgenSystem;
+    MinimapSystem minimapSystem;
+
 
     std::unique_ptr<InputManager> inputManager;
 

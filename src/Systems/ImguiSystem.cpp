@@ -2,7 +2,6 @@
 
 
 void ImguiSystem::update(const sf::RenderWindow& ren, EntityManager& em, ComponentManager& cm) {
-
     const auto mouse_pos = ImGui::GetIO().MousePos;
     const auto wmouse_pos = ren.mapPixelToCoords({(int)mouse_pos.x, (int)mouse_pos.y}); //world coordinates
 
@@ -11,9 +10,12 @@ void ImguiSystem::update(const sf::RenderWindow& ren, EntityManager& em, Compone
     std::string tentities_amount   = "(entities) " + std::to_string(em.getAllEntities().size());
 
     ImGui::Begin("Debug");
-    if (ImGui::Button("Spawn ninja")) {
+    if (ImGui::Button("Spawn ninja"))
         buildNinja(cm, em, ren.getView().getCenter().x, ren.getView().getCenter().y);
-    }
+
+    if (ImGui::Button("Spawn well"))
+        buildWell(cm, em, ren.getView().getCenter().x, ren.getView().getCenter().y);
+    
 
     ImGui::TextColored({0.0, 0.5, 1.0, 1.0}, "Information:");
     ImGui::Text("Focus: %d, Hovered: %d", ImGui::IsWindowFocused(), ImGui::IsWindowHovered());

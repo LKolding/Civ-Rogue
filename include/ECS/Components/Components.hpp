@@ -1,7 +1,8 @@
 #ifndef _COMPONENTS_
 #define _COMPONENTS_
 
-#include <SFML/Graphics.hpp>  // for Sprite
+#include <SFML/Graphics.hpp> // for "sf::?" types
+
 // World space
 struct PositionComponent { float x, y; };
 
@@ -11,7 +12,6 @@ struct HealthComponent { int currentHealth, maxHealth; };
 
 struct WeaponComponent { int damage; float dmgMultiplier; float useTime; float elapsedTime; bool isAttacking; };
 
-struct BoundsComponent { sf::FloatRect bounds; };  // maintained by RenderSystem
 
 struct SpriteComponent {
     sf::IntRect textureRectangle; // rect of the tilesheet
@@ -54,8 +54,8 @@ struct StateComponent { std::string currentState; };
 // ----- Collision component -----
 // -------------------------------
 
-// (bounds is stored in BoundsComponent)
 struct CollisionComponent { bool isStaticBody = false; };
+struct BoundsComponent { sf::FloatRect bounds; };           // maintained by RenderSystem
 
 // --------------------------------------
 // ----- Entity behavior components -----

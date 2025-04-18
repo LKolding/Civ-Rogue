@@ -81,7 +81,7 @@ class InputSystem {
                 for (size_t i = 0; i < selectStorage.components.size(); ++i) {
                     auto& component = selectStorage.components[i];
 
-                    if (component.isSelected) { // <--- if selected, send objective
+                    if (component.isSelected && cm.getComponent<ObjectiveComponent>(selectStorage.indexToEntity[i])) { // <--- if selected, send objective
                         EntityID selectedEntity = selectStorage.indexToEntity[i];
                         cm.getComponent<ObjectiveComponent>(selectedEntity)->hasObjective = true;
                         cm.getComponent<ObjectiveComponent>(selectedEntity)->x = cursor.world_pos.x;

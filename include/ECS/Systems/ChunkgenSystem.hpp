@@ -8,6 +8,7 @@
 #include "ECS/ComponentManager.hpp"
 #include "ECS/Components/Components.hpp"
 
+#include "coordinate_calculators.hpp"
 
 inline int floorDiv(int a, int b) {
     return (a >= 0) ? (a / b) : ((a - b + 1) / b);
@@ -23,7 +24,9 @@ public:
 
             PositionComponent* entityPosition = cm.getComponent<PositionComponent>(ent);
 
-            if (wm.world.getChunk({(int32_t)entityPosition->x, (int32_t)entityPosition->y}))
+            auto pos = getChunkCoords({entityPosition->x, entityPosition->y});
+
+            if (wm.world.getChunk(pos))
                 continue;//<-- skip if chunk at location already exists
 
             wm.generateRandomChunk({

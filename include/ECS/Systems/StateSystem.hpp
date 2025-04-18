@@ -20,10 +20,10 @@ class StateSystem {
 public:
     inline void update(EntityManager& em, ComponentManager& cm) {
         for (auto ent : em.getAllEntities()) {
-            
-            auto state = cm.getComponent<StateComponent>(ent);
-            if (!state)
+            if (!cm.getComponent<StateComponent>(ent))
                 continue;
+
+            auto state = cm.getComponent<StateComponent>(ent);
 
             if (auto health = cm.getComponent<HealthComponent>(ent); health && health->currentHealth <= 0) {
                 state->currentState = "DEAD";

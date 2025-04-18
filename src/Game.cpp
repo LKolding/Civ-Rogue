@@ -2,7 +2,7 @@
 
 
 const sf::Time targetFrameTime = sf::seconds(1.f / 120); // 120 fps
-const char* gamefilepath = "../saveGames/game1.tmx"; 
+const char* gamefilepath = "../saveGames/game1.tmx";
 
 
 Game::Game() {
@@ -12,23 +12,22 @@ Game::Game() {
     this->inputManager = std::make_unique<InputManager>();
     this->allocator = std::make_shared<ResourceManager>();
     this->renderWindow = std::make_unique<sf::RenderWindow>(sf::VideoMode({static_cast<int>(WINDOW_WIDTH), static_cast<int>(WINDOW_HEIGHT)}), "klunkabadul");
+    this->player = std::make_shared<Player>();
 
     if (!ImGui::SFML::Init(*this->renderWindow)) // init imgui
-        throw std::runtime_error("[GAME ERROR] Could not initiliaze ImGui");
+        throw std::runtime_error("[GAME ERROR] Could not initialize ImGui");
     else
         this->renderWindow->resetGLStates();
 }
 
 void Game::initializeGame() {
-    //  init player
-    this->player = std::make_shared<Player>();
     //  read game file and initialize world
-    this->worldManager.initialize(this->allocator, this->player, gamefilepath);
+    this->worldManager.initialize(this->allocator, gamefilepath);
     //  Chunks generation
-    this->worldManager.generateRandomChunk({0,0});  // center
+    // this->worldManager.generateRandomChunk({0,0});  // center
     // Generate sprites for all chunks
     this->worldManager.createChunkSprites(this->allocator);
-    
+
 }
 
 void Game::updateSystems(float deltaTime) {
@@ -53,8 +52,9 @@ void Game::updateSystems(float deltaTime) {
         controlSystem.update(this->entityManager, this->componentManager, *this->inputManager, *this->player);
 
     chunkgenSystem.update(this->entityManager, this->componentManager, this->worldManager);
+
 }
-// Polls event from SFML, sends it to ImGui ProcessEvent() and to inputManager->update()
+// Polls event from SFML, sends it to ImGui ProcessEvent() and then to inputManager->update()
 // Also checks for Event::Closed and returns false if so, otherwise returns true; 
 bool Game::handleEventQueue() {
     while (const std::optional event = this->renderWindow->pollEvent()) {
@@ -62,7 +62,7 @@ bool Game::handleEventQueue() {
         if (event->is<sf::Event::Closed>()) {
             this->worldManager.saveMapToTMX(gamefilepath, this->entityManager, this->componentManager);
             this->renderWindow->close();
-            return false;// <-- escape loop and send exit signal
+            return false;//<-- escape loop and send exit signal
         }
         // ImGui
         ImGui::SFML::ProcessEvent(*this->renderWindow, *event);
@@ -72,7 +72,7 @@ bool Game::handleEventQueue() {
     return true;
 }
 
-void Game::gameLoop() {    
+void Game::gameLoop() {
     while (this->renderWindow->isOpen()) {
         // 1.  Frame start: Calculate deltaTime
         sf::Time frameStartTime = clock.restart();
@@ -93,7 +93,11 @@ void Game::gameLoop() {
         this->renderWindow->setView(player->playerView);         // Set view for world rendering
         this->render();                                          // Render all game tiles, entities and minimap
 
-        ImGui::SFML::Render(*this->renderWindow);                // render imgui
+        ImGui::SFML::Render(*this->renderWindow);                // imgui
+        this->minimapSystem.update(                              // minimap
+            *this->renderWindow, 
+            *this->player, 
+            this->worldManager);
         this->renderWindow->display();                           // display
 
         this->inputManager->reset();                             // reset inputManager
@@ -101,7 +105,7 @@ void Game::gameLoop() {
         // 6.  FPS mangement (currently unused eg. no frame cap applied)
         sf::Time frameTime = clock.getElapsedTime();
         if (frameTime < targetFrameTime) {
-            //sf::sleep(targetFrameTime - frameTime);
+            sf::sleep(targetFrameTime - frameTime);
         }
 
     } // while loop
@@ -109,34 +113,14 @@ void Game::gameLoop() {
 }
 
 void Game::render() {
-    // ----------------------
-    // ----- BACKGROUND -----
-    // ----------------------
-
-    sf::Color BLUE_COLOR = {8, 85, 177, 255};
     this->renderWindow->clear(BLUE_COLOR);  // blue background
 
-    this->worldManager.render(this->renderWindow); // render all background tiles (all chunks)
+    this->worldManager.render(*this->renderWindow); // render all background tiles (all chunks)
     renderSystem.update(*renderWindow, this->allocator, this->entityManager, this->componentManager);
 
     this->renderWindow->setView(this->renderWindow->getDefaultView());  // escape playerView
     // isFollowing/freecam
-    drawString(this->renderWindow, this->allocator, this->player->isFollowingUnit() ? "controlling character : ESC to stop" : "free cam");
-    // Minimap
-    sf::RectangleShape minimapBackground;
-    minimapBackground.setSize({(float)(WINDOW_WIDTH)*(this->player->minimapView.getViewport().size.x), (float)(WINDOW_HEIGHT)*(this->player->minimapView.getViewport().size.y)});
-    minimapBackground.setPosition({(WINDOW_WIDTH)*0.75f, 0});
-    minimapBackground.setFillColor(BLUE_COLOR);
-    minimapBackground.setOutlineColor(sf::Color::White);
-    minimapBackground.setOutlineThickness(5.0f);
-    this->renderWindow->draw(minimapBackground);
-
-    this->player->minimapView.setCenter(this->player->playerView.getCenter()); // syncronize views
-
-    this->renderWindow->setView(this->player->minimapView);
-    this->worldManager.render(this->renderWindow);    // render minimap
-
-    this->renderWindow->setView(player->playerView);  // reset view
+    drawString(this->renderWindow, this->allocator, this->player->isFollowingUnit() ? "CONTROLLING" : "FREE CAM");
     
 }
 

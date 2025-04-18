@@ -40,7 +40,7 @@ public:
     std::unordered_map<Coord, ChunkData> m_chunks;
     // Returns nullptr if chunk is non-existent
     const ChunkData* getChunk(Coord chunkCoord);
-    TileData*  getTile(Coord tileCoord);
+    const TileData*  getTile(Coord tileCoord);
 
     bool loadChunk(ChunkData& data);
 };
@@ -57,19 +57,18 @@ public:
     tmx::TileLayer::Chunk getChunkTMX(Coord chunkCoord);
     void saveMapToTMX(const std::string& filePath, EntityManager& em, ComponentManager& cm) const;
 
-    void initialize(std::weak_ptr<ResourceManager> allocator, std::weak_ptr<Player> p, const std::string& game_name);
+    void initialize(std::weak_ptr<ResourceManager> allocator, const std::string& game_name);
     
     void generateRandomChunk(Coord pos);
     //  Render
     void createChunkSprites(std::shared_ptr<ResourceManager> allocator);
-    void render(std::unique_ptr<sf::RenderWindow> &ren) const;
+    void render(sf::RenderWindow &ren) const;
 
 private:
     void createGrassTileSprite(unsigned int &ID, sf::Vector2f pos, ResourceManager& allocator);
     void loadMap(const tmx::Map& map);
     
     std::vector<std::unique_ptr<sf::Sprite>> chunkSprites;
-    std::weak_ptr<Player> playerPtr;
     std::weak_ptr<ResourceManager> resourceAllocatorPtr;
 };
 #endif

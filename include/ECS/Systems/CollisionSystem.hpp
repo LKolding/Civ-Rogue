@@ -15,7 +15,10 @@
 
 const float COLLISION_SYSTEM_DELAY = 0.005;// <-- increase/decrease to have fun
 
-// Calculation functions
+// ---------------------------------
+// ----- Calculation functions -----
+// ---------------------------------
+
 bool inline checkCollision(const sf::FloatRect& a, const sf::FloatRect& b) {
     //  AABB (axis-aligned bounding box) collision detection
     return (a.position.x < b.position.x  + b.size.x  &&
@@ -23,57 +26,43 @@ bool inline checkCollision(const sf::FloatRect& a, const sf::FloatRect& b) {
             a.position.y  < b.position.y   + b.size.y &&
             a.position.y  + a.size.y > b.position.y );
 }
-/*
-void inline resolveStaticCollision(std::shared_ptr<Entity> entityA, std::shared_ptr<Entity> entityB) {
-    // First, determine which entity has the StaticCollisionComponent and which has the CollisionComponent
-    std::shared_ptr<StaticCollisionComponent> staticCollision;
-    std::shared_ptr<CollisionComponent> dynamicCollision;
-    std::shared_ptr<PositionComponent> dynamicPosition;
 
-    if (entityA->hasComponent<StaticCollisionComponent>()) {
-        staticCollision = entityA->getComponent<StaticCollisionComponent>();
-        dynamicCollision = entityB->getComponent<CollisionComponent>();
-        dynamicPosition = entityB->getComponent<PositionComponent>();
-    } else if (entityB->hasComponent<StaticCollisionComponent>()) {
-        staticCollision = entityB->getComponent<StaticCollisionComponent>();
-        dynamicCollision = entityA->getComponent<CollisionComponent>();
-        dynamicPosition = entityA->getComponent<PositionComponent>();
-    } else {
-        // No static collision detected, return early
-        return;
-    }
-
-    // Now resolve the collision using dynamicCollision and dynamicPosition
-    // For example, calculate overlap and adjust position of the dynamic entity
+// A: dynamic body
+// B: static body
+void inline resolveStaticCollision(PositionComponent& positionA, PositionComponent& positionB, BoundsComponent& collisionA, BoundsComponent& collisionB) {
+    std::cout << "Resolving A: " << &positionA << " vs B: " << &positionB << std::endl;
 
     // Example logic (replace this with your actual collision resolution):
-    float overlapX = std::min(staticCollision->bounds.left + staticCollision->bounds.width, dynamicCollision->bounds.left + dynamicCollision->bounds.width) -
-                     std::max(staticCollision->bounds.left, dynamicCollision->bounds.left);
-
-    float overlapY = std::min(staticCollision->bounds.top + staticCollision->bounds.height, dynamicCollision->bounds.top + dynamicCollision->bounds.height) -
-                     std::max(staticCollision->bounds.top, dynamicCollision->bounds.top);
+    float overlapX = std::max(0.f,
+        std::min(collisionB.bounds.position.x + collisionB.bounds.size.x, collisionA.bounds.position.x + collisionA.bounds.size.x) -
+        std::max(collisionB.bounds.position.x, collisionA.bounds.position.x));
+    
+    float overlapY = std::max(0.f,
+        std::min(collisionB.bounds.position.y + collisionB.bounds.size.y, collisionA.bounds.position.y + collisionA.bounds.size.y) -
+        std::max(collisionB.bounds.position.y, collisionA.bounds.position.y));    
 
     if (overlapX < overlapY) {
         // Separate along the x-axis
-        if (dynamicCollision->bounds.left < staticCollision->bounds.left) {
-            dynamicPosition->x -= overlapX;
+        if (collisionA.bounds.position.x < collisionB.bounds.position.x) {
+            positionA.x -= overlapX;
         } else {
-            dynamicPosition->x += overlapX;
+            positionA.x += overlapX;
         }
     } else {
         // Separate along the y-axis
-        if (dynamicCollision->bounds.top < staticCollision->bounds.top) {
-            dynamicPosition->y -= overlapY;
+        if (collisionA.bounds.position.y < collisionB.bounds.position.y) {
+            positionA.y -= overlapY;
         } else {
-            dynamicPosition->y += overlapY;
+            positionA.y += overlapY;
         }
     }
 
     // Update collision box positions based on new entity positions
-    dynamicCollision->bounds.left = dynamicPosition->x - (dynamicCollision->bounds.width /2);
-    dynamicCollision->bounds.top  = dynamicPosition->y - (dynamicCollision->bounds.height/2);
+    collisionA.bounds.position.x = positionA.x - (collisionA.bounds.size.x / 2);
+    collisionA.bounds.position.y = positionA.y - (collisionA.bounds.size.y / 2);
+
 }
-*/
+
 void inline resolveCollision(PositionComponent& positionA, PositionComponent& positionB, BoundsComponent& collisionA, BoundsComponent& collisionB) {
     // Calculate the overlap on both the x and y axes
     float overlapX = std::min(collisionA.bounds.position.x + collisionA.bounds.size.x, collisionB.bounds.position.x + collisionB.bounds.size.x) -
@@ -114,6 +103,9 @@ void inline resolveCollision(PositionComponent& positionA, PositionComponent& po
     collisionB.bounds.position.y = positionB.y - (collisionB.bounds.size.y/2);
 }
 
+// ------------------------
+// ----- System class -----
+// ------------------------
 
 class CollisionSystem {
 public:
@@ -126,7 +118,7 @@ public:
             this->collisionDetectionTimer = 0.0f;
 
         for (auto ent : em.getAllEntities()) {
-            if (!cm.getComponent<CollisionComponent>(ent) | cm.getComponent<CollisionComponent>(ent)->isStaticBody)
+            if (!cm.getComponent<CollisionComponent>(ent) || cm.getComponent<CollisionComponent>(ent)->isStaticBody)
                 continue; // skip if no collision component or static body
             
             for (auto ent2 : em.getAllEntities()) {
@@ -144,17 +136,22 @@ public:
                 if (checkCollision(pbounds1->bounds, pbounds2->bounds)) {
                     // If bounds2 == static body
                     if ( cm.getComponent<CollisionComponent>(ent2)->isStaticBody) {
-                        //resolveStaticCollision( );
-                        continue;
+                        resolveStaticCollision(
+                            *cm.getComponent<PositionComponent>(ent),
+                            *cm.getComponent<PositionComponent>(ent2),
+                            *cm.getComponent<BoundsComponent>(ent),
+                            *cm.getComponent<BoundsComponent>(ent2)
+                        );
+                    } else {
+                        // Else, resolve collision in normal manner
+                        resolveCollision(
+                            *cm.getComponent<PositionComponent>(ent),
+                            *cm.getComponent<PositionComponent>(ent2),
+                            *pbounds1,
+                            *pbounds2
+                        );       
                     }
-                    // Else, resolve collision in normal manner
-                    resolveCollision(
-                        *cm.getComponent<PositionComponent>(ent),
-                        *cm.getComponent<PositionComponent>(ent2),
-                        *pbounds1,
-                        *pbounds2
-                    );       
-                };
+                }
             }
         }
     }
