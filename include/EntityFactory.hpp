@@ -77,4 +77,30 @@ inline EntityID buildWell(ComponentManager& cm, EntityManager& em, float x = 0, 
 
 }
 
+
+inline EntityID buildTree(ComponentManager& cm, EntityManager& em, float x = 0, float y = 0) {
+    EntityID id = em.createEntity();
+
+    const float XPOSITION = x;
+    const float YPOSITION = y;
+    const int MAX_HEALTH = 100;
+    const int TEX_WIDTH  = 128 + 32;
+    const int TEX_HEIGHT = 128 + 32;
+    const std::string TEX_PATH = "../assets/textures/tilesheets/TX Plant.png";
+    
+    cm.addComponent<PositionComponent>(id, {XPOSITION, YPOSITION});
+    cm.addComponent<HealthComponent>(id, {MAX_HEALTH, MAX_HEALTH});
+    cm.addComponent<SpriteComponent>(id, {{{0,0},{TEX_WIDTH,TEX_HEIGHT}}, {TEX_WIDTH/2, TEX_HEIGHT/2}, TEX_PATH});
+
+    // Hitbox gets declared here
+    cm.addComponent<BoundsComponent>(id, {{{XPOSITION, YPOSITION},{(float)TEX_WIDTH/12, (float)TEX_HEIGHT/4}}});
+    cm.addComponent<CollisionComponent>(id, {true}); //<-- static body = true
+
+    cm.addComponent<HoverComponent>(id, {});
+    cm.addComponent<SelectComponent>(id, {false});
+
+    return id;
+
+} 
+
 #endif

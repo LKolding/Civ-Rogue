@@ -11,7 +11,10 @@ Game::Game() {
 
     this->inputManager = std::make_unique<InputManager>();
     this->allocator = std::make_shared<ResourceManager>();
-    this->renderWindow = std::make_unique<sf::RenderWindow>(sf::VideoMode({static_cast<int>(WINDOW_WIDTH), static_cast<int>(WINDOW_HEIGHT)}), "klunkabadul");
+
+    sf::ContextSettings context;
+    context.antiAliasingLevel = 6;
+    this->renderWindow = std::make_unique<sf::RenderWindow>(sf::VideoMode({static_cast<int>(WINDOW_WIDTH), static_cast<int>(WINDOW_HEIGHT)}), "klunkabadul", sf::State::Windowed, context);
     this->player = std::make_shared<Player>();
 
     if (!ImGui::SFML::Init(*this->renderWindow)) // init imgui

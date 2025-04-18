@@ -15,6 +15,9 @@ void ImguiSystem::update(const sf::RenderWindow& ren, EntityManager& em, Compone
 
     if (ImGui::Button("Spawn well"))
         buildWell(cm, em, ren.getView().getCenter().x, ren.getView().getCenter().y);
+
+    if (ImGui::Button("Spawn tree"))
+        buildTree(cm, em, ren.getView().getCenter().x, ren.getView().getCenter().y);
     
 
     ImGui::TextColored({0.0, 0.5, 1.0, 1.0}, "Information:");
